@@ -1,25 +1,19 @@
 import { Hero } from "@/components/sections/Hero";
-import { TripAdvisor } from "@/components/sections/TripAdvisor";
-import { Experience } from "@/components/sections/Experience";
-import { WhatToPrepare } from "@/components/sections/WhatToPrepare";
-import { Gallery } from "@/components/sections/Gallery";
+import { EditorsNote } from "@/components/sections/EditorsNote";
+import { NeighborhoodsPreview } from "@/components/sections/NeighborhoodsPreview";
+import { Ceremony } from "@/components/sections/Ceremony";
 import { Host } from "@/components/sections/Host";
-import { Plans } from "@/components/sections/Plans";
-import { BookingCTA } from "@/components/sections/BookingCTA";
-import { Access } from "@/components/sections/Access";
+import { ReserveBlock } from "@/components/sections/ReserveBlock";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <TripAdvisor />
-      <Experience />
-      <WhatToPrepare />
-      <Gallery />
+      <EditorsNote />
+      <NeighborhoodsPreview />
+      <Ceremony />
       <Host />
-      <Plans />
-      <BookingCTA />
-      <Access />
+      <ReserveBlock />
     </>
   );
 }

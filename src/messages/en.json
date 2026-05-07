@@ -1,258 +1,258 @@
 {
   "metadata": {
-    "title": "En Chakai — Authentic Japanese Tea Ceremony Experience in Tokyo",
-    "description": "Experience the art of traditional Japanese tea ceremony in Tokyo. An intimate, authentic chado experience unlike any other."
+    "title": "En Chakai — Tea ceremony in the side of Tokyo most travelers never see",
+    "description": "A 60-minute tea ceremony in a Bunkyō tea room, hosted in English. From ¥7,000. Reservations confirmed by hand within 24 hours."
   },
   "nav": {
-    "about": "Philosophy",
-    "plans": "Experiences",
-    "gallery": "Gallery",
-    "access": "Access",
-    "booking": "Reserve",
-    "cancellation": "Cancellation Policy"
+    "experience": "Experience",
+    "neighborhoods": "Neighborhoods",
+    "itineraries": "Itineraries",
+    "faq": "FAQ",
+    "booking": "Reserve"
   },
   "hero": {
-    "subtitle": "円茶会",
-    "heading": "A Quiet Moment.\nA Lifetime of Memory.",
-    "tagline": "An intimate journey into the heart of chado — traditional Japanese tea ceremony — in Tokyo.",
-    "cta": "Reserve Your Experience",
-    "maxGuests": "Max 6 guests per session"
+    "kicker": "Tea ceremony · Bunkyō, Tokyo",
+    "heading": "Tea, in the side of Tokyo\nmost travelers never see.",
+    "tagline": "A sixty-minute ceremony in a quiet ward of north Tokyo. Hosted in English. No seiza required.",
+    "primaryCta": "Reserve a seat",
+    "secondaryCta": "Read the guide",
+    "meta": "60 minutes · From ¥10,000 · Hosted in English"
   },
-  "experience": {
-    "label": "Your Experience",
-    "heading": "What Awaits You",
-    "p1": "Step through the garden gate and leave the city behind. In our intimate tea room, you will experience the profound stillness of an authentic tea ceremony — not as a spectator, but as a welcomed guest.",
-    "p2": "From the first bow to the last sip of matcha, every moment is crafted to immerse you in the beauty of wabi-sabi. Feel the warmth of a hand-thrown tea bowl, taste seasonal wagashi made that morning, and discover the meditative rhythm of chado.",
-    "p3": "Whether this is your first encounter with tea ceremony or a return to a beloved practice, our host will guide you with warmth and expertise through an experience you will carry with you long after you leave.",
-    "features": {
-      "authentic": {
-        "title": "Authentic Tradition",
-        "description": "Urasenke-school tea ceremony practiced in a genuine chashitsu (tea room)"
-      },
-      "intimate": {
-        "title": "Intimate Setting",
-        "description": "Small groups of 2-6 guests for a deeply personal experience"
-      },
-      "seasonal": {
-        "title": "Seasonal Beauty",
-        "description": "Each ceremony reflects the season through wagashi, chabana, and scroll selection"
-      }
-    }
+  "editorsNote": {
+    "kicker": "Editor's note",
+    "heading": "We started this because the alternatives weren't quite right.",
+    "body": "The tea ceremonies most visitors find in Tokyo are either too cheap to be the real thing or too expensive to be relaxed. This is the middle. Sixty minutes, four guests at a time, in a working tea room in Bunkyō — the part of Tokyo where a lot of people quietly live and very few tourists ever come. We thought you should know it exists."
+  },
+  "neighborhoodsPreview": {
+    "kicker": "Around the tea room",
+    "heading": "Five small worlds, all within walking distance.",
+    "body": "We bundle the ceremony with a guide to the streets around it, because half the point of coming this way is that you didn't have to.",
+    "walkMin": "{n} min walk",
+    "rooted": "The tea room is here",
+    "readMore": "Read the guide"
+  },
+  "ceremony": {
+    "kicker": "The ceremony",
+    "heading": "Sixty minutes, end to end.",
+    "body": "What actually happens, in order. No surprises, no improvisation theater.",
+    "timeline": [
+      { "time": "0:00", "label": "Welcome and purification" },
+      { "time": "0:05", "label": "A short introduction — what to watch for" },
+      { "time": "0:15", "label": "The host prepares matcha (temae)" },
+      { "time": "0:30", "label": "Wagashi and your first bowl" },
+      { "time": "0:40", "label": "Whisk your own bowl, with help" },
+      { "time": "0:55", "label": "Q&A and farewell" }
+    ],
+    "readMore": "Read more about the ceremony"
   },
   "plans": {
-    "label": "Experience Plans",
-    "heading": "Choose Your Journey",
-    "description": "Three carefully curated experiences, each offering a different depth of engagement with the Way of Tea.",
-    "perPerson": "per person",
-    "minutes": "min",
-    "maxGuests": "Max {count} guests",
+    "kicker": "Three ways to attend",
+    "heading": "Choose the room, not the activity.",
+    "body": "All three are the same ceremony. The difference is privacy and pace.",
+    "perParty": "per person",
+    "minutesShort": "min",
+    "shared": "Shared room (up to {n})",
+    "private": "Your party only (up to {n})",
+    "recommended": "Most chosen",
     "reserve": "Reserve",
-    "recommended": "Recommended",
-    "mostPopular": "Most Popular",
-    "ume": {
-      "name": "梅 Ume — Plum",
-      "subtitle": "Introduction",
-      "description": "A graceful introduction to the world of chado. Observe and participate in a simplified tea ceremony while enjoying seasonal wagashi.",
-      "includes": [
-        "Welcome tea (usucha)",
-        "Seasonal wagashi sweet",
-        "Brief explanation of tea ceremony principles",
-        "Photo opportunities"
-      ]
+    "encounter": {
+      "name": "The Encounter",
+      "tagline": "The shortest version. Useful if you have an afternoon to fill."
     },
-    "take": {
-      "name": "竹 Take — Bamboo",
-      "subtitle": "Immersion",
-      "description": "A deeper engagement with the tea ceremony. Learn the fundamental movements and philosophy of chado, and prepare your own bowl of matcha.",
-      "includes": [
-        "Full tea ceremony observation",
-        "Hands-on matcha preparation",
-        "Two seasonal wagashi sweets",
-        "Tea utensil appreciation",
-        "Kimono wearing experience (optional)"
-      ]
+    "conversation": {
+      "name": "The Conversation",
+      "tagline": "Our standard hour. Most first-timers pick this."
     },
-    "matsu": {
-      "name": "松 Matsu — Pine",
-      "subtitle": "The Complete Way",
-      "description": "The definitive chado experience. From the garden path to the final bow, experience every element of an authentic tea gathering as it has been practiced for centuries.",
-      "includes": [
-        "Roji (garden path) purification walk",
-        "Full formal tea ceremony (koicha & usucha)",
-        "Kaiseki-inspired light meal",
-        "Premium seasonal wagashi",
-        "Tea utensil study with historical context",
-        "Calligraphy or ikebana mini-workshop",
-        "Certificate of participation"
-      ]
-    }
-  },
-  "gallery": {
-    "label": "Gallery",
-    "heading": "Moments of Stillness",
-    "images": {
-      "chashitsu": "The tea room",
-      "temae": "The preparation",
-      "wagashi": "Seasonal sweets",
-      "chakin": "Tea utensils",
-      "roji": "The garden path",
-      "chabana": "Tea flowers"
-    }
-  },
-  "bookingCta": {
-    "heading": "Begin Your Journey",
-    "description": "Reserve your tea ceremony experience and step into a world of tranquility and tradition.",
-    "cta": "Make a Reservation"
-  },
-  "access": {
-    "label": "Access",
-    "heading": "Finding Us",
-    "address": "Sengoku, Bunkyo-ku, Tokyo",
-    "station": "Sengoku Station (Toei Mita Line) — 5 min walk",
-    "description": "Nestled in the quiet residential neighborhood of Bunkyo ward, our tea room offers a retreat from the energy of central Tokyo. The area's unhurried atmosphere is itself part of the experience.",
-    "directions": {
-      "title": "Directions",
-      "step1": "Exit Sengoku Station (A4 exit)",
-      "step2": "Walk north along Hakusan-dori for 3 minutes",
-      "step3": "Turn right at the small shrine",
-      "step4": "Our entrance is 2 minutes ahead on the left"
-    }
-  },
-  "tripadvisor": {
-    "heading": "Guest Reviews",
-    "description": "Read what our guests say about their experience.",
-    "cta": "Read Reviews on TripAdvisor",
-    "rating": "Excellent",
-    "basedOn": "Based on guest reviews",
-    "reviews": {
-      "review1": {
-        "comment": "The most authentic tea ceremony experience I've had in Japan. Our host was incredibly gracious and knowledgeable. Far from the tourist traps — this is the real thing.",
-        "author": "Sarah M. — New York, USA"
-      },
-      "review2": {
-        "comment": "A truly meditative experience. The attention to detail, from the seasonal wagashi to the hand-selected scroll, was extraordinary. We felt like honoured guests, not tourists.",
-        "author": "James T. — London, UK"
-      },
-      "review3": {
-        "comment": "We came for tea and left with a completely new understanding of Japanese culture. The intimate setting and patient guidance made all the difference. Highly recommend the Take plan.",
-        "author": "Emily R. — Melbourne, Australia"
-      }
-    }
-  },
-  "whatToPrepare": {
-    "label": "Before You Visit",
-    "heading": "What to Prepare",
-    "description": "A few simple preparations to help you make the most of your tea ceremony experience.",
-    "badgeRequired": "Required",
-    "badgeIfPossible": "If possible",
-    "items": {
-      "whiteSocks": {
-        "title": "White Socks",
-        "reason": "Guests enter the tea room in socks. White or light-colored socks are traditional and show respect for the clean tatami space."
-      },
-      "removeAccessories": {
-        "title": "Remove Watches & Rings",
-        "reason": "Jewelry and watches can scratch the delicate tea bowls and utensils, some of which are centuries old."
-      },
-      "avoidPerfume": {
-        "title": "Avoid Strong Perfume",
-        "reason": "The tea ceremony engages all senses, including smell. Strong fragrances can interfere with the subtle aroma of the matcha and incense."
-      },
-      "comfortableClothing": {
-        "title": "Wear Comfortable Clothing",
-        "reason": "You will be seated on tatami for the duration of the ceremony. Loose, comfortable clothing makes the experience more enjoyable."
-      }
+    "quietHour": {
+      "name": "The Quiet Hour",
+      "tagline": "Same ceremony, your party only. We don't add another booking."
     }
   },
   "host": {
-    "label": "Your Host",
-    "heading": "The Tea Master",
+    "kicker": "The host",
+    "heading": "Who you'll be sitting across from.",
     "name": "Tea Master Yamamoto",
-    "years": "25+ years of Urasenke practice",
-    "philosophy": "In tea, there is no competition, no hurry, no judgement — only the beauty of this single, unrepeatable moment shared between host and guest.",
-    "bio": "Trained in the Urasenke tradition since youth, our tea master has dedicated over two decades to the study and teaching of chado. Having welcomed guests from more than 30 countries, they bring warmth, patience, and a deep reverence for the Way of Tea to every ceremony."
+    "credential": "Urasenke tradition · 25 years",
+    "pull": "There is no competition in tea, no hurry, no judgement. Only this single hour, between the two of us.",
+    "bio": "Trained in Urasenke since youth, our host has welcomed guests from more than thirty countries. She speaks English fluently and treats first-timers and old hands the same way."
   },
-  "booking": {
-    "heading": "Reserve Your Experience",
-    "description": "Select your preferred plan and date. We will confirm your reservation within 24 hours.",
-    "fields": {
-      "plan": "Select Plan",
-      "date": "Preferred Date",
-      "timeSlot": "Preferred Time",
-      "guests": "Number of Guests",
-      "name": "Full Name",
-      "email": "Email Address",
-      "phone": "Phone Number (optional)",
-      "country": "Country of Residence",
-      "requests": "Special Requests or Dietary Needs",
-      "agreeToPolicy": "I agree to the cancellation policy"
-    },
-    "timeSlots": {
-      "morning": "Morning — 10:00",
-      "afternoon": "Afternoon — 14:00",
-      "evening": "Late Afternoon — 16:00"
-    },
-    "submit": "Submit Reservation",
-    "submitting": "Submitting...",
-    "success": {
-      "heading": "Reservation Received",
-      "message": "Thank you for your reservation. We will send a confirmation to your email within 24 hours.",
-      "backHome": "Return to Homepage"
-    },
-    "label": "Reservation",
-    "cta": "Reserve via Google Form",
-    "note": "The form will open in a new window. We will send a confirmation email within 24 hours."
+  "reserve": {
+    "kicker": "Reserve",
+    "heading": "We confirm by hand, within 24 hours.",
+    "body": "Send us a request and we'll reply with availability and a payment link. No automated calendar — every booking is reviewed personally.",
+    "cta": "Begin a reservation",
+    "review1": "The most thoughtful tea ceremony we found in Tokyo. Calm, unhurried, in a real neighborhood. — Sarah M., New York",
+    "review2": "We were expecting a tourist demo. We got something quieter and much better. — James T., London",
+    "review3": "The host explained as much or as little as we asked for. Pitch-perfect. — Emily R., Melbourne"
   },
-  "cancellation": {
-    "heading": "Cancellation Policy",
-    "policy": {
-      "intro": "We understand that plans may change. Please review our cancellation policy below.",
-      "rules": [
-        {
-          "period": "7+ days before",
-          "refund": "Full refund"
-        },
-        {
-          "period": "3–6 days before",
-          "refund": "50% refund"
-        },
-        {
-          "period": "2 days or less",
-          "refund": "No refund"
-        }
-      ],
-      "note": "Cancellation requests must be submitted via the form below. We will process your request within 24 hours."
+  "experience": {
+    "metaTitle": "The Tea Ceremony — En Chakai",
+    "metaDescription": "What happens in 60 minutes, what to expect, and how the three plans differ.",
+    "kicker": "The ceremony",
+    "heading": "This is not a tourist demo.",
+    "lede": "The ceremony you'll attend is the one our host studied for twenty-five years. The only thing we changed for visitors is the language and the option to use a chair.",
+    "expect": {
+      "heading": "What to expect",
+      "items": [
+        { "title": "Chair seating available", "body": "Tatami if you want it, a low chair if you don't. Either is fine." },
+        { "title": "No kimono provided", "body": "Wear what you came in. Light socks help — guests sit on tatami, even if you take a chair." },
+        { "title": "Photography is welcome", "body": "Quietly, between movements. The host will tell you when." },
+        { "title": "Card only, in JPY", "body": "Visa, Master, Amex, JCB via Stripe. We send the link in the confirmation email." }
+      ]
     },
-    "form": {
-      "heading": "Request Cancellation",
-      "description": "Please fill in the form below to cancel your reservation. We will process your request within 24 hours.",
-      "fields": {
-        "email": "Email used for booking",
-        "name": "Full Name",
-        "bookingDate": "Booking Date",
-        "reason": "Reason for cancellation (optional)"
-      },
-      "submit": "Submit Cancellation Request",
-      "submitting": "Submitting...",
-      "success": {
-        "heading": "Request Received",
-        "message": "We have received your cancellation request. You will receive a confirmation email within 2 business days."
-      },
-      "cta": "Submit Cancellation Request"
+    "plansHeading": "The three rooms"
+  },
+  "neighborhoods": {
+    "metaTitle": "The neighborhoods — En Chakai",
+    "metaDescription": "Five small worlds within walking distance of the tea room: Sengoku, Hakusan, Sugamo, Gokokuji, Zoshigaya.",
+    "kicker": "The neighborhoods",
+    "heading": "Five small worlds within walking distance.",
+    "lede": "We host the ceremony in Bunkyō, a residential ward in north Tokyo that almost no guidebook covers. The five places below are all within a half-hour walk of the tea room. None of them feel like Tokyo as the brochure imagines it. That's the point.",
+    "footer": "Plan a route: see our suggested itineraries.",
+    "footerCta": "See itineraries",
+    "walk": "{n} min walk from the tea room",
+    "homeIs": "The tea room"
+  },
+  "neighborhoodPages": {
+    "sengoku": {
+      "lede": "Sengoku is, by Tokyo standards, very quiet. The tea room sits on a side street that you would walk past without noticing.",
+      "paras": [
+        "There are two stations called Sengoku. We mean the one on the Toei Mita line — five minutes' walk and you are at our door. The other one, on the Yamanote loop, is twenty minutes south and a different conversation entirely.",
+        "What you find here is not picturesque exactly. Old timber houses next to small concrete apartment blocks, a koban on the corner, an elderly man watering his hydrangeas. People live here. That is the appeal.",
+        "If you have an extra fifteen minutes before or after the ceremony, walk south to the small Tokugawa-era graveyard at Jōrenji, or north along Hakusan-dōri toward the shrine. Neither is a destination. Both are pleasant."
+      ]
+    },
+    "hakusan": {
+      "lede": "Eight minutes from the tea room, on a low hill, sits a shrine that was here before Tokyo was Tokyo.",
+      "paras": [
+        "Hakusan Shrine has been on this hill since the 10th century, though the buildings you see today are mostly post-war. It is the kind of shrine the city walks past on its way to work — busy on festival days, otherwise yours.",
+        "Come in mid-June if you can: three thousand hydrangeas bloom across the hillside for the Bunkyō Hydrangea Festival, and the side path turns into a tunnel of blue and white. Tōyō University is next door, so the streets have the slow rhythm of a university quarter — bookshops, ramen, students reading on benches.",
+        "Hakusan station, on the Toei Mita line, is one stop from Sengoku. You can do the shrine before or after the ceremony without backtracking."
+      ]
+    },
+    "sugamo": {
+      "lede": "Sugamo is what locals affectionately call Harajuku for the elderly. We mean that as a compliment.",
+      "paras": [
+        "The Jizō-dōri shopping street runs four hundred meters and is, on the 4th, 14th, and 24th of each month, the busiest place for two kilometers. Older women come for healing-salt at Togenuki Jizō, then move on to red underwear (a local good-luck specialty), then to lunch.",
+        "Eat where the queue is. The unagi shops are good. The shio-daifuku at Mizuno is the thing to bring back. The temple itself is small and unassuming — the point is the street it sits on, and the people on it.",
+        "From Sugamo to the tea room is twelve minutes on foot, mostly downhill. A nice route is: Jizō-dōri, then south through the back streets, then the ceremony, then a coffee."
+      ]
+    },
+    "gokokuji": {
+      "lede": "A 1681 temple commissioned by the Shogun's mother. One of the few large structures in central Tokyo to survive both the Great Kantō Earthquake and the bombings.",
+      "paras": [
+        "Gokokuji is bigger than it looks from the gate, and almost always nearly empty. The main hall is original. The grounds slope back into a quiet temple cemetery, and if you wander in you will find — among many graves — those of three successive Urasenke tea masters.",
+        "We send guests here when they want to sit somewhere old without paying admission. The grounds are always open. Bring a coffee.",
+        "The temple is eighteen minutes' walk from the tea room, or one stop on the Yūrakuchō line from Gokokuji station to Edogawabashi and a slow walk back."
+      ]
+    },
+    "zoshigaya": {
+      "lede": "If you read Sōseki or Lafcadio Hearn, you already know this neighborhood, even if you don't know its name.",
+      "paras": [
+        "Zoshigaya is where Tokyo, briefly, slows down. The Kishimojin temple is its center — a small, perfectly proportioned compound with a 700-year-old camphor tree and a candy shop that has been there for two hundred years.",
+        "The cemetery a few blocks away holds Natsume Sōseki, Lafcadio Hearn, John Manjirō, and a long list of writers and printers. It is large, walkable, and never crowded. There are signs in English at the major graves.",
+        "Take the Toden Arakawa tram from Kishimojin-mae if you can — it is one of two surviving streetcar lines in Tokyo, and the ride out toward Waseda is the kind of thing that makes a slow afternoon feel earned."
+      ]
     }
   },
-  "footer": {
-    "tagline": "The Way of Tea, Authentically Yours",
-    "contact": "Contact",
-    "links": "Quick Links",
-    "followUs": "Follow Us",
-    "rights": "All rights reserved.",
-    "instagram": "Instagram",
-    "tripadvisor": "TripAdvisor"
+  "itineraries": {
+    "metaTitle": "Itineraries — En Chakai",
+    "metaDescription": "Three suggested routes that combine the tea ceremony with the neighborhoods around it.",
+    "kicker": "Itineraries",
+    "heading": "Three ways to spend a day around the tea room.",
+    "lede": "We get asked this a lot. These are the routes we actually recommend, in the order our guests usually do them."
   },
-  "common": {
-    "learnMore": "Learn More",
-    "backToTop": "Back to Top",
-    "loading": "Loading..."
+  "booking": {
+    "metaTitle": "Reserve — En Chakai",
+    "metaDescription": "Send a reservation request. We confirm by hand within 24 hours and send a payment link.",
+    "kicker": "Reserve",
+    "heading": "Confirmed by hand, within 24 hours.",
+    "lede": "We host one party at a time. Every reservation is reviewed personally — usually within a few hours, always within a day.",
+    "steps": {
+      "heading": "How it works",
+      "items": [
+        { "n": "1", "title": "Send a request", "body": "Five minutes on a short Google Form. Date, party size, plan, anything we should know." },
+        { "n": "2", "title": "We reply", "body": "Within 24 hours. If your date is open, we send a Stripe payment link. If not, we suggest the nearest available." },
+        { "n": "3", "title": "Pay to confirm", "body": "Card payment in JPY. Visa, Master, Amex, JCB. The seat is yours." }
+      ]
+    },
+    "preview": {
+      "heading": "What we'll ask",
+      "fields": [
+        "Your name and email",
+        "1st choice date and 2nd choice date",
+        "Party size and plan tier",
+        "Seating preference (chair or floor)",
+        "Dietary restrictions, if any",
+        "Anything else we should know"
+      ]
+    },
+    "practical": {
+      "heading": "Before you ask",
+      "items": [
+        { "title": "Card payment only", "body": "Visa, Master, Amex, JCB via Stripe. UK cards: 3D Secure may apply." },
+        { "title": "English-hosted", "body": "The ceremony, the explanation, the Q&A — all in English." },
+        { "title": "Chair seating available", "body": "If you can't or don't want to do seiza, say so on the form." },
+        { "title": "We don't lend kimono", "body": "Wear what you came in. Light socks help." }
+      ]
+    },
+    "cta": "Open the reservation form",
+    "ctaNote": "Opens in a new tab. Replies usually within a few hours.",
+    "fallback": "Prefer email? Write to {email}.",
+    "trust": "Read our cancellation policy"
+  },
+  "faq": {
+    "metaTitle": "FAQ — En Chakai",
+    "metaDescription": "Common questions about the tea ceremony, booking, payment, cancellation, and access.",
+    "kicker": "FAQ",
+    "heading": "Common questions, answered plainly.",
+    "sections": [
+      {
+        "heading": "Booking and confirmation",
+        "items": [
+          { "q": "How does reservation work?", "a": "Send a request via the Google Form. We reply within 24 hours with availability and a Stripe payment link. Pay to confirm." },
+          { "q": "Why manual confirmation?", "a": "We host one party at a time and want to be sure we can do the date well. The review is fast — usually a few hours." },
+          { "q": "How far in advance can I book?", "a": "Up to three months. Same-week requests are sometimes possible — ask." }
+        ]
+      },
+      {
+        "heading": "Payment",
+        "items": [
+          { "q": "Which cards do you accept?", "a": "Visa, Master, Amex, JCB. We use Stripe Payment Links, billed in JPY." },
+          { "q": "Will my UK or US bank charge a fee?", "a": "Most cards charge a small foreign-transaction fee on JPY. We can't waive that. The amount your bank shows in your local currency may differ slightly from the JPY total because of the exchange rate." },
+          { "q": "Why JPY and not USD?", "a": "It's the simplest for us and the most accurate for you — your bank applies its own exchange rate, which is usually better than ours would be." }
+        ]
+      },
+      {
+        "heading": "The experience",
+        "items": [
+          { "q": "Do I have to do seiza?", "a": "No. We have low chairs. Tell us on the form so we set the room up correctly." },
+          { "q": "What should I wear?", "a": "Anything comfortable. Light or white socks are traditional and help with the tatami. We don't lend kimono." },
+          { "q": "Can I take photos?", "a": "Quietly, between movements. The host will tell you when." },
+          { "q": "How long does it take?", "a": "Forty-five, sixty, or seventy-five minutes depending on the plan. Allow another fifteen minutes either side." }
+        ]
+      },
+      {
+        "heading": "Cancellation",
+        "items": [
+          { "q": "What's the cancellation policy?", "a": "7 or more days before: full refund. 3–6 days before: 50%. 2 days or less: no refund. We process refunds via the original Stripe charge." },
+          { "q": "What if you cancel?", "a": "Full refund and an apology. Rare, but it does happen — typhoons, illness." }
+        ]
+      },
+      {
+        "heading": "Access",
+        "items": [
+          { "q": "Where is the tea room?", "a": "Sengoku, Bunkyō-ku, Tokyo. Five minutes' walk from Sengoku station on the Toei Mita line. The exact address is sent with the booking confirmation." },
+          { "q": "Is it accessible?", "a": "There are two small steps at the entrance. Tell us on the form if mobility is a concern and we'll make it work." }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "tagline": "A tea ceremony in the part of Tokyo people quietly live in.",
+    "links": "Site",
+    "contact": "Contact",
+    "rights": "All rights reserved.",
+    "tripadvisor": "TripAdvisor"
   }
 }

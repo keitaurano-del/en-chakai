@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { NextIntlClientProvider, useMessages } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Cormorant_Garamond, Inter, Noto_Sans_JP } from "next/font/google";
+import { Cormorant_Garamond, Inter } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -21,13 +21,6 @@ const inter = Inter({
   display: "swap",
 });
 
-const notoJP = Noto_Sans_JP({
-  subsets: ["latin"],
-  variable: "--font-jp",
-  weight: ["400", "500", "700"],
-  display: "swap",
-});
-
 type Props = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -43,6 +36,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: t("title"),
       description: t("description"),
       type: "website",
+      images: ["/photos/room1.jpg"],
+    },
+    alternates: {
+      languages: {
+        en: "/",
+        "x-default": "/",
+      },
     },
   };
 }
@@ -56,14 +56,12 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = (await import(`../../messages/${locale}.json`)).default;
 
-  const fontClass = locale === "ja" ? notoJP.className : inter.className;
-
   return (
     <html
       lang={locale}
-      className={`${cormorant.variable} ${inter.variable} ${notoJP.variable} antialiased`}
+      className={`${cormorant.variable} ${inter.variable} antialiased`}
     >
-      <body className={`min-h-screen flex flex-col ${fontClass}`}>
+      <body className={`min-h-screen flex flex-col ${inter.className}`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Header />
           <main className="flex-1">{children}</main>
