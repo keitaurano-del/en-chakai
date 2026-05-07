@@ -28,18 +28,18 @@ export default async function NeighborhoodsIndexPage({
   const t = await getTranslations({ locale, namespace: "neighborhoods" });
 
   return (
-    <div className="bg-charcoal pt-20 sm:pt-24">
-      <section className="py-16 sm:py-24">
+    <div className="bg-charcoal pt-24 sm:pt-32">
+      <section className="py-20 sm:py-28">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <p className="mb-3 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+            <div className="mx-auto max-w-2xl">
+              <p className="mb-5 text-xs tracking-[0.3em] text-cream/45">
                 {t("kicker")}
               </p>
-              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium leading-[1.1] text-cream sm:text-5xl md:text-6xl">
+              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-light leading-[1.1] text-cream sm:text-5xl md:text-6xl">
                 {t("heading")}
               </h1>
-              <p className="mt-6 text-lg leading-relaxed text-cream/80 sm:text-xl">
+              <p className="mt-7 text-[16px] leading-[1.8] text-cream/65 sm:text-lg">
                 {t("lede")}
               </p>
             </div>
@@ -47,14 +47,14 @@ export default async function NeighborhoodsIndexPage({
         </Container>
       </section>
 
-      <section className="pb-16 sm:pb-24">
+      <section className="pb-20 sm:pb-28">
         <Container>
-          <div className="mx-auto grid max-w-5xl gap-10 sm:gap-14">
+          <div className="mx-auto max-w-5xl divide-y divide-cream/10 border-y border-cream/10">
             {NEIGHBORHOODS.map((n, i) => (
               <FadeIn key={n.slug} delay={i * 0.05}>
                 <Link
                   href={`/neighborhoods/${n.slug}`}
-                  className="group grid gap-6 md:grid-cols-2 md:gap-10"
+                  className="group grid gap-8 py-12 md:grid-cols-2 md:gap-14 md:py-16"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
@@ -62,20 +62,22 @@ export default async function NeighborhoodsIndexPage({
                       alt={n.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-cover grayscale-[15%] transition-all duration-700 group-hover:scale-[1.02] group-hover:grayscale-0"
                     />
                   </div>
                   <div className="flex flex-col justify-center">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-gold">
+                    <p className="text-[11px] tracking-[0.25em] text-cream/45">
                       {n.walkMin === 0
                         ? t("homeIs")
                         : t("walk", { n: n.walkMin })}
                     </p>
-                    <h2 className="mt-2 font-[family-name:var(--font-heading)] text-3xl font-medium text-cream transition-colors group-hover:text-gold sm:text-4xl">
+                    <h2 className="mt-3 font-[family-name:var(--font-heading)] text-3xl font-light text-cream transition-colors group-hover:text-cream/85 sm:text-[2.5rem]">
                       {n.name}
+                      <span className="ml-3 text-base text-cream/35 sm:text-lg">
+                        {n.nameJa}
+                      </span>
                     </h2>
-                    <p className="mt-1 text-sm text-cream/55">{n.nameJa}</p>
-                    <p className="mt-5 text-base leading-relaxed text-cream/75 sm:text-lg">
+                    <p className="mt-5 max-w-md text-[15px] leading-[1.8] text-cream/65 sm:text-base">
                       {n.blurb}
                     </p>
                   </div>
@@ -85,15 +87,16 @@ export default async function NeighborhoodsIndexPage({
           </div>
 
           <FadeIn>
-            <div className="mt-16 border-t border-cream/15 pt-10 text-center sm:mt-24">
-              <p className="text-base text-cream/70 sm:text-lg">
+            <div className="mx-auto mt-20 max-w-2xl sm:mt-28">
+              <p className="text-[15px] leading-[1.75] text-cream/65 sm:text-base">
                 {t("footer")}
               </p>
               <Link
                 href="/itineraries"
-                className="mt-4 inline-block text-sm uppercase tracking-[0.2em] text-gold transition-colors hover:text-gold-light"
+                className="group mt-5 inline-flex items-center gap-3 text-sm tracking-[0.18em] text-cream/65 transition-colors hover:text-cream"
               >
-                {t("footerCta")} →
+                <span>{t("footerCta")}</span>
+                <span className="h-px w-10 bg-cream/30 transition-all group-hover:w-14 group-hover:bg-cream" />
               </Link>
             </div>
           </FadeIn>

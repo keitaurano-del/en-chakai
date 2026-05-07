@@ -18,14 +18,14 @@ export function Hero() {
         sizes="100vw"
         className="object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-charcoal/30 via-charcoal/40 to-charcoal" />
+      <div className="absolute inset-0 bg-gradient-to-b from-charcoal/20 via-charcoal/30 to-charcoal/95" />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-16 sm:px-6 sm:pb-24 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-20 sm:px-6 sm:pb-28 lg:px-8 lg:pb-32">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-3 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm"
+          className="mb-5 text-xs tracking-[0.3em] text-cream/55 sm:text-[13px]"
         >
           {t("kicker")}
         </motion.p>
@@ -34,7 +34,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="font-[family-name:var(--font-heading)] text-4xl font-medium leading-[1.05] text-cream sm:text-6xl md:text-7xl lg:text-[5.5rem] whitespace-pre-line max-w-4xl"
+          className="font-[family-name:var(--font-heading)] text-4xl font-light leading-[1.08] text-cream sm:text-6xl md:text-7xl lg:text-[5.25rem] whitespace-pre-line max-w-4xl"
         >
           {t("heading")}
         </motion.h1>
@@ -43,7 +43,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="mt-5 max-w-xl text-base leading-relaxed text-cream/80 sm:mt-7 sm:text-lg"
+          className="mt-7 max-w-md text-base leading-relaxed text-cream/70 sm:mt-9 sm:text-[17px]"
         >
           {t("tagline")}
         </motion.p>
@@ -52,21 +52,22 @@ export function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
-          className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:gap-5"
+          className="mt-10 flex flex-col gap-5 sm:mt-12 sm:flex-row sm:items-center sm:gap-8"
         >
           <Link
             href="/booking"
-            className="inline-block bg-gold px-7 py-3.5 text-center text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light"
+            className="group inline-flex items-center gap-3 text-sm tracking-[0.18em] text-cream transition-colors hover:text-gold"
           >
-            {t("primaryCta")}
+            <span>{t("primaryCta")}</span>
+            <span className="h-px w-10 bg-cream/50 transition-all group-hover:w-14 group-hover:bg-gold" />
           </Link>
           <Link
             href="/neighborhoods"
-            className="inline-block border border-cream/30 px-7 py-3.5 text-center text-sm font-medium uppercase tracking-[0.15em] text-cream transition-colors hover:border-gold hover:text-gold"
+            className="text-sm tracking-[0.18em] text-cream/55 transition-colors hover:text-cream"
           >
             {t("secondaryCta")}
           </Link>
-          <span className="mt-2 text-xs tracking-wide text-cream/60 sm:ml-3 sm:mt-0">
+          <span className="text-xs tracking-wide text-cream/40 sm:ml-auto">
             {t("meta")}
           </span>
         </motion.div>

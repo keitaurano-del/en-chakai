@@ -7,45 +7,45 @@ export function Footer() {
   const nav = useTranslations("nav");
 
   return (
-    <footer className="border-t border-cream/10 bg-charcoal">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="grid gap-10 sm:gap-12 md:grid-cols-3">
+    <footer className="bg-charcoal">
+      <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-24 lg:px-8">
+        <div className="grid gap-12 sm:gap-16 md:grid-cols-3">
           <div>
-            <p className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream">
+            <p className="font-[family-name:var(--font-heading)] text-2xl font-light text-cream">
               円茶会
             </p>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-cream/55">
+            <p className="mt-4 max-w-xs text-[13px] leading-[1.7] text-cream/45">
               {t("tagline")}
             </p>
           </div>
 
           <div>
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-gold">
+            <h3 className="mb-5 text-[11px] tracking-[0.3em] text-cream/35">
               {t("links")}
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               <li>
-                <Link href="/experience" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/experience" className="text-[13px] text-cream/65 transition-colors hover:text-cream">
                   {nav("experience")}
                 </Link>
               </li>
               <li>
-                <Link href="/neighborhoods" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/neighborhoods" className="text-[13px] text-cream/65 transition-colors hover:text-cream">
                   {nav("neighborhoods")}
                 </Link>
               </li>
               <li>
-                <Link href="/itineraries" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/itineraries" className="text-[13px] text-cream/65 transition-colors hover:text-cream">
                   {nav("itineraries")}
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/faq" className="text-[13px] text-cream/65 transition-colors hover:text-cream">
                   {nav("faq")}
                 </Link>
               </li>
               <li>
-                <Link href="/booking" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/booking" className="text-[13px] text-cream/65 transition-colors hover:text-cream">
                   {nav("booking")}
                 </Link>
               </li>
@@ -53,22 +53,22 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-gold">
+            <h3 className="mb-5 text-[11px] tracking-[0.3em] text-cream/35">
               {t("contact")}
             </h3>
-            <ul className="space-y-2 text-sm text-cream/65">
+            <ul className="space-y-3 text-[13px] text-cream/65">
               <li>
-                <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-gold">
+                <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-cream">
                   {CONTACT.email}
                 </a>
               </li>
-              <li>{CONTACT.address}</li>
+              <li className="text-cream/55">{CONTACT.address}</li>
               <li>
                 <a
                   href={TRIPADVISOR_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-colors hover:text-gold"
+                  className="transition-colors hover:text-cream"
                 >
                   {t("tripadvisor")}
                 </a>
@@ -77,8 +77,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-cream/10 pt-6 text-center text-xs text-cream/35 sm:mt-16">
-          © {new Date().getFullYear()} 円茶会 En Chakai. {t("rights")}
+        <div className="mt-20 text-[11px] tracking-wide text-cream/25 sm:mt-24">
+          © {new Date().getFullYear()} 円茶会 En Chakai · {t("rights")}
         </div>
       </div>
     </footer>

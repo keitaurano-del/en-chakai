@@ -49,8 +49,8 @@ export default async function NeighborhoodPage({
   const otherNeighborhoods = NEIGHBORHOODS.filter((x) => x.slug !== slug);
 
   return (
-    <article className="bg-charcoal pt-20 sm:pt-24">
-      <section className="relative h-[55vh] min-h-[420px] overflow-hidden">
+    <article className="bg-charcoal pt-16 sm:pt-20">
+      <section className="relative h-[60vh] min-h-[440px] overflow-hidden">
         <Image
           src={n.photo}
           alt={n.name}
@@ -59,30 +59,32 @@ export default async function NeighborhoodPage({
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/40 via-charcoal/30 to-charcoal" />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/30 via-charcoal/20 to-charcoal/95" />
         <div className="absolute inset-0 flex items-end">
-          <Container className="pb-12 sm:pb-16">
-            <p className="text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+          <Container className="pb-16 sm:pb-20">
+            <p className="text-xs tracking-[0.3em] text-cream/55">
               {n.walkMin === 0
                 ? tn("homeIs")
                 : tn("walk", { n: n.walkMin })}
             </p>
-            <h1 className="mt-2 font-[family-name:var(--font-heading)] text-5xl font-medium leading-tight text-cream sm:text-6xl md:text-7xl">
+            <h1 className="mt-4 font-[family-name:var(--font-heading)] text-5xl font-light leading-[1.05] text-cream sm:text-6xl md:text-7xl">
               {n.name}
             </h1>
-            <p className="mt-1 text-lg text-cream/65">{n.nameJa}</p>
+            <p className="mt-2 font-[family-name:var(--font-heading)] text-xl font-light text-cream/55 sm:text-2xl">
+              {n.nameJa}
+            </p>
           </Container>
         </div>
       </section>
 
-      <section className="py-16 sm:py-24">
+      <section className="py-20 sm:py-28">
         <Container>
           <FadeIn>
             <div className="mx-auto max-w-prose">
-              <p className="font-[family-name:var(--font-heading)] text-2xl font-medium leading-snug text-cream sm:text-3xl">
+              <p className="font-[family-name:var(--font-heading)] text-2xl font-light italic leading-[1.4] text-cream sm:text-3xl">
                 {t("lede")}
               </p>
-              <div className="mt-10 space-y-6 text-base leading-relaxed text-cream/80 sm:text-lg">
+              <div className="mt-12 space-y-7 text-[16px] leading-[1.85] text-cream/70 sm:text-lg">
                 {paras.map((p, i) => (
                   <p key={i}>{p}</p>
                 ))}
@@ -92,28 +94,29 @@ export default async function NeighborhoodPage({
         </Container>
       </section>
 
-      <section className="bg-deep-green py-12 sm:py-16">
+      <section className="py-16 sm:py-20">
         <Container>
-          <div className="mx-auto max-w-prose text-center">
-            <p className="text-base text-cream/85 sm:text-lg">
+          <div className="mx-auto max-w-prose">
+            <p className="text-[15px] leading-[1.7] text-cream/65 sm:text-base">
               Combine this neighborhood with a tea ceremony.
             </p>
             <Link
               href="/booking"
-              className="mt-5 inline-block bg-gold px-7 py-3.5 text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light"
+              className="group mt-5 inline-flex items-center gap-3 text-sm tracking-[0.18em] text-gold transition-colors hover:text-gold-light"
             >
-              Reserve a seat
+              <span>Reserve a seat</span>
+              <span className="h-px w-10 bg-gold/60 transition-all group-hover:w-14 group-hover:bg-gold-light" />
             </Link>
           </div>
         </Container>
       </section>
 
-      <section className="border-t border-cream/10 py-16 sm:py-20">
+      <section className="border-t border-cream/10 py-20 sm:py-24">
         <Container>
-          <p className="mb-8 text-xs uppercase tracking-[0.25em] text-gold">
+          <p className="mb-10 text-[11px] tracking-[0.3em] text-cream/45">
             Other neighborhoods
           </p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {otherNeighborhoods.map((other) => (
               <Link
                 key={other.slug}
@@ -126,10 +129,10 @@ export default async function NeighborhoodPage({
                     alt={other.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover grayscale-[15%] transition-all duration-700 group-hover:scale-[1.03] group-hover:grayscale-0"
                   />
                 </div>
-                <h3 className="mt-3 font-[family-name:var(--font-heading)] text-xl font-medium text-cream transition-colors group-hover:text-gold">
+                <h3 className="mt-4 font-[family-name:var(--font-heading)] text-xl font-light text-cream transition-colors group-hover:text-cream/70">
                   {other.name}
                 </h3>
               </Link>

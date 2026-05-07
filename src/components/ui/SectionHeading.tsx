@@ -10,14 +10,18 @@ export function SectionHeading({
   light?: boolean;
 }) {
   return (
-    <div className="mb-8 text-center sm:mb-12 md:mb-14">
+    <div className="mb-12 sm:mb-16 md:mb-20">
       {label && (
-        <span className="mb-2 block text-[11px] font-medium uppercase tracking-[0.2em] text-gold sm:mb-3 sm:text-sm">
+        <span
+          className={`mb-4 block text-[11px] tracking-[0.3em] sm:mb-5 sm:text-xs ${
+            light ? "text-charcoal/55" : "text-cream/45"
+          }`}
+        >
           {label}
         </span>
       )}
       <h2
-        className={`font-[family-name:var(--font-heading)] text-2xl font-bold leading-tight sm:text-3xl md:text-4xl lg:text-5xl ${
+        className={`font-[family-name:var(--font-heading)] text-3xl font-light leading-[1.15] sm:text-4xl md:text-[2.75rem] ${
           light ? "text-charcoal" : "text-cream"
         }`}
       >
@@ -25,8 +29,8 @@ export function SectionHeading({
       </h2>
       {description && (
         <p
-          className={`mx-auto mt-3 max-w-2xl text-sm leading-relaxed sm:mt-4 sm:text-base md:text-lg ${
-            light ? "text-charcoal/70" : "text-cream/70"
+          className={`mt-5 max-w-xl text-[15px] leading-[1.8] sm:mt-6 sm:text-base ${
+            light ? "text-charcoal/65" : "text-cream/65"
           }`}
         >
           {description}

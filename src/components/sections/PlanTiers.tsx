@@ -13,7 +13,7 @@ export function PlanTiers() {
   const t = useTranslations("plans");
 
   return (
-    <div className="grid gap-5 sm:gap-6 lg:grid-cols-3">
+    <div className="grid divide-y divide-cream/10 lg:grid-cols-3 lg:divide-x lg:divide-y-0">
       {PLANS.map((plan, i) => {
         const tk = TRANSLATION_KEY[plan.id];
         const isRecommended = "recommended" in plan && plan.recommended;
@@ -21,70 +21,68 @@ export function PlanTiers() {
 
         return (
           <FadeIn key={plan.id} delay={i * 0.08}>
-            <div
-              className={`relative flex h-full flex-col border p-6 transition-colors sm:p-7 ${
-                isRecommended
-                  ? "border-gold bg-deep-green/15"
-                  : "border-cream/15 bg-charcoal-light hover:border-cream/30"
-              }`}
-            >
+            <div className="relative flex h-full flex-col px-1 py-10 sm:px-8 sm:py-12">
               {isRecommended && (
-                <span className="absolute -top-3 left-6 bg-gold px-3 py-1 text-[10px] font-medium uppercase tracking-[0.15em] text-charcoal sm:left-7">
+                <span className="mb-5 text-[10px] tracking-[0.3em] text-gold">
                   {t("recommended")}
                 </span>
               )}
 
-              <h3 className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+              <h3 className="font-[family-name:var(--font-heading)] text-2xl font-light text-cream sm:text-[28px]">
                 {t(`${tk}.name`)}
               </h3>
-              <p className="mt-1 text-sm leading-relaxed text-cream/65 sm:text-base">
+              <p className="mt-2 text-[14px] leading-[1.7] text-cream/55">
                 {t(`${tk}.tagline`)}
               </p>
 
-              <div className="my-6 border-y border-cream/10 py-5">
-                <p className="font-[family-name:var(--font-heading)] text-3xl font-medium text-cream sm:text-4xl">
+              <div className="my-9 sm:my-10">
+                <p className="font-[family-name:var(--font-heading)] text-[2.5rem] font-light leading-none text-cream sm:text-[2.75rem]">
                   ¥{plan.priceJpy.toLocaleString()}
                 </p>
-                <p className="mt-1 text-xs text-cream/55">
+                <p className="mt-2 text-xs text-cream/40">
                   ~${plan.priceUsdDisplay} USD · {t("perParty")}
                 </p>
               </div>
 
-              <ul className="mb-3 space-y-2 text-sm text-cream/80">
-                <li className="flex items-baseline gap-2">
-                  <span className="text-gold">·</span>
-                  <span>
-                    {plan.durationMin} {t("minutesShort")}
-                  </span>
-                </li>
-                <li className="flex items-baseline gap-2">
-                  <span className="text-gold">·</span>
-                  <span>
+              <dl className="mb-7 grid grid-cols-2 gap-4 text-[13px] text-cream/70">
+                <div>
+                  <dt className="text-[11px] tracking-[0.2em] text-cream/35">
+                    {t("minutesShort").toUpperCase()}
+                  </dt>
+                  <dd className="mt-1.5">{plan.durationMin}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] tracking-[0.2em] text-cream/35">
+                    {isPrivate ? "Private" : "Guests"}
+                  </dt>
+                  <dd className="mt-1.5">
                     {isPrivate
                       ? t("private", { n: plan.maxGuests })
                       : t("shared", { n: plan.maxGuests })}
-                  </span>
-                </li>
-              </ul>
+                  </dd>
+                </div>
+              </dl>
 
-              <ul className="mb-7 flex-1 space-y-2 text-sm text-cream/75">
+              <ul className="mb-10 flex-1 space-y-2.5 text-[14px] leading-[1.65] text-cream/65">
                 {plan.includes.map((item) => (
-                  <li key={item} className="flex items-baseline gap-2">
-                    <span className="mt-0.5 text-gold">›</span>
-                    <span className="leading-relaxed">{item}</span>
-                  </li>
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
 
               <Link
                 href="/booking"
-                className={`block py-3.5 text-center text-sm font-medium uppercase tracking-[0.15em] transition-colors ${
+                className={`group inline-flex items-center gap-3 self-start text-sm tracking-[0.18em] transition-colors ${
                   isRecommended
-                    ? "bg-gold text-charcoal hover:bg-gold-light"
-                    : "border border-gold text-gold hover:bg-gold hover:text-charcoal"
+                    ? "text-gold hover:text-gold-light"
+                    : "text-cream/70 hover:text-cream"
                 }`}
               >
-                {t("reserve")}
+                <span>{t("reserve")}</span>
+                <span
+                  className={`h-px w-8 transition-all group-hover:w-12 ${
+                    isRecommended ? "bg-gold" : "bg-cream/40 group-hover:bg-cream"
+                  }`}
+                />
               </Link>
             </div>
           </FadeIn>

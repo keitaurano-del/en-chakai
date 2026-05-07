@@ -9,55 +9,48 @@ export function NeighborhoodsPreview() {
   const t = useTranslations("neighborhoodsPreview");
 
   return (
-    <section className="bg-charcoal-light py-20 sm:py-28">
+    <section className="bg-charcoal py-28 sm:py-40">
       <Container>
         <FadeIn>
-          <div className="mb-12 max-w-2xl sm:mb-16">
-            <p className="mb-3 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+          <div className="mb-16 max-w-2xl sm:mb-20">
+            <p className="mb-5 text-xs tracking-[0.3em] text-cream/45">
               {t("kicker")}
             </p>
-            <h2 className="font-[family-name:var(--font-heading)] text-3xl font-medium leading-tight text-cream sm:text-4xl md:text-5xl">
+            <h2 className="font-[family-name:var(--font-heading)] text-3xl font-light leading-[1.15] text-cream sm:text-4xl md:text-[2.75rem]">
               {t("heading")}
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-cream/70 sm:text-lg">
+            <p className="mt-6 text-[15px] leading-[1.8] text-cream/65 sm:text-base">
               {t("body")}
             </p>
           </div>
         </FadeIn>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
           {NEIGHBORHOODS.map((n, i) => (
             <FadeIn key={n.slug} delay={i * 0.05}>
-              <Link
-                href={`/neighborhoods/${n.slug}`}
-                className="group block"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden bg-charcoal">
+              <Link href={`/neighborhoods/${n.slug}`} className="group block">
+                <div className="relative aspect-[4/5] overflow-hidden">
                   <Image
                     src={n.photo}
                     alt={n.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover grayscale-[15%] transition-all duration-700 group-hover:scale-[1.03] group-hover:grayscale-0"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-                    <p className="text-[11px] uppercase tracking-widest text-gold">
-                      {n.walkMin === 0
-                        ? t("rooted")
-                        : t("walkMin", { n: n.walkMin })}
-                    </p>
-                    <h3 className="mt-1.5 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
-                      {n.name}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-cream/60">{n.nameJa}</p>
-                  </div>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-cream/65">
+                <div className="mt-5 flex items-baseline justify-between gap-3">
+                  <h3 className="font-[family-name:var(--font-heading)] text-2xl font-light text-cream">
+                    {n.name}
+                    <span className="ml-2 text-sm text-cream/35">{n.nameJa}</span>
+                  </h3>
+                  <span className="shrink-0 text-[11px] tracking-[0.18em] text-cream/40">
+                    {n.walkMin === 0
+                      ? t("rooted")
+                      : t("walkMin", { n: n.walkMin })}
+                  </span>
+                </div>
+                <p className="mt-3 text-[14px] leading-[1.75] text-cream/55">
                   {n.blurb}
-                </p>
-                <p className="mt-3 text-xs uppercase tracking-[0.2em] text-gold transition-colors group-hover:text-gold-light">
-                  {t("readMore")} →
                 </p>
               </Link>
             </FadeIn>

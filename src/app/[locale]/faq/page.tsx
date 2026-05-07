@@ -49,20 +49,20 @@ export default async function FaqPage({
   };
 
   return (
-    <div className="bg-charcoal pt-20 sm:pt-24">
+    <div className="bg-charcoal pt-24 sm:pt-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="py-16 sm:py-24">
+      <section className="py-20 sm:py-28">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <p className="mb-3 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+            <div className="mx-auto max-w-2xl">
+              <p className="mb-5 text-xs tracking-[0.3em] text-cream/45">
                 {t("kicker")}
               </p>
-              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium leading-[1.1] text-cream sm:text-5xl md:text-6xl">
+              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-light leading-[1.1] text-cream sm:text-5xl md:text-6xl">
                 {t("heading")}
               </h1>
             </div>
@@ -70,25 +70,25 @@ export default async function FaqPage({
         </Container>
       </section>
 
-      <section className="pb-20 sm:pb-28">
+      <section className="pb-24 sm:pb-32">
         <Container>
-          <div className="mx-auto max-w-3xl">
+          <div className="mx-auto max-w-2xl">
             {sections.map((section, i) => (
               <FadeIn key={section.heading} delay={i * 0.04}>
                 <section
                   id={SECTION_ANCHORS[i]}
-                  className="border-t border-cream/15 py-10 first:border-t-0 first:pt-0 sm:py-14"
+                  className="border-t border-cream/10 py-14 first:border-t-0 first:pt-0 sm:py-20"
                 >
-                  <h2 className="mb-7 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+                  <h2 className="mb-10 text-[11px] tracking-[0.3em] text-cream/45">
                     {section.heading}
                   </h2>
-                  <dl className="space-y-7">
+                  <dl className="space-y-10">
                     {section.items.map((item) => (
                       <div key={item.q}>
-                        <dt className="text-base font-medium text-cream sm:text-lg">
+                        <dt className="font-[family-name:var(--font-heading)] text-xl font-light text-cream sm:text-2xl">
                           {item.q}
                         </dt>
-                        <dd className="mt-2 text-base leading-relaxed text-cream/75 sm:text-lg">
+                        <dd className="mt-3 text-[15px] leading-[1.8] text-cream/65 sm:text-base">
                           {item.a}
                         </dd>
                       </div>

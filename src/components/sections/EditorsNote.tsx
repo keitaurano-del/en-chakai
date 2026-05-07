@@ -6,17 +6,17 @@ export function EditorsNote() {
   const t = useTranslations("editorsNote");
 
   return (
-    <section className="bg-charcoal py-20 sm:py-28">
+    <section className="bg-charcoal py-28 sm:py-40">
       <Container>
         <FadeIn>
-          <div className="mx-auto max-w-3xl">
-            <p className="mb-4 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+          <div className="mx-auto max-w-2xl">
+            <p className="mb-6 text-xs tracking-[0.3em] text-cream/45">
               {t("kicker")}
             </p>
-            <h2 className="font-[family-name:var(--font-heading)] text-3xl font-medium leading-tight text-cream sm:text-4xl md:text-5xl">
+            <h2 className="font-[family-name:var(--font-heading)] text-3xl font-light leading-[1.2] text-cream sm:text-4xl md:text-[2.75rem]">
               {t("heading")}
             </h2>
-            <p className="mt-6 text-base leading-relaxed text-cream/75 sm:mt-8 sm:text-lg">
+            <p className="mt-8 text-[15px] leading-[1.85] text-cream/65 sm:mt-10 sm:text-base">
               {t("body")}
             </p>
           </div>

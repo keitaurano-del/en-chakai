@@ -15,18 +15,18 @@ export function BookingContent() {
   const practical = t.raw("practical.items") as Item[];
 
   return (
-    <div className="bg-charcoal pt-20 sm:pt-24">
-      <section className="py-16 sm:py-24">
+    <div className="bg-charcoal pt-24 sm:pt-32">
+      <section className="py-20 sm:py-28">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <p className="mb-3 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+            <div className="mx-auto max-w-2xl">
+              <p className="mb-5 text-xs tracking-[0.3em] text-cream/45">
                 {t("kicker")}
               </p>
-              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium leading-[1.1] text-cream sm:text-5xl md:text-6xl">
+              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-light leading-[1.1] text-cream sm:text-5xl md:text-6xl">
                 {t("heading")}
               </h1>
-              <p className="mt-6 text-lg leading-relaxed text-cream/80 sm:text-xl">
+              <p className="mt-7 text-[16px] leading-[1.8] text-cream/65 sm:text-lg">
                 {t("lede")}
               </p>
             </div>
@@ -34,24 +34,24 @@ export function BookingContent() {
         </Container>
       </section>
 
-      <section className="bg-charcoal-light py-16 sm:py-20">
+      <section className="bg-charcoal-light py-20 sm:py-28">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-10 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+            <div className="mx-auto max-w-2xl">
+              <h2 className="mb-12 text-[11px] tracking-[0.3em] text-cream/45 sm:mb-16">
                 {t("steps.heading")}
               </h2>
-              <ol className="space-y-8">
+              <ol className="divide-y divide-cream/10 border-y border-cream/10">
                 {steps.map((s) => (
-                  <li key={s.n} className="flex gap-5 sm:gap-7">
-                    <span className="font-[family-name:var(--font-heading)] text-3xl font-medium tabular-nums text-gold sm:text-4xl">
+                  <li key={s.n} className="flex gap-7 py-8 sm:gap-10 sm:py-10">
+                    <span className="font-[family-name:var(--font-heading)] text-3xl font-light tabular-nums text-cream/40 sm:text-4xl">
                       {s.n}
                     </span>
-                    <div className="flex-1 border-t border-cream/15 pt-2">
-                      <h3 className="text-base font-medium text-cream sm:text-lg">
+                    <div className="flex-1">
+                      <h3 className="font-[family-name:var(--font-heading)] text-xl font-light text-cream sm:text-2xl">
                         {s.title}
                       </h3>
-                      <p className="mt-2 text-base leading-relaxed text-cream/75 sm:text-lg">
+                      <p className="mt-3 text-[15px] leading-[1.8] text-cream/70 sm:text-base">
                         {s.body}
                       </p>
                     </div>
@@ -63,17 +63,21 @@ export function BookingContent() {
         </Container>
       </section>
 
-      <section className="py-16 sm:py-20">
+      <section className="py-20 sm:py-28">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-7 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+            <div className="mx-auto max-w-2xl">
+              <h2 className="mb-10 text-[11px] tracking-[0.3em] text-cream/45">
                 {t("preview.heading")}
               </h2>
-              <ul className="grid gap-3 border-l border-gold/30 pl-5 sm:grid-cols-2 sm:gap-x-8">
+              <ul className="grid gap-y-3 sm:grid-cols-2 sm:gap-x-10">
                 {fields.map((f) => (
-                  <li key={f} className="text-base text-cream/80 sm:text-lg">
-                    {f}
+                  <li
+                    key={f}
+                    className="flex items-baseline gap-3 text-[15px] text-cream/75 sm:text-base"
+                  >
+                    <span className="h-px w-3 shrink-0 translate-y-2 bg-cream/30" />
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -82,22 +86,23 @@ export function BookingContent() {
         </Container>
       </section>
 
-      <section className="bg-deep-green py-16 sm:py-20">
+      <section className="border-y border-cream/10 py-20 sm:py-24">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
+            <div className="mx-auto max-w-2xl">
               <a
                 href={GOOGLE_FORM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block bg-gold px-9 py-4 text-base font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light sm:text-lg"
+                className="group inline-flex items-baseline gap-4 font-[family-name:var(--font-heading)] text-3xl font-light text-gold transition-colors hover:text-gold-light sm:text-4xl"
               >
-                {t("cta")}
+                <span>{t("cta")}</span>
+                <span className="inline-block h-px w-12 translate-y-[-0.4em] bg-gold/60 transition-all group-hover:w-16 group-hover:bg-gold-light" />
               </a>
-              <p className="mt-4 text-sm text-cream/70 sm:text-base">
+              <p className="mt-5 text-[14px] text-cream/55 sm:text-[15px]">
                 {t("ctaNote")}
               </p>
-              <p className="mt-3 text-sm text-cream/65">
+              <p className="mt-3 text-[14px] text-cream/55 sm:text-[15px]">
                 {t("fallback", { email: CONTACT.email })
                   .split(CONTACT.email)
                   .flatMap((part, i) =>
@@ -107,7 +112,7 @@ export function BookingContent() {
                           <a
                             key="email"
                             href={`mailto:${CONTACT.email}`}
-                            className="underline transition-colors hover:text-gold"
+                            className="underline underline-offset-4 transition-colors hover:text-cream"
                           >
                             {CONTACT.email}
                           </a>,
@@ -120,32 +125,33 @@ export function BookingContent() {
         </Container>
       </section>
 
-      <section className="py-16 sm:py-24">
+      <section className="py-20 sm:py-28">
         <Container>
           <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-8 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+            <div className="mx-auto max-w-2xl">
+              <h2 className="mb-12 text-[11px] tracking-[0.3em] text-cream/45 sm:mb-16">
                 {t("practical.heading")}
               </h2>
-              <ul className="grid gap-7 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-9">
+              <ul className="grid gap-10 sm:grid-cols-2 sm:gap-x-12 sm:gap-y-12">
                 {practical.map((item) => (
-                  <li key={item.title} className="border-l border-gold/30 pl-5">
-                    <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-gold">
+                  <li key={item.title}>
+                    <h3 className="text-[11px] tracking-[0.25em] text-cream/45">
                       {item.title}
                     </h3>
-                    <p className="mt-2 text-base leading-relaxed text-cream/75 sm:text-lg">
+                    <p className="mt-2.5 text-[15px] leading-[1.75] text-cream/75 sm:text-base">
                       {item.body}
                     </p>
                   </li>
                 ))}
               </ul>
 
-              <div className="mt-12 border-t border-cream/15 pt-8 text-center sm:mt-16">
+              <div className="mt-20 sm:mt-24">
                 <Link
                   href="/faq"
-                  className="text-sm uppercase tracking-[0.2em] text-gold transition-colors hover:text-gold-light"
+                  className="group inline-flex items-center gap-3 text-sm tracking-[0.18em] text-cream/65 transition-colors hover:text-cream"
                 >
-                  {t("trust")} →
+                  <span>{t("trust")}</span>
+                  <span className="h-px w-10 bg-cream/30 transition-all group-hover:w-14 group-hover:bg-cream" />
                 </Link>
               </div>
             </div>
