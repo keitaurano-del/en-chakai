@@ -25,7 +25,7 @@ export function Experience() {
           />
         </FadeIn>
 
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:gap-16">
           {/* Text */}
           <FadeIn>
             <div className="space-y-5 text-base leading-relaxed text-charcoal/80 sm:space-y-6">
@@ -37,7 +37,7 @@ export function Experience() {
 
           {/* Image placeholder */}
           <FadeIn delay={0.2}>
-            <div className="relative aspect-[16/10] overflow-hidden bg-deep-green/10 sm:aspect-[4/5]">
+            <div className="relative aspect-[16/10] overflow-hidden bg-deep-green/10 sm:aspect-[3/2] md:aspect-[4/5]">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-deep-green/30">
                   <p className="font-[family-name:var(--font-heading)] text-5xl sm:text-6xl">茶</p>
@@ -49,7 +49,7 @@ export function Experience() {
         </div>
 
         {/* Features */}
-        <div className="mt-12 space-y-4 sm:mt-20 sm:grid sm:grid-cols-3 sm:gap-8 sm:space-y-0">
+        <div className="mt-12 space-y-4 sm:mt-16 sm:grid sm:grid-cols-3 sm:gap-6 sm:space-y-0 md:mt-20 md:gap-8">
           {features.map(({ key, icon }, i) => (
             <FadeIn key={key} delay={i * 0.1}>
               <div className="flex items-center gap-4 sm:flex-col sm:text-center sm:gap-0">

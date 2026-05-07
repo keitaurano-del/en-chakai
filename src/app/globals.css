@@ -28,6 +28,23 @@ body {
   font-family: var(--font-body);
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  /* iOS notch / Android gesture bar support */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent iOS auto-zoom on form focus (font-size < 16px triggers zoom) */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Ensure embedded iframes scale on small screens */
+iframe {
+  max-width: 100%;
 }
 
 ::selection {

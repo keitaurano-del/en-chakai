@@ -17,7 +17,7 @@ export function Access() {
           />
         </FadeIn>
 
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10 lg:gap-12">
           {/* Info */}
           <FadeIn>
             <div>
@@ -53,7 +53,7 @@ export function Access() {
 
           {/* Map */}
           <FadeIn delay={0.2}>
-            <div className="aspect-[4/3] overflow-hidden bg-charcoal-light sm:aspect-square lg:aspect-[4/3]">
+            <div className="aspect-[4/3] overflow-hidden bg-charcoal-light sm:aspect-[16/10] md:aspect-square lg:aspect-[4/3]">
               <iframe
                 title="En Chakai location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3239.5!2d139.745!3d35.73!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c49ef!2sSengoku%20Station!5e0!3m2!1sen!2sjp!4v1"
