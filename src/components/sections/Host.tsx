@@ -1,49 +1,50 @@
-"use client";
-
 import { useTranslations } from "next-intl";
 import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { FadeIn } from "@/components/ui/FadeIn";
-import { User } from "lucide-react";
 
 export function Host() {
   const t = useTranslations("host");
 
   return (
-    <section id="host" className="bg-cream py-16 sm:py-24 md:py-32">
+    <section className="bg-cream py-20 sm:py-28">
       <Container>
         <FadeIn>
-          <SectionHeading
-            label={t("label")}
-            heading={t("heading")}
-            light
-          />
-        </FadeIn>
+          <div className="mx-auto max-w-3xl">
+            <p className="mb-3 text-xs uppercase tracking-[0.25em] text-deep-green sm:text-sm">
+              {t("kicker")}
+            </p>
+            <h2 className="font-[family-name:var(--font-heading)] text-3xl font-medium leading-tight text-charcoal sm:text-4xl md:text-5xl">
+              {t("heading")}
+            </h2>
 
-        <FadeIn delay={0.15}>
-          <div className="mx-auto max-w-2xl text-center">
-            {/* Profile placeholder */}
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-deep-green/10 sm:mb-8 sm:h-28 sm:w-28">
-              <User size={36} className="text-deep-green/50 sm:hidden" />
-              <User size={48} className="text-deep-green/50 hidden sm:block" />
+            <div className="mt-8 grid gap-8 md:mt-12 md:grid-cols-[1fr_2fr] md:gap-12">
+              <div className="aspect-[3/4] bg-stone/15">
+                <div className="flex h-full items-center justify-center">
+                  <span className="font-[family-name:var(--font-heading)] text-6xl text-stone/30">
+                    山
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-[family-name:var(--font-heading)] text-2xl font-medium text-charcoal sm:text-3xl">
+                  {t("name")}
+                </h3>
+                <p className="mt-1 text-sm tracking-wide text-deep-green">
+                  {t("credential")}
+                </p>
+
+                <blockquote className="mt-7 border-l-2 border-gold pl-5">
+                  <p className="font-[family-name:var(--font-heading)] text-xl italic leading-snug text-charcoal/85 sm:text-2xl">
+                    “{t("pull")}”
+                  </p>
+                </blockquote>
+
+                <p className="mt-7 text-base leading-relaxed text-charcoal/75 sm:text-lg">
+                  {t("bio")}
+                </p>
+              </div>
             </div>
-
-            <h3 className="font-[family-name:var(--font-heading)] text-xl font-bold text-charcoal sm:text-2xl">
-              {t("name")}
-            </h3>
-            <p className="mt-1 text-xs tracking-wide text-deep-green sm:text-sm">
-              {t("years")}
-            </p>
-
-            <blockquote className="mt-6 border-l-2 border-gold pl-4 text-left sm:mt-8 sm:pl-6">
-              <p className="font-[family-name:var(--font-heading)] text-base italic leading-relaxed text-charcoal/80 sm:text-lg">
-                &ldquo;{t("philosophy")}&rdquo;
-              </p>
-            </blockquote>
-
-            <p className="mt-6 text-sm leading-relaxed text-charcoal/70 sm:mt-8 sm:text-base">
-              {t("bio")}
-            </p>
           </div>
         </FadeIn>
       </Container>

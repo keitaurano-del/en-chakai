@@ -1,63 +1,151 @@
 export const PLANS = [
   {
-    id: "ume",
-    tier: "basic",
-    nameJa: "梅",
-    nameEn: "Ume",
-    price: 9000,
-    duration: 60,
+    id: "encounter",
+    name: "The Encounter",
+    durationMin: 45,
     maxGuests: 6,
+    privacy: "shared",
+    priceJpy: 7000,
+    priceUsdDisplay: 50,
+    includes: [
+      "Welcome usucha (thin matcha)",
+      "One seasonal wagashi sweet",
+      "Brief explanation of the ceremony",
+    ],
   },
   {
-    id: "take",
-    tier: "standard",
-    nameJa: "竹",
-    nameEn: "Take",
-    price: 15000,
-    duration: 90,
+    id: "conversation",
+    name: "The Conversation",
+    durationMin: 60,
     maxGuests: 4,
+    privacy: "shared",
+    priceJpy: 10000,
+    priceUsdDisplay: 70,
+    recommended: true,
+    includes: [
+      "Usucha and koicha (thick matcha) tasting",
+      "Two seasonal wagashi",
+      "Tea utensil appreciation",
+      "Q&A with the host",
+    ],
   },
   {
-    id: "matsu",
-    tier: "premium",
-    nameJa: "松",
-    nameEn: "Matsu",
-    price: 25000,
-    duration: 120,
+    id: "quiet-hour",
+    name: "The Quiet Hour",
+    durationMin: 75,
     maxGuests: 2,
-    recommended: true,
+    privacy: "private",
+    priceJpy: 12000,
+    priceUsdDisplay: 80,
+    includes: [
+      "Everything in The Conversation",
+      "Your party only — no shared session",
+      "Unhurried pace and longer Q&A",
+    ],
   },
 ] as const;
 
-export const TIME_SLOTS = [
-  { id: "morning", time: "10:00" },
-  { id: "afternoon", time: "14:00" },
-  { id: "evening", time: "16:00" },
+export type PlanId = (typeof PLANS)[number]["id"];
+
+export const NEIGHBORHOODS = [
+  {
+    slug: "sengoku",
+    name: "Sengoku",
+    nameJa: "千石",
+    walkMin: 0,
+    blurb:
+      "The quiet next door. Old timber houses, narrow alleys, and the residential rhythm of Bunkyō — this is where the tea room sits.",
+    photo: "/photos/room1.jpg",
+  },
+  {
+    slug: "hakusan",
+    name: "Hakusan",
+    nameJa: "白山",
+    walkMin: 8,
+    blurb:
+      "A university hill with a hidden Edo-era shrine. In June, three thousand hydrangeas turn the slope blue and white.",
+    photo: "/photos/tokonoma.jpg",
+  },
+  {
+    slug: "sugamo",
+    name: "Sugamo",
+    nameJa: "巣鴨",
+    walkMin: 12,
+    blurb:
+      "Tokyo's grandmothers come here for healing salt and red underwear. Locals call it Harajuku for the elderly. We mean that as a compliment.",
+    photo: "/photos/kettle.jpg",
+  },
+  {
+    slug: "gokokuji",
+    name: "Gokokuji",
+    nameJa: "護国寺",
+    walkMin: 18,
+    blurb:
+      "A 1681 Shogun's-mother temple, the rare WWII survivor in this part of Tokyo. The graves of three Urasenke tea masters are kept here.",
+    photo: "/photos/room2.jpg",
+  },
+  {
+    slug: "zoshigaya",
+    name: "Zoshigaya",
+    nameJa: "雑司ヶ谷",
+    walkMin: 22,
+    blurb:
+      "Sōseki and Lafcadio Hearn rest in the same cemetery. The pace of the streets has not changed much since they walked them.",
+    photo: "/photos/room3.jpg",
+  },
+] as const;
+
+export type NeighborhoodSlug = (typeof NEIGHBORHOODS)[number]["slug"];
+
+export const ITINERARIES = [
+  {
+    id: "half-day",
+    name: "The Half-Day",
+    durationLabel: "3–4 hours",
+    summary:
+      "Sugamo's Jizō-dōri at noon, tea ceremony at two, Hakusan Shrine before dusk. The shortest route that still feels like a real day.",
+    stops: [
+      "Sugamo Jizō-dōri (lunch + Togenuki Jizō)",
+      "Tea ceremony at our room in Sengoku",
+      "Hakusan Shrine, walking back to Hakusan station",
+    ],
+  },
+  {
+    id: "literary-walk",
+    name: "The Literary Walk",
+    durationLabel: "5–6 hours",
+    summary:
+      "For readers. Trace Sōseki and Lafcadio Hearn through Zoshigaya, then Kishimojin, Gokokuji, and tea — chronological from grave to garden.",
+    stops: [
+      "Zoshigaya cemetery (Sōseki, Lafcadio Hearn)",
+      "Kishimojin temple",
+      "Gokokuji main hall and tea master graves",
+      "Tea ceremony at our room",
+    ],
+  },
+  {
+    id: "slow-day",
+    name: "The Slow Day",
+    durationLabel: "Full day",
+    summary:
+      "Begin at Rikugien at opening, lunch in Sugamo, tea in the afternoon, and end on the Toden Arakawa tram as it gets dark.",
+    stops: [
+      "Rikugien garden, Komagome",
+      "Sugamo lunch (any of the unagi shops on Jizō-dōri)",
+      "Tea ceremony at our room",
+      "Zoshigaya at dusk",
+      "Toden Arakawa Line at Kishimojin-mae",
+    ],
+  },
 ] as const;
 
 export const TRIPADVISOR_URL = "https://www.tripadvisor.com/";
 
 export const CONTACT = {
   email: "info@en-chakai.com",
-  phone: "+81-3-XXXX-XXXX",
-  address: {
-    en: "Sengoku, Bunkyo-ku, Tokyo",
-    ja: "東京都文京区千石",
-  },
-  station: {
-    en: "Sengoku Station (Toei Mita Line) — 5 min walk",
-    ja: "都営三田線 千石駅 徒歩5分",
-  },
+  address: "Sengoku, Bunkyo-ku, Tokyo",
+  station: "Sengoku Station, Toei Mita Line — 5 min walk",
 };
 
-// Stripe Payment Links — KeitaさんがStripeダッシュボードで作成後に差し替え
-export const STRIPE_PAYMENT_LINKS = {
-  ume: "https://buy.stripe.com/UME_PLACEHOLDER",
-  take: "https://buy.stripe.com/TAKE_PLACEHOLDER",
-  matsu: "https://buy.stripe.com/MATSU_PLACEHOLDER",
-};
-
-export const GOOGLE_FORMS = {
-  booking: "https://docs.google.com/forms/d/e/1FAIpQLSeuo3Ec2k8oROTX2av_uw0re64AMw-z-gLBUZ-pcALj0ITa9w/viewform",
-  cancellation: "https://docs.google.com/forms/d/e/1FAIpQLSeuo3Ec2k8oROTX2av_uw0re64AMw-z-gLBUZ-pcALj0ITa9w/viewform",
-};
+export const GOOGLE_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSeuo3Ec2k8oROTX2av_uw0re64AMw-z-gLBUZ-pcALj0ITa9w/viewform";

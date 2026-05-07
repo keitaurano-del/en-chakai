@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,17 +17,18 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileOpen]);
 
-  const navItems = [
-    { href: "/#experience", label: t("about") },
-    { href: "/#plans", label: t("plans") },
-    { href: "/#gallery", label: t("gallery") },
-    { href: "/#access", label: t("access") },
+  const navItems: { href: "/experience" | "/neighborhoods" | "/itineraries" | "/faq"; label: string }[] = [
+    { href: "/experience", label: t("experience") },
+    { href: "/neighborhoods", label: t("neighborhoods") },
+    { href: "/itineraries", label: t("itineraries") },
+    { href: "/faq", label: t("faq") },
   ];
 
   return (
@@ -36,28 +36,26 @@ export function Header() {
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${
         scrolled
           ? "bg-charcoal/95 backdrop-blur-md shadow-lg shadow-black/10 border-b border-cream/5"
-          : "bg-charcoal/70 backdrop-blur-sm"
+          : "bg-charcoal/60 backdrop-blur-sm"
       }`}
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
-        {/* Logo */}
         <Link
           href="/"
-          className="font-[family-name:var(--font-heading)] text-lg font-bold tracking-wide text-cream hover:text-gold transition-colors sm:text-xl"
+          className="font-[family-name:var(--font-heading)] text-lg font-medium tracking-wide text-cream transition-colors hover:text-gold sm:text-xl"
         >
           円茶会
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className="text-sm tracking-wide text-cream/70 transition-colors hover:text-gold"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
           <Link
             href="/booking"
@@ -65,12 +63,9 @@ export function Header() {
           >
             {t("booking")}
           </Link>
-          <LanguageSwitcher />
         </nav>
 
-        {/* Mobile toggle */}
-        <div className="flex items-center gap-3 md:hidden">
-          <LanguageSwitcher />
+        <div className="flex items-center md:hidden">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="flex h-10 w-10 items-center justify-center text-cream"
@@ -81,34 +76,30 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.nav
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            transition={{ duration: 0.2 }}
             className="overflow-hidden border-t border-cream/5 bg-charcoal/98 backdrop-blur-md md:hidden"
           >
             <div className="flex flex-col px-4 py-3">
-              {navItems.map((item, i) => (
-                <motion.a
+              {navItems.map((item) => (
+                <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="py-3.5 text-base tracking-wide text-cream/70 transition-colors hover:text-gold active:text-gold border-b border-cream/5"
+                  className="border-b border-cream/5 py-3.5 text-base tracking-wide text-cream/75 transition-colors hover:text-gold"
                 >
                   {item.label}
-                </motion.a>
+                </Link>
               ))}
               <Link
                 href="/booking"
                 onClick={() => setMobileOpen(false)}
-                className="mt-4 mb-1 bg-gold px-5 py-3.5 text-center text-sm font-medium text-charcoal transition-colors hover:bg-gold-light active:bg-gold-light"
+                className="mt-4 bg-gold px-5 py-3.5 text-center text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light"
               >
                 {t("booking")}
               </Link>
