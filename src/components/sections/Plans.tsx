@@ -18,14 +18,15 @@ export function Plans() {
           />
         </FadeIn>
 
-        <div className="grid gap-4 sm:gap-8 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8">
           {[PLANS[1], PLANS[0], PLANS[2]].map((plan, i) => {
             const isRecommended = "recommended" in plan && plan.recommended;
             const isMostPopular = plan.id === "take";
+            const isTablet3rd = i === 2;
             return (
-              <FadeIn key={plan.id} delay={i * 0.15}>
+              <FadeIn key={plan.id} delay={i * 0.15} className={isTablet3rd ? "md:col-span-2 lg:col-span-1" : ""}>
                 <div
-                  className={`relative flex h-full flex-col border p-5 transition-all duration-300 hover:border-gold/50 active:border-gold/50 sm:p-8 ${
+                  className={`relative flex h-full flex-col border p-5 transition-all duration-300 hover:border-gold/50 active:border-gold/50 sm:p-6 md:p-7 lg:p-8 ${
                     isMostPopular
                       ? "border-gold bg-deep-green/20"
                       : isRecommended
