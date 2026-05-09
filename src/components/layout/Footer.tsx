@@ -9,8 +9,9 @@ export function Footer() {
   return (
     <footer className="border-t border-cream/10 bg-charcoal">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="grid gap-10 sm:gap-12 md:grid-cols-3">
-          <div>
+        <div className="grid gap-10 sm:gap-12 md:grid-cols-4">
+          {/* ブランド */}
+          <div className="md:col-span-2">
             <p className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream">
               円茶会
             </p>
@@ -19,24 +20,15 @@ export function Footer() {
             </p>
           </div>
 
+          {/* 茶道関連ページ */}
           <div>
             <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-gold">
               {t("links")}
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               <li>
                 <Link href="/experience" className="text-sm text-cream/65 transition-colors hover:text-gold">
                   {nav("experience")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/neighborhoods" className="text-sm text-cream/65 transition-colors hover:text-gold">
-                  {nav("neighborhoods")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/itineraries" className="text-sm text-cream/65 transition-colors hover:text-gold">
-                  {nav("itineraries")}
                 </Link>
               </li>
               <li>
@@ -52,11 +44,28 @@ export function Footer() {
             </ul>
           </div>
 
+          {/* 周辺情報 + 連絡先 */}
           <div>
             <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-gold">
+              {t("explore")}
+            </h3>
+            <ul className="space-y-2.5">
+              <li>
+                <Link href="/neighborhoods" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                  {nav("neighborhoods")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/itineraries" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                  {nav("itineraries")}
+                </Link>
+              </li>
+            </ul>
+
+            <h3 className="mb-4 mt-8 text-xs font-medium uppercase tracking-[0.2em] text-gold">
               {t("contact")}
             </h3>
-            <ul className="space-y-2 text-sm text-cream/65">
+            <ul className="space-y-2.5 text-sm text-cream/65">
               <li>
                 <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-gold">
                   {CONTACT.email}

@@ -19,15 +19,12 @@ export function Header() {
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  const navItems: { href: "/experience" | "/neighborhoods" | "/itineraries" | "/faq"; label: string }[] = [
+  // 茶道関連のページだけ前面に出す
+  const navItems: { href: "/experience" | "/faq"; label: string }[] = [
     { href: "/experience", label: t("experience") },
-    { href: "/neighborhoods", label: t("neighborhoods") },
-    { href: "/itineraries", label: t("itineraries") },
     { href: "/faq", label: t("faq") },
   ];
 
