@@ -8,7 +8,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-paper">
-      <div className="mx-auto max-w-[640px] px-8 py-12 sm:py-16">
+      <div className="mx-auto max-w-[640px] px-4 sm:px-8 py-12 sm:py-16">
         <div className="grid gap-10 sm:grid-cols-3">
           <div className="sm:col-span-1">
             <p className="font-[family-name:var(--font-heading)] text-[17px] tracking-[0.2em] text-ink">

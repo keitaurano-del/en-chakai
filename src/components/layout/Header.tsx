@@ -35,7 +35,7 @@ export function Header() {
           : "bg-paper/80 backdrop-blur-sm border-b border-border"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-8">
+      <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-4 sm:px-8">
         <Link
           href="/"
           className="font-[family-name:var(--font-heading)] text-[17px] tracking-[0.2em] text-ink transition-colors hover:text-clay"

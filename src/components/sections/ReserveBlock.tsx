@@ -8,7 +8,7 @@ export function ReserveBlock() {
 
   return (
     <section className="bg-ink py-24 text-center sm:py-32">
-      <div className="mx-auto max-w-[640px] px-8">
+      <div className="mx-auto max-w-[640px] px-4 sm:px-8">
         <FadeIn>
           <div className="mx-auto mb-8 h-px w-8 bg-clay" />
           <p className="mb-6 text-[11px] uppercase tracking-[0.3em] text-clay">

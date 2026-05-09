@@ -183,7 +183,7 @@ export function BookingContent() {
               </p>
 
               {/* Calendar */}
-              <div className="mt-10 border border-border bg-paper-dark p-5 sm:p-7">
+              <div className="mt-10 border border-border bg-paper-dark p-4 sm:p-7">
                 {/* Month nav */}
                 <div className="mb-5 flex items-center justify-between">
                   <button

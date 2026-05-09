@@ -23,7 +23,7 @@ export function Hero() {
       </div>
 
       {/* テキストブロック */}
-      <div className="mx-auto max-w-[640px] px-8 py-14 sm:py-20">
+      <div className="mx-auto max-w-[640px] px-4 sm:px-8 py-14 sm:py-20">
         <motion.p
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
