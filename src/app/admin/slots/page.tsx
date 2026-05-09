@@ -2,15 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createServiceClient, type Slot } from "@/lib/supabase";
-import { type Booking } from "@/lib/supabase";
+import { type Slot, type Booking } from "@/lib/supabase";
 import { TIME_SLOTS, TIME_SLOT_LABELS, PLAN_LABELS, formatDateDisplay } from "@/lib/booking";
 import { Container } from "@/components/ui/Container";
 import { ChevronLeft, ChevronRight, Plus, Trash2, LogOut, Calendar, Users } from "lucide-react";
 
 type Tab = "slots" | "bookings";
+const CLOSED_DAYS = [0, 1];
+const ADMIN_PW = "chakai2024";
 
-const CLOSED_DAYS = [0, 1]; // Sun, Mon
+function authHeader() {
+  return { "x-admin-password": ADMIN_PW, "Content-Type": "application/json" };
+}
 
 export default function AdminSlotsPage() {
   const router = useRouter();
@@ -22,17 +25,13 @@ export default function AdminSlotsPage() {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [bookings, setBookings] = useState<(Booking & { available_slots: Slot })[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Auth guard
   useEffect(() => {
     if (typeof window !== "undefined" && sessionStorage.getItem("admin_auth") !== "1") {
       router.replace("/admin");
     }
   }, [router]);
-
-  const supabase = createServiceClient();
 
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth();
@@ -44,26 +43,16 @@ export default function AdminSlotsPage() {
   }
 
   const loadSlots = useCallback(async () => {
-    setLoading(true);
     const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
     const to = `${year}-${String(month + 1).padStart(2, "0")}-${daysInMonth}`;
-    const { data } = await supabase
-      .from("available_slots")
-      .select("*")
-      .gte("date", from)
-      .lte("date", to);
-    if (data) setSlots(data as Slot[]);
-    setLoading(false);
-  }, [year, month, daysInMonth]); // eslint-disable-line react-hooks/exhaustive-deps
+    const res = await fetch(`/api/admin/slots?from=${from}&to=${to}`, { headers: authHeader() });
+    if (res.ok) setSlots(await res.json());
+  }, [year, month, daysInMonth]);
 
   const loadBookings = useCallback(async () => {
-    const { data } = await supabase
-      .from("bookings")
-      .select("*, available_slots(*)")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (data) setBookings(data as (Booking & { available_slots: Slot })[]);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const res = await fetch("/api/admin/bookings", { headers: authHeader() });
+    if (res.ok) setBookings(await res.json());
+  }, []);
 
   useEffect(() => { loadSlots(); }, [loadSlots]);
   useEffect(() => { if (tab === "bookings") loadBookings(); }, [tab, loadBookings]);
@@ -71,71 +60,74 @@ export default function AdminSlotsPage() {
   function slotsForDate(dateStr: string) {
     return slots.filter((s) => s.date === dateStr);
   }
-
   function hasSlot(dateStr: string, time: string) {
     return slots.some((s) => s.date === dateStr && s.time_slot === time);
   }
-
-  function isOpen(dateStr: string, time: string) {
-    const slot = slots.find((s) => s.date === dateStr && s.time_slot === time);
-    return slot?.is_open ?? false;
+  function getSlot(dateStr: string, time: string) {
+    return slots.find((s) => s.date === dateStr && s.time_slot === time);
   }
 
   async function toggleSlot(dateStr: string, time: string) {
     setSaving(true);
-    const existing = slots.find((s) => s.date === dateStr && s.time_slot === time);
-
+    const existing = getSlot(dateStr, time);
     if (existing) {
-      // Toggle open/closed
-      const { error } = await supabase
-        .from("available_slots")
-        .update({ is_open: !existing.is_open })
-        .eq("id", existing.id);
-      if (!error) await loadSlots();
+      await fetch("/api/admin/slots", {
+        method: "PATCH",
+        headers: authHeader(),
+        body: JSON.stringify({ id: existing.id, is_open: !existing.is_open }),
+      });
     } else {
-      // Create new open slot
-      const { error } = await supabase
-        .from("available_slots")
-        .insert({ date: dateStr, time_slot: time, is_open: true });
-      if (!error) await loadSlots();
+      await fetch("/api/admin/slots", {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify({ date: dateStr, time_slot: time, is_open: true }),
+      });
     }
+    await loadSlots();
     setSaving(false);
   }
 
   async function deleteSlot(dateStr: string, time: string) {
     setSaving(true);
-    const slot = slots.find((s) => s.date === dateStr && s.time_slot === time);
+    const slot = getSlot(dateStr, time);
     if (slot) {
-      await supabase.from("available_slots").delete().eq("id", slot.id);
+      await fetch("/api/admin/slots", {
+        method: "DELETE",
+        headers: authHeader(),
+        body: JSON.stringify({ id: slot.id }),
+      });
       await loadSlots();
     }
     setSaving(false);
   }
 
-  // Bulk: open all slots for a week (Tue–Sat)
   async function openWeek() {
     if (!selectedDate) return;
     setSaving(true);
     const base = new Date(selectedDate + "T00:00:00");
-    const inserts = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(base);
       d.setDate(base.getDate() + i);
       if (CLOSED_DAYS.includes(d.getDay())) continue;
       const dateStr = d.toISOString().slice(0, 10);
       for (const t of TIME_SLOTS) {
-        inserts.push({ date: dateStr, time_slot: t, is_open: true });
+        await fetch("/api/admin/slots", {
+          method: "POST",
+          headers: authHeader(),
+          body: JSON.stringify({ date: dateStr, time_slot: t, is_open: true }),
+        });
       }
     }
-    await supabase
-      .from("available_slots")
-      .upsert(inserts, { onConflict: "date,time_slot", ignoreDuplicates: true });
     await loadSlots();
     setSaving(false);
   }
 
   async function updateBookingStatus(id: string, status: "confirmed" | "cancelled") {
-    await supabase.from("bookings").update({ status }).eq("id", id);
+    await fetch("/api/admin/bookings", {
+      method: "PATCH",
+      headers: authHeader(),
+      body: JSON.stringify({ id, status }),
+    });
     await loadBookings();
   }
 
@@ -187,7 +179,6 @@ export default function AdminSlotsPage() {
           {/* ── SLOTS TAB ── */}
           {tab === "slots" && (
             <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-              {/* Calendar */}
               <div>
                 <div className="mb-5 flex items-center justify-between">
                   <button
@@ -217,14 +208,13 @@ export default function AdminSlotsPage() {
                   </div>
                   <div className="grid grid-cols-7">
                     {Array.from({ length: firstDay }).map((_, i) => (
-                      <div key={`e${i}`} className="border-b border-r border-cream/5" />
+                      <div key={`e${i}`} className="border-b border-r border-cream/5 min-h-[48px]" />
                     ))}
                     {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
                       const dateStr = padDay(d);
                       const date = new Date(dateStr + "T00:00:00");
                       const closed = CLOSED_DAYS.includes(date.getDay());
-                      const daySlots = slotsForDate(dateStr);
-                      const openCount = daySlots.filter((s) => s.is_open).length;
+                      const openCount = slotsForDate(dateStr).filter((s) => s.is_open).length;
                       const isSelected = selectedDate === dateStr;
 
                       return (
@@ -233,16 +223,16 @@ export default function AdminSlotsPage() {
                           onClick={() => !closed && setSelectedDate(isSelected ? null : dateStr)}
                           disabled={closed}
                           className={`
-                            relative border-b border-r border-cream/5 p-2 text-left transition-colors
+                            relative min-h-[48px] border-b border-r border-cream/5 p-2 text-left transition-colors
                             ${closed ? "cursor-default bg-charcoal/30" : "hover:bg-deep-green/10 cursor-pointer"}
-                            ${isSelected ? "bg-deep-green/20 border-gold/30" : ""}
+                            ${isSelected ? "bg-deep-green/20" : ""}
                           `}
                         >
                           <span className={`text-sm ${closed ? "text-cream/20" : "text-cream/70"}`}>
                             {d}
                           </span>
                           {openCount > 0 && (
-                            <div className="mt-1 flex gap-0.5">
+                            <div className="mt-1 flex gap-0.5 flex-wrap">
                               {Array.from({ length: openCount }).map((_, i) => (
                                 <div key={i} className="h-1.5 w-1.5 rounded-full bg-gold" />
                               ))}
@@ -256,10 +246,9 @@ export default function AdminSlotsPage() {
 
                 <p className="mt-3 flex items-center gap-2 text-xs text-cream/35">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold" />
-                  Each dot = one open time slot. Click a day to manage slots.
+                  Each dot = one open time slot. Click a day to manage.
                 </p>
 
-                {/* Bulk open week */}
                 {selectedDate && (
                   <button
                     onClick={openWeek}
@@ -267,12 +256,12 @@ export default function AdminSlotsPage() {
                     className="mt-4 flex items-center gap-2 border border-deep-green px-4 py-2 text-sm text-deep-green transition-colors hover:bg-deep-green hover:text-cream disabled:opacity-50"
                   >
                     <Plus size={14} />
-                    Open Tue–Sat from {selectedDate} (all time slots)
+                    {saving ? "Saving…" : `Open Tue–Sat from ${selectedDate} (all slots)`}
                   </button>
                 )}
               </div>
 
-              {/* Day detail panel */}
+              {/* Day detail */}
               <div>
                 {selectedDate ? (
                   <div className="border border-cream/10 bg-charcoal-light p-5">
@@ -281,18 +270,16 @@ export default function AdminSlotsPage() {
                     </h3>
                     <div className="space-y-3">
                       {TIME_SLOTS.map((time) => {
-                        const exists = hasSlot(selectedDate, time);
-                        const open = isOpen(selectedDate, time);
+                        const slot = getSlot(selectedDate, time);
+                        const exists = !!slot;
+                        const open = slot?.is_open ?? false;
                         return (
                           <div key={time} className="flex items-center justify-between gap-3">
                             <div>
                               <p className="text-sm text-cream">{TIME_SLOT_LABELS[time]}</p>
-                              {exists && (
-                                <p className={`text-xs ${open ? "text-deep-green" : "text-cream/30"}`}>
-                                  {open ? "Open" : "Closed"}
-                                </p>
-                              )}
-                              {!exists && <p className="text-xs text-cream/25">Not created</p>}
+                              <p className={`text-xs ${exists ? (open ? "text-deep-green" : "text-cream/30") : "text-cream/25"}`}>
+                                {exists ? (open ? "Open" : "Closed") : "Not created"}
+                              </p>
                             </div>
                             <div className="flex gap-2">
                               <button
@@ -341,18 +328,14 @@ export default function AdminSlotsPage() {
               ) : (
                 <div className="space-y-3">
                   {bookings.map((b) => (
-                    <div
-                      key={b.id}
-                      className="border border-cream/10 bg-charcoal-light p-5"
-                    >
+                    <div key={b.id} className="border border-cream/10 bg-charcoal-light p-5">
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-3">
                             <p className="font-medium text-cream">{b.name}</p>
                             <span className={`text-xs uppercase tracking-wide ${
                               b.status === "confirmed" ? "text-deep-green" :
-                              b.status === "cancelled" ? "text-red-400" :
-                              "text-gold"
+                              b.status === "cancelled" ? "text-red-400" : "text-gold"
                             }`}>
                               {b.status}
                             </span>
@@ -366,24 +349,20 @@ export default function AdminSlotsPage() {
                             <span>{b.guests} guest{b.guests > 1 ? "s" : ""}</span>
                             <span>{b.seating === "floor" ? "Floor" : "Chair"}</span>
                           </div>
-                          {b.dietary && (
-                            <p className="mt-2 text-xs text-cream/45">Dietary: {b.dietary}</p>
-                          )}
-                          {b.notes && (
-                            <p className="mt-1 text-xs text-cream/45">Notes: {b.notes}</p>
-                          )}
+                          {b.dietary && <p className="mt-2 text-xs text-cream/45">Dietary: {b.dietary}</p>}
+                          {b.notes && <p className="mt-1 text-xs text-cream/45">Notes: {b.notes}</p>}
                         </div>
                         {b.status === "pending" && (
                           <div className="flex gap-2">
                             <button
                               onClick={() => updateBookingStatus(b.id, "confirmed")}
-                              className="bg-deep-green px-4 py-2 text-xs uppercase tracking-wide text-cream transition-colors hover:bg-deep-green-light"
+                              className="bg-deep-green px-4 py-2 text-xs uppercase tracking-wide text-cream hover:bg-deep-green-light"
                             >
                               Confirm
                             </button>
                             <button
                               onClick={() => updateBookingStatus(b.id, "cancelled")}
-                              className="border border-cream/20 px-4 py-2 text-xs uppercase tracking-wide text-cream/50 transition-colors hover:border-red-400 hover:text-red-400"
+                              className="border border-cream/20 px-4 py-2 text-xs uppercase tracking-wide text-cream/50 hover:border-red-400 hover:text-red-400"
                             >
                               Cancel
                             </button>
@@ -396,6 +375,7 @@ export default function AdminSlotsPage() {
               )}
             </div>
           )}
+
         </div>
       </Container>
     </div>
