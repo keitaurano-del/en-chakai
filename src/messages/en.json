@@ -179,11 +179,14 @@
     "preview": {
       "heading": "What we'll ask",
       "fields": [
-        "Your name and email",
-        "1st choice date and 2nd choice date",
-        "Party size and plan tier",
+        "Your name",
+        "Your email address",
+        "1st choice date",
+        "2nd choice date (backup)",
+        "Number of guests",
+        "Experience plan (The Encounter ¥7,000 / The Conversation ¥10,000 / The Quiet Hour ¥12,000)",
         "Seating preference (chair or floor)",
-        "Dietary restrictions, if any",
+        "Dietary restrictions or allergies",
         "Anything else we should know"
       ]
     },

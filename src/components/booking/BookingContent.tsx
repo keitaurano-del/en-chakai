@@ -1,152 +1,284 @@
-import { useTranslations } from "next-intl";
+"use client";
+
+import { useState, useEffect } from "react";
+import { supabase, type Slot } from "@/lib/supabase";
+import {
+  CLOSED_DAYS,
+  TIME_SLOT_LABELS,
+  PLAN_LABELS,
+  PLAN_MAX_GUESTS,
+  formatDateDisplay,
+  type TimeSlot,
+} from "@/lib/booking";
+import { PLANS } from "@/lib/constants";
 import { Container } from "@/components/ui/Container";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { Link } from "@/i18n/navigation";
-import { CONTACT, GOOGLE_FORM_URL } from "@/lib/constants";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 
-type Step = { n: string; title: string; body: string };
-type Field = string;
-type Item = { title: string; body: string };
+type Step = "date" | "details" | "done";
+
+type FormState = {
+  date: string;
+  time_slot: TimeSlot | "";
+  plan: string;
+  guests: number;
+  name: string;
+  email: string;
+  seating: "floor" | "chair" | "";
+  dietary: string;
+  notes: string;
+};
+
+const EMPTY_FORM: FormState = {
+  date: "",
+  time_slot: "",
+  plan: "",
+  guests: 1,
+  name: "",
+  email: "",
+  seating: "",
+  dietary: "",
+  notes: "",
+};
 
 export function BookingContent() {
-  const t = useTranslations("booking");
-  const steps = t.raw("steps.items") as Step[];
-  const fields = t.raw("preview.fields") as Field[];
-  const practical = t.raw("practical.items") as Item[];
+  const [step, setStep] = useState<Step>("date");
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  return (
+  // Load open slots for the visible month range
+  useEffect(() => {
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+    const nextMonth = new Date(year, month + 2, 0);
+    const to = `${year}-${String(month + 1).padStart(2, "0")}-${nextMonth.getDate()}`;
+
+    supabase
+      .from("available_slots")
+      .select("*")
+      .gte("date", from)
+      .lte("date", to)
+      .eq("is_open", true)
+      .then(({ data }) => {
+        if (data) setSlots(data as Slot[]);
+      });
+  }, [calendarMonth]);
+
+  // Calendar helpers
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  function openSlotsForDate(dateStr: string) {
+    return slots.filter((s) => s.date === dateStr);
+  }
+
+  function padDay(d: number) {
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  }
+
+  function isDayAvailable(d: number) {
+    const dateStr = padDay(d);
+    const date = new Date(dateStr + "T00:00:00");
+    if (CLOSED_DAYS.includes(date.getDay())) return false;
+    if (date < today) return false;
+    return openSlotsForDate(dateStr).length > 0;
+  }
+
+  const selectedDateSlots = form.date ? openSlotsForDate(form.date) : [];
+
+  // Filtered guest options by plan
+  const maxGuests = form.plan ? PLAN_MAX_GUESTS[form.plan] ?? 6 : 6;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setStep("done");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  // ── DONE ────────────────────────────────────────────────────────────────────
+  if (step === "done") {
+    return (
+      <div className="bg-charcoal pt-20 sm:pt-24">
+        <section className="py-24 sm:py-32">
+          <Container>
+            <FadeIn>
+              <div className="mx-auto max-w-2xl text-center">
+                <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-deep-green">
+                  <Check size={32} className="text-cream" />
+                </div>
+                <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium text-cream sm:text-5xl">
+                  Request received.
+                </h1>
+                <p className="mt-6 text-lg leading-relaxed text-cream/75">
+                  We'll confirm your reservation at{" "}
+                  <span className="text-cream">{form.email}</span> within 24
+                  hours. If your date is unavailable, we'll suggest the nearest
+                  alternative.
+                </p>
+                <div className="mt-10 border-t border-cream/10 pt-8 text-sm text-cream/55">
+                  <p>{formatDateDisplay(form.date)} at {form.time_slot}</p>
+                  <p className="mt-1">{PLAN_LABELS[form.plan]}</p>
+                  <p className="mt-1">{form.guests} guest{form.guests > 1 ? "s" : ""} · {form.seating === "floor" ? "Floor (tatami)" : "Chair"}</p>
+                </div>
+                <Link
+                  href="/"
+                  className="mt-10 inline-block border border-cream/20 px-7 py-3.5 text-sm uppercase tracking-[0.15em] text-cream/70 transition-colors hover:border-gold hover:text-gold"
+                >
+                  Back to home
+                </Link>
+              </div>
+            </FadeIn>
+          </Container>
+        </section>
+      </div>
+    );
+  }
+
+  // ── STEP 1: Date + Time ──────────────────────────────────────────────────────
+  const stepDate = (
     <div className="bg-charcoal pt-20 sm:pt-24">
       <section className="py-16 sm:py-24">
         <Container>
           <FadeIn>
             <div className="mx-auto max-w-3xl">
               <p className="mb-3 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
-                {t("kicker")}
+                Reserve
               </p>
               <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium leading-[1.1] text-cream sm:text-5xl md:text-6xl">
-                {t("heading")}
+                Choose a date.
               </h1>
-              <p className="mt-6 text-lg leading-relaxed text-cream/80 sm:text-xl">
-                {t("lede")}
+              <p className="mt-4 text-base text-cream/65">
+                We're open Tuesday through Saturday. Select any highlighted day.
               </p>
-            </div>
-          </FadeIn>
-        </Container>
-      </section>
 
-      <section className="bg-charcoal-light py-16 sm:py-20">
-        <Container>
-          <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-10 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
-                {t("steps.heading")}
-              </h2>
-              <ol className="space-y-8">
-                {steps.map((s) => (
-                  <li key={s.n} className="flex gap-5 sm:gap-7">
-                    <span className="font-[family-name:var(--font-heading)] text-3xl font-medium tabular-nums text-gold sm:text-4xl">
-                      {s.n}
-                    </span>
-                    <div className="flex-1 border-t border-cream/15 pt-2">
-                      <h3 className="text-base font-medium text-cream sm:text-lg">
-                        {s.title}
-                      </h3>
-                      <p className="mt-2 text-base leading-relaxed text-cream/75 sm:text-lg">
-                        {s.body}
-                      </p>
+              {/* Calendar */}
+              <div className="mt-10 border border-cream/10 bg-charcoal-light p-5 sm:p-7">
+                {/* Month nav */}
+                <div className="mb-5 flex items-center justify-between">
+                  <button
+                    onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                    disabled={new Date(year, month, 1) <= today}
+                    className="flex h-9 w-9 items-center justify-center text-cream/60 transition-colors hover:text-gold disabled:opacity-30"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="font-[family-name:var(--font-heading)] text-lg font-medium text-cream">
+                    {calendarMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                  </span>
+                  <button
+                    onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                    className="flex h-9 w-9 items-center justify-center text-cream/60 transition-colors hover:text-gold"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+
+                {/* Day headers */}
+                <div className="mb-2 grid grid-cols-7 text-center">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                    <div key={d} className="py-1 text-xs tracking-wide text-cream/35">
+                      {d}
                     </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </FadeIn>
-        </Container>
-      </section>
+                  ))}
+                </div>
 
-      <section className="py-16 sm:py-20">
-        <Container>
-          <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-7 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
-                {t("preview.heading")}
-              </h2>
-              <ul className="grid gap-3 border-l border-gold/30 pl-5 sm:grid-cols-2 sm:gap-x-8">
-                {fields.map((f) => (
-                  <li key={f} className="text-base text-cream/80 sm:text-lg">
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </FadeIn>
-        </Container>
-      </section>
+                {/* Days */}
+                <div className="grid grid-cols-7">
+                  {Array.from({ length: firstDay }).map((_, i) => (
+                    <div key={`empty-${i}`} />
+                  ))}
+                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
+                    const dateStr = padDay(d);
+                    const available = isDayAvailable(d);
+                    const selected = form.date === dateStr;
+                    const date = new Date(dateStr + "T00:00:00");
+                    const closed = CLOSED_DAYS.includes(date.getDay()) || date < today;
 
-      <section className="bg-deep-green py-16 sm:py-20">
-        <Container>
-          <FadeIn>
-            <div className="mx-auto max-w-3xl text-center">
-              <a
-                href={GOOGLE_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-gold px-9 py-4 text-base font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light sm:text-lg"
-              >
-                {t("cta")}
-              </a>
-              <p className="mt-4 text-sm text-cream/70 sm:text-base">
-                {t("ctaNote")}
-              </p>
-              <p className="mt-3 text-sm text-cream/65">
-                {t("fallback", { email: CONTACT.email })
-                  .split(CONTACT.email)
-                  .flatMap((part, i) =>
-                    i === 0
-                      ? [part]
-                      : [
-                          <a
-                            key="email"
-                            href={`mailto:${CONTACT.email}`}
-                            className="underline transition-colors hover:text-gold"
-                          >
-                            {CONTACT.email}
-                          </a>,
-                          part,
-                        ]
-                  )}
-              </p>
-            </div>
-          </FadeIn>
-        </Container>
-      </section>
+                    return (
+                      <button
+                        key={d}
+                        disabled={!available}
+                        onClick={() => setForm((f) => ({ ...f, date: dateStr, time_slot: "" }))}
+                        className={`
+                          aspect-square flex items-center justify-center text-sm transition-colors
+                          ${selected ? "bg-gold text-charcoal font-medium" : ""}
+                          ${!selected && available ? "text-cream hover:bg-deep-green/40 hover:text-gold cursor-pointer" : ""}
+                          ${closed || !available ? "text-cream/20 cursor-default" : ""}
+                        `}
+                      >
+                        {d}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-      <section className="py-16 sm:py-24">
-        <Container>
-          <FadeIn>
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-8 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
-                {t("practical.heading")}
-              </h2>
-              <ul className="grid gap-7 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-9">
-                {practical.map((item) => (
-                  <li key={item.title} className="border-l border-gold/30 pl-5">
-                    <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-gold">
-                      {item.title}
-                    </h3>
-                    <p className="mt-2 text-base leading-relaxed text-cream/75 sm:text-lg">
-                      {item.body}
+              {/* Time slots */}
+              {form.date && (
+                <FadeIn>
+                  <div className="mt-8">
+                    <p className="mb-4 text-sm uppercase tracking-[0.15em] text-gold">
+                      {formatDateDisplay(form.date)}
                     </p>
-                  </li>
-                ))}
-              </ul>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {selectedDateSlots.map((slot) => (
+                        <button
+                          key={slot.time_slot}
+                          onClick={() => setForm((f) => ({ ...f, time_slot: slot.time_slot as TimeSlot }))}
+                          className={`border py-4 text-center text-sm transition-colors ${
+                            form.time_slot === slot.time_slot
+                              ? "border-gold bg-deep-green/20 text-cream"
+                              : "border-cream/15 text-cream/70 hover:border-gold hover:text-cream"
+                          }`}
+                        >
+                          {TIME_SLOT_LABELS[slot.time_slot as TimeSlot]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </FadeIn>
+              )}
 
-              <div className="mt-12 border-t border-cream/15 pt-8 text-center sm:mt-16">
-                <Link
-                  href="/faq"
-                  className="text-sm uppercase tracking-[0.2em] text-gold transition-colors hover:text-gold-light"
+              {/* Next */}
+              <div className="mt-10">
+                <button
+                  disabled={!form.date || !form.time_slot}
+                  onClick={() => setStep("details")}
+                  className="bg-gold px-9 py-4 text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {t("trust")} →
-                </Link>
+                  Continue →
+                </button>
               </div>
             </div>
           </FadeIn>
@@ -154,4 +286,211 @@ export function BookingContent() {
       </section>
     </div>
   );
+
+  // ── STEP 2: Details form ─────────────────────────────────────────────────────
+  const stepDetails = (
+    <div className="bg-charcoal pt-20 sm:pt-24">
+      <section className="py-16 sm:py-24">
+        <Container>
+          <FadeIn>
+            <div className="mx-auto max-w-2xl">
+              <button
+                onClick={() => setStep("date")}
+                className="mb-8 flex items-center gap-2 text-sm text-cream/50 transition-colors hover:text-gold"
+              >
+                <ChevronLeft size={14} /> Change date
+              </button>
+
+              <div className="mb-8 border border-gold/30 bg-deep-green/10 px-5 py-4">
+                <p className="text-sm text-cream/70">
+                  {formatDateDisplay(form.date)} at{" "}
+                  <span className="text-cream">{form.time_slot}</span>
+                </p>
+              </div>
+
+              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium text-cream sm:text-5xl">
+                Your details.
+              </h1>
+
+              <form onSubmit={handleSubmit} className="mt-10 space-y-7">
+                {/* Plan */}
+                <div>
+                  <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Experience plan *
+                  </label>
+                  <div className="grid gap-3">
+                    {PLANS.map((plan) => {
+                      const key = plan.id;
+                      return (
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() =>
+                            setForm((f) => ({
+                              ...f,
+                              plan: key,
+                              guests: Math.min(f.guests, PLAN_MAX_GUESTS[key]),
+                            }))
+                          }
+                          className={`flex items-start justify-between border p-4 text-left transition-colors ${
+                            form.plan === key
+                              ? "border-gold bg-deep-green/15"
+                              : "border-cream/15 hover:border-cream/30"
+                          }`}
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-cream">
+                              {PLAN_LABELS[key].split(" — ")[0]}
+                            </p>
+                            <p className="mt-0.5 text-xs text-cream/55">
+                              {PLAN_LABELS[key].split(" — ")[1]}
+                            </p>
+                          </div>
+                          {form.plan === key && (
+                            <Check size={16} className="mt-0.5 shrink-0 text-gold" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Guests */}
+                <div>
+                  <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Number of guests *
+                  </label>
+                  <div className="flex gap-2">
+                    {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
+                      <button
+                        type="button"
+                        key={n}
+                        onClick={() => setForm((f) => ({ ...f, guests: n }))}
+                        className={`h-10 w-10 border text-sm transition-colors ${
+                          form.guests === n
+                            ? "border-gold bg-gold text-charcoal"
+                            : "border-cream/15 text-cream/70 hover:border-gold hover:text-cream"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Your name *
+                  </label>
+                  <input
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className="w-full border border-cream/15 bg-charcoal-light px-4 py-3 text-base text-cream placeholder:text-cream/30 focus:border-gold focus:outline-none"
+                    placeholder="Full name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Email address *
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    className="w-full border border-cream/15 bg-charcoal-light px-4 py-3 text-base text-cream placeholder:text-cream/30 focus:border-gold focus:outline-none"
+                    placeholder="you@example.com"
+                  />
+                </div>
+
+                {/* Seating */}
+                <div>
+                  <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Seating preference *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(["floor", "chair"] as const).map((s) => (
+                      <button
+                        type="button"
+                        key={s}
+                        onClick={() => setForm((f) => ({ ...f, seating: s }))}
+                        className={`border py-3.5 text-center text-sm transition-colors ${
+                          form.seating === s
+                            ? "border-gold bg-deep-green/15 text-cream"
+                            : "border-cream/15 text-cream/65 hover:border-cream/30"
+                        }`}
+                      >
+                        {s === "floor" ? "Floor (tatami)" : "Chair"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dietary */}
+                <div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Dietary restrictions / allergies
+                    <span className="ml-2 normal-case tracking-normal text-cream/40">
+                      — optional
+                    </span>
+                  </label>
+                  <input
+                    value={form.dietary}
+                    onChange={(e) => setForm((f) => ({ ...f, dietary: e.target.value }))}
+                    className="w-full border border-cream/15 bg-charcoal-light px-4 py-3 text-base text-cream placeholder:text-cream/30 focus:border-gold focus:outline-none"
+                    placeholder="e.g. nut allergy, vegetarian"
+                  />
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-gold">
+                    Anything else we should know
+                    <span className="ml-2 normal-case tracking-normal text-cream/40">
+                      — optional
+                    </span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={form.notes}
+                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                    className="w-full border border-cream/15 bg-charcoal-light px-4 py-3 text-base text-cream placeholder:text-cream/30 focus:border-gold focus:outline-none"
+                    placeholder="Accessibility needs, questions, etc."
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-sm text-red-400">{error}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={
+                    submitting ||
+                    !form.plan ||
+                    !form.name ||
+                    !form.email ||
+                    !form.seating
+                  }
+                  className="w-full bg-gold py-4 text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {submitting ? "Sending…" : "Send reservation request"}
+                </button>
+
+                <p className="text-center text-xs text-cream/40">
+                  We confirm by hand within 24 hours. No charge until we send a payment link.
+                </p>
+              </form>
+            </div>
+          </FadeIn>
+        </Container>
+      </section>
+    </div>
+  );
+
+  return step === "date" ? stepDate : stepDetails;
 }
