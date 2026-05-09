@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { type Slot, type Booking } from "@/lib/supabase";
 import { TIME_SLOTS, TIME_SLOT_LABELS, PLAN_LABELS, formatDateDisplay } from "@/lib/booking";
-import { Container } from "@/components/ui/Container";
-import { ChevronLeft, ChevronRight, Plus, Trash2, LogOut, Calendar, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Calendar, Users, Plus, Trash2, Check, X } from "lucide-react";
 
 type Tab = "slots" | "bookings";
-const CLOSED_DAYS = [0, 1];
+const CLOSED_DAYS = [0, 1]; // 日・月
 const ADMIN_PW = "chakai2024";
+const DAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
 function authHeader() {
   return { "x-admin-password": ADMIN_PW, "Content-Type": "application/json" };
@@ -26,6 +26,7 @@ export default function AdminSlotsPage() {
   const [bookings, setBookings] = useState<(Booking & { available_slots: Slot })[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined" && sessionStorage.getItem("admin_auth") !== "1") {
@@ -42,9 +43,14 @@ export default function AdminSlotsPage() {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   }
 
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  }
+
   const loadSlots = useCallback(async () => {
     const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
-    const to = `${year}-${String(month + 1).padStart(2, "0")}-${daysInMonth}`;
+    const to = `${year}-${String(month + 1).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
     const res = await fetch(`/api/admin/slots?from=${from}&to=${to}`, { headers: authHeader() });
     if (res.ok) setSlots(await res.json());
   }, [year, month, daysInMonth]);
@@ -57,14 +63,11 @@ export default function AdminSlotsPage() {
   useEffect(() => { loadSlots(); }, [loadSlots]);
   useEffect(() => { if (tab === "bookings") loadBookings(); }, [tab, loadBookings]);
 
-  function slotsForDate(dateStr: string) {
-    return slots.filter((s) => s.date === dateStr);
-  }
-  function hasSlot(dateStr: string, time: string) {
-    return slots.some((s) => s.date === dateStr && s.time_slot === time);
-  }
   function getSlot(dateStr: string, time: string) {
     return slots.find((s) => s.date === dateStr && s.time_slot === time);
+  }
+  function slotsForDate(dateStr: string) {
+    return slots.filter((s) => s.date === dateStr);
   }
 
   async function toggleSlot(dateStr: string, time: string) {
@@ -76,18 +79,21 @@ export default function AdminSlotsPage() {
         headers: authHeader(),
         body: JSON.stringify({ id: existing.id, is_open: !existing.is_open }),
       });
+      showToast(existing.is_open ? "スロットを非公開にしました" : "スロットを公開しました");
     } else {
       await fetch("/api/admin/slots", {
         method: "POST",
         headers: authHeader(),
         body: JSON.stringify({ date: dateStr, time_slot: time, is_open: true }),
       });
+      showToast("スロットを追加しました");
     }
     await loadSlots();
     setSaving(false);
   }
 
   async function deleteSlot(dateStr: string, time: string) {
+    if (!confirm("このスロットを削除しますか？")) return;
     setSaving(true);
     const slot = getSlot(dateStr, time);
     if (slot) {
@@ -96,6 +102,7 @@ export default function AdminSlotsPage() {
         headers: authHeader(),
         body: JSON.stringify({ id: slot.id }),
       });
+      showToast("削除しました");
       await loadSlots();
     }
     setSaving(false);
@@ -111,14 +118,17 @@ export default function AdminSlotsPage() {
       if (CLOSED_DAYS.includes(d.getDay())) continue;
       const dateStr = d.toISOString().slice(0, 10);
       for (const t of TIME_SLOTS) {
-        await fetch("/api/admin/slots", {
-          method: "POST",
-          headers: authHeader(),
-          body: JSON.stringify({ date: dateStr, time_slot: t, is_open: true }),
-        });
+        if (!getSlot(dateStr, t)) {
+          await fetch("/api/admin/slots", {
+            method: "POST",
+            headers: authHeader(),
+            body: JSON.stringify({ date: dateStr, time_slot: t, is_open: true }),
+          });
+        }
       }
     }
     await loadSlots();
+    showToast("週のスロットを一括追加しました");
     setSaving(false);
   }
 
@@ -128,6 +138,7 @@ export default function AdminSlotsPage() {
       headers: authHeader(),
       body: JSON.stringify({ id, status }),
     });
+    showToast(status === "confirmed" ? "予約を確認済みにしました" : "予約をキャンセルしました");
     await loadBookings();
   }
 
@@ -136,168 +147,259 @@ export default function AdminSlotsPage() {
     router.push("/admin");
   }
 
+  const pendingCount = bookings.filter((b) => b.status === "pending").length;
+
   return (
-    <div className="min-h-screen bg-charcoal">
+    <div style={{ minHeight: "100vh", backgroundColor: "#1e1e1a", color: "#f0ebe0", fontFamily: "Inter, sans-serif" }}>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", top: 20, right: 20, zIndex: 1000,
+          backgroundColor: "#3d6b4f", color: "#f0ebe0",
+          padding: "12px 20px", fontSize: 14, borderRadius: 4,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+        }}>
+          {toast}
+        </div>
+      )}
+
       {/* Header */}
-      <div className="border-b border-cream/10 bg-charcoal-light">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-6">
-            <span className="font-[family-name:var(--font-heading)] text-lg text-cream">
-              円茶会 Admin
-            </span>
-            <div className="flex gap-1">
+      <div style={{ borderBottom: "1px solid rgba(240,235,224,0.1)", backgroundColor: "#2a2a25", padding: "0 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 18, color: "#f0ebe0" }}>円茶会 管理</span>
+            <div style={{ display: "flex", gap: 4 }}>
               <button
                 onClick={() => setTab("slots")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
-                  tab === "slots" ? "bg-gold/15 text-gold" : "text-cream/50 hover:text-cream"
-                }`}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "6px 14px",
+                  fontSize: 13, border: "none", cursor: "pointer", borderRadius: 4,
+                  backgroundColor: tab === "slots" ? "rgba(181,147,106,0.15)" : "transparent",
+                  color: tab === "slots" ? "#b5936a" : "rgba(240,235,224,0.5)",
+                }}
               >
-                <Calendar size={14} /> Slots
+                <Calendar size={14} /> スロット管理
               </button>
               <button
                 onClick={() => setTab("bookings")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
-                  tab === "bookings" ? "bg-gold/15 text-gold" : "text-cream/50 hover:text-cream"
-                }`}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, padding: "6px 14px",
+                  fontSize: 13, border: "none", cursor: "pointer", borderRadius: 4,
+                  backgroundColor: tab === "bookings" ? "rgba(181,147,106,0.15)" : "transparent",
+                  color: tab === "bookings" ? "#b5936a" : "rgba(240,235,224,0.5)",
+                }}
               >
-                <Users size={14} /> Bookings
+                <Users size={14} />
+                予約一覧
+                {pendingCount > 0 && (
+                  <span style={{ backgroundColor: "#b5936a", color: "#1e1e1a", fontSize: 11, fontWeight: 700, padding: "1px 7px", borderRadius: 10 }}>
+                    {pendingCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-sm text-cream/40 transition-colors hover:text-cream"
+            style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "rgba(240,235,224,0.4)", background: "none", border: "none", cursor: "pointer" }}
           >
-            <LogOut size={14} /> Sign out
+            <LogOut size={14} /> ログアウト
           </button>
         </div>
       </div>
 
-      <Container>
-        <div className="py-10">
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px" }}>
 
-          {/* ── SLOTS TAB ── */}
-          {tab === "slots" && (
-            <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-              <div>
-                <div className="mb-5 flex items-center justify-between">
-                  <button
-                    onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
-                    className="flex h-9 w-9 items-center justify-center text-cream/50 transition-colors hover:text-gold"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <h2 className="font-[family-name:var(--font-heading)] text-xl text-cream">
-                    {calendarMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                  </h2>
-                  <button
-                    onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
-                    className="flex h-9 w-9 items-center justify-center text-cream/50 transition-colors hover:text-gold"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
+        {/* ── スロット管理 ── */}
+        {tab === "slots" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24 }}>
 
-                <div className="border border-cream/10 bg-charcoal-light">
-                  <div className="grid grid-cols-7 border-b border-cream/10">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                      <div key={d} className="py-2 text-center text-xs tracking-wide text-cream/30">
-                        {d}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7">
-                    {Array.from({ length: firstDay }).map((_, i) => (
-                      <div key={`e${i}`} className="border-b border-r border-cream/5 min-h-[48px]" />
-                    ))}
-                    {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
-                      const dateStr = padDay(d);
-                      const date = new Date(dateStr + "T00:00:00");
-                      const closed = CLOSED_DAYS.includes(date.getDay());
-                      const openCount = slotsForDate(dateStr).filter((s) => s.is_open).length;
-                      const isSelected = selectedDate === dateStr;
-
-                      return (
-                        <button
-                          key={d}
-                          onClick={() => !closed && setSelectedDate(isSelected ? null : dateStr)}
-                          disabled={closed}
-                          className={`
-                            relative min-h-[48px] border-b border-r border-cream/5 p-2 text-left transition-colors
-                            ${closed ? "cursor-default bg-charcoal/30" : "hover:bg-deep-green/10 cursor-pointer"}
-                            ${isSelected ? "bg-deep-green/20" : ""}
-                          `}
-                        >
-                          <span className={`text-sm ${closed ? "text-cream/20" : "text-cream/70"}`}>
-                            {d}
-                          </span>
-                          {openCount > 0 && (
-                            <div className="mt-1 flex gap-0.5 flex-wrap">
-                              {Array.from({ length: openCount }).map((_, i) => (
-                                <div key={i} className="h-1.5 w-1.5 rounded-full bg-gold" />
-                              ))}
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <p className="mt-3 flex items-center gap-2 text-xs text-cream/35">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold" />
-                  Each dot = one open time slot. Click a day to manage.
-                </p>
-
-                {selectedDate && (
-                  <button
-                    onClick={openWeek}
-                    disabled={saving}
-                    className="mt-4 flex items-center gap-2 border border-deep-green px-4 py-2 text-sm text-deep-green transition-colors hover:bg-deep-green hover:text-cream disabled:opacity-50"
-                  >
-                    <Plus size={14} />
-                    {saving ? "Saving…" : `Open Tue–Sat from ${selectedDate} (all slots)`}
-                  </button>
-                )}
+            {/* カレンダー */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <button
+                  onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                  style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "1px solid rgba(240,235,224,0.1)", cursor: "pointer", color: "#f0ebe0", borderRadius: 4 }}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 20, color: "#f0ebe0", margin: 0 }}>
+                  {year}年{month + 1}月
+                </h2>
+                <button
+                  onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                  style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "1px solid rgba(240,235,224,0.1)", cursor: "pointer", color: "#f0ebe0", borderRadius: 4 }}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
 
-              {/* Day detail */}
-              <div>
-                {selectedDate ? (
-                  <div className="border border-cream/10 bg-charcoal-light p-5">
-                    <h3 className="mb-5 font-[family-name:var(--font-heading)] text-lg text-cream">
+              {/* カレンダーグリッド */}
+              <div style={{ border: "1px solid rgba(240,235,224,0.1)", borderRadius: 6, overflow: "hidden" }}>
+                {/* 曜日ヘッダー */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: "1px solid rgba(240,235,224,0.1)", backgroundColor: "#2a2a25" }}>
+                  {DAYS_JA.map((d, i) => (
+                    <div key={d} style={{
+                      padding: "10px 0", textAlign: "center", fontSize: 12,
+                      color: i === 0 ? "#e57373" : i === 1 ? "rgba(240,235,224,0.25)" : "rgba(240,235,224,0.4)",
+                      fontWeight: 500,
+                    }}>
+                      {d}
+                    </div>
+                  ))}
+                </div>
+
+                {/* 日付グリッド */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
+                  {/* 空白セル */}
+                  {Array.from({ length: firstDay }).map((_, i) => (
+                    <div key={`empty-${i}`} style={{ minHeight: 60, borderRight: "1px solid rgba(240,235,224,0.05)", borderBottom: "1px solid rgba(240,235,224,0.05)", backgroundColor: "rgba(0,0,0,0.1)" }} />
+                  ))}
+
+                  {/* 日付セル */}
+                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
+                    const dateStr = padDay(d);
+                    const dateObj = new Date(dateStr + "T00:00:00");
+                    const isClosed = CLOSED_DAYS.includes(dateObj.getDay());
+                    const isSun = dateObj.getDay() === 0;
+                    const isSelected = selectedDate === dateStr;
+                    const daySlots = slotsForDate(dateStr);
+                    const openSlots = daySlots.filter((s) => s.is_open);
+
+                    return (
+                      <div
+                        key={d}
+                        onClick={() => !isClosed && setSelectedDate(isSelected ? null : dateStr)}
+                        style={{
+                          minHeight: 60,
+                          padding: 8,
+                          borderRight: "1px solid rgba(240,235,224,0.05)",
+                          borderBottom: "1px solid rgba(240,235,224,0.05)",
+                          cursor: isClosed ? "default" : "pointer",
+                          backgroundColor: isSelected ? "rgba(61,107,79,0.25)" : isClosed ? "rgba(0,0,0,0.15)" : "transparent",
+                          transition: "background-color 0.15s",
+                          position: "relative",
+                        }}
+                        onMouseEnter={(e) => { if (!isClosed && !isSelected) (e.currentTarget as HTMLDivElement).style.backgroundColor = "rgba(61,107,79,0.1)"; }}
+                        onMouseLeave={(e) => { if (!isClosed && !isSelected) (e.currentTarget as HTMLDivElement).style.backgroundColor = "transparent"; }}
+                      >
+                        <span style={{
+                          fontSize: 13, fontWeight: 500,
+                          color: isClosed ? "rgba(240,235,224,0.2)" : isSun ? "#e57373" : "rgba(240,235,224,0.8)",
+                        }}>
+                          {d}
+                        </span>
+                        {/* スロットインジケーター */}
+                        {openSlots.length > 0 && (
+                          <div style={{ display: "flex", gap: 2, marginTop: 4, flexWrap: "wrap" }}>
+                            {openSlots.map((_, i) => (
+                              <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#b5936a" }} />
+                            ))}
+                          </div>
+                        )}
+                        {/* 非公開スロット */}
+                        {daySlots.length > openSlots.length && (
+                          <div style={{ display: "flex", gap: 2, marginTop: 2, flexWrap: "wrap" }}>
+                            {daySlots.filter((s) => !s.is_open).map((_, i) => (
+                              <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "rgba(240,235,224,0.2)" }} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 凡例 */}
+              <div style={{ display: "flex", gap: 16, marginTop: 12, fontSize: 12, color: "rgba(240,235,224,0.4)" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#b5936a", display: "inline-block" }} />
+                  公開中のスロット
+                </span>
+                <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "rgba(240,235,224,0.2)", display: "inline-block" }} />
+                  非公開スロット
+                </span>
+                <span>日・月は定休日</span>
+              </div>
+
+              {/* 一括追加ボタン */}
+              {selectedDate && (
+                <button
+                  onClick={openWeek}
+                  disabled={saving}
+                  style={{
+                    marginTop: 16, display: "flex", alignItems: "center", gap: 8,
+                    padding: "10px 16px", fontSize: 13, cursor: saving ? "not-allowed" : "pointer",
+                    border: "1px solid #3d6b4f", backgroundColor: "transparent", color: "#3d6b4f",
+                    borderRadius: 4, opacity: saving ? 0.5 : 1,
+                  }}
+                >
+                  <Plus size={14} />
+                  {selectedDate} から1週間（火〜土）を一括で公開
+                </button>
+              )}
+            </div>
+
+            {/* 右パネル：選択した日のスロット管理 */}
+            <div>
+              {selectedDate ? (
+                <div style={{ border: "1px solid rgba(240,235,224,0.1)", borderRadius: 6, overflow: "hidden", backgroundColor: "#2a2a25" }}>
+                  <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(240,235,224,0.1)", backgroundColor: "#333330" }}>
+                    <p style={{ margin: 0, fontSize: 13, color: "rgba(240,235,224,0.5)" }}>選択中の日付</p>
+                    <p style={{ margin: "4px 0 0", fontSize: 16, fontFamily: "Cormorant Garamond, serif", color: "#f0ebe0" }}>
                       {formatDateDisplay(selectedDate)}
-                    </h3>
-                    <div className="space-y-3">
+                    </p>
+                  </div>
+
+                  <div style={{ padding: 16 }}>
+                    <p style={{ margin: "0 0 12px", fontSize: 12, color: "rgba(240,235,224,0.4)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      時間スロット
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {TIME_SLOTS.map((time) => {
                         const slot = getSlot(selectedDate, time);
                         const exists = !!slot;
-                        const open = slot?.is_open ?? false;
+                        const isOpen = slot?.is_open ?? false;
+
                         return (
-                          <div key={time} className="flex items-center justify-between gap-3">
+                          <div key={time} style={{
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                            padding: "12px 14px", borderRadius: 6,
+                            border: `1px solid ${isOpen ? "rgba(181,147,106,0.3)" : "rgba(240,235,224,0.08)"}`,
+                            backgroundColor: isOpen ? "rgba(181,147,106,0.06)" : "transparent",
+                          }}>
                             <div>
-                              <p className="text-sm text-cream">{TIME_SLOT_LABELS[time]}</p>
-                              <p className={`text-xs ${exists ? (open ? "text-deep-green" : "text-cream/30") : "text-cream/25"}`}>
-                                {exists ? (open ? "Open" : "Closed") : "Not created"}
+                              <p style={{ margin: 0, fontSize: 14, color: "#f0ebe0", fontWeight: 500 }}>
+                                {TIME_SLOT_LABELS[time]}
+                              </p>
+                              <p style={{ margin: "2px 0 0", fontSize: 12, color: isOpen ? "#b5936a" : exists ? "rgba(240,235,224,0.3)" : "rgba(240,235,224,0.2)" }}>
+                                {!exists ? "未設定" : isOpen ? "● 公開中" : "○ 非公開"}
                               </p>
                             </div>
-                            <div className="flex gap-2">
+                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                               <button
                                 onClick={() => toggleSlot(selectedDate, time)}
                                 disabled={saving}
-                                className={`px-3 py-1.5 text-xs uppercase tracking-wide transition-colors disabled:opacity-50 ${
-                                  open
-                                    ? "border border-cream/20 text-cream/50 hover:border-red-400 hover:text-red-400"
-                                    : "bg-deep-green/80 text-cream hover:bg-deep-green"
-                                }`}
+                                style={{
+                                  padding: "6px 12px", fontSize: 12, cursor: saving ? "not-allowed" : "pointer",
+                                  border: "1px solid", borderRadius: 4, fontWeight: 500,
+                                  borderColor: isOpen ? "rgba(229,115,115,0.4)" : "#3d6b4f",
+                                  backgroundColor: isOpen ? "transparent" : "rgba(61,107,79,0.3)",
+                                  color: isOpen ? "#e57373" : "#f0ebe0",
+                                  opacity: saving ? 0.5 : 1,
+                                }}
                               >
-                                {exists ? (open ? "Close" : "Open") : "Add"}
+                                {!exists ? "追加" : isOpen ? "非公開にする" : "公開する"}
                               </button>
                               {exists && (
                                 <button
                                   onClick={() => deleteSlot(selectedDate, time)}
                                   disabled={saving}
-                                  className="flex h-7 w-7 items-center justify-center text-cream/20 transition-colors hover:text-red-400 disabled:opacity-50"
+                                  title="削除"
+                                  style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "rgba(240,235,224,0.2)", borderRadius: 4, opacity: saving ? 0.5 : 1 }}
                                 >
                                   <Trash2 size={13} />
                                 </button>
@@ -308,76 +410,98 @@ export default function AdminSlotsPage() {
                       })}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex h-40 items-center justify-center border border-cream/5 text-sm text-cream/25">
-                    Select a day to manage slots
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── BOOKINGS TAB ── */}
-          {tab === "bookings" && (
-            <div>
-              <h2 className="mb-6 font-[family-name:var(--font-heading)] text-2xl text-cream">
-                Recent Bookings
-              </h2>
-              {bookings.length === 0 ? (
-                <p className="text-cream/40">No bookings yet.</p>
+                </div>
               ) : (
-                <div className="space-y-3">
-                  {bookings.map((b) => (
-                    <div key={b.id} className="border border-cream/10 bg-charcoal-light p-5">
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <p className="font-medium text-cream">{b.name}</p>
-                            <span className={`text-xs uppercase tracking-wide ${
-                              b.status === "confirmed" ? "text-deep-green" :
-                              b.status === "cancelled" ? "text-red-400" : "text-gold"
-                            }`}>
-                              {b.status}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm text-cream/55">{b.email}</p>
-                          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-cream/70">
-                            {b.available_slots && (
-                              <span>{formatDateDisplay(b.available_slots.date)} · {b.available_slots.time_slot}</span>
-                            )}
-                            <span>{PLAN_LABELS[b.plan]?.split(" — ")[0]}</span>
-                            <span>{b.guests} guest{b.guests > 1 ? "s" : ""}</span>
-                            <span>{b.seating === "floor" ? "Floor" : "Chair"}</span>
-                          </div>
-                          {b.dietary && <p className="mt-2 text-xs text-cream/45">Dietary: {b.dietary}</p>}
-                          {b.notes && <p className="mt-1 text-xs text-cream/45">Notes: {b.notes}</p>}
-                        </div>
-                        {b.status === "pending" && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => updateBookingStatus(b.id, "confirmed")}
-                              className="bg-deep-green px-4 py-2 text-xs uppercase tracking-wide text-cream hover:bg-deep-green-light"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => updateBookingStatus(b.id, "cancelled")}
-                              className="border border-cream/20 px-4 py-2 text-xs uppercase tracking-wide text-cream/50 hover:border-red-400 hover:text-red-400"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                <div style={{ border: "1px solid rgba(240,235,224,0.08)", borderRadius: 6, height: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "rgba(240,235,224,0.25)", fontSize: 14, gap: 8 }}>
+                  <Calendar size={24} />
+                  <p style={{ margin: 0 }}>左のカレンダーで日付を選択</p>
                 </div>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-        </div>
-      </Container>
+        {/* ── 予約一覧 ── */}
+        {tab === "bookings" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: 24, color: "#f0ebe0", margin: 0 }}>予約一覧</h2>
+              {pendingCount > 0 && (
+                <span style={{ backgroundColor: "rgba(181,147,106,0.15)", color: "#b5936a", fontSize: 13, padding: "4px 12px", borderRadius: 20 }}>
+                  未確認 {pendingCount}件
+                </span>
+              )}
+            </div>
+
+            {bookings.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 60, color: "rgba(240,235,224,0.3)", fontSize: 14 }}>
+                まだ予約はありません
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {bookings.map((b) => (
+                  <div key={b.id} style={{
+                    border: `1px solid ${b.status === "pending" ? "rgba(181,147,106,0.3)" : "rgba(240,235,224,0.08)"}`,
+                    borderRadius: 6, padding: "16px 20px", backgroundColor: "#2a2a25",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                      <div style={{ flex: 1 }}>
+                        {/* ステータスバッジ */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                          <span style={{ fontSize: 15, fontWeight: 600, color: "#f0ebe0" }}>{b.name}</span>
+                          <span style={{
+                            fontSize: 11, padding: "2px 8px", borderRadius: 10, fontWeight: 500,
+                            backgroundColor: b.status === "confirmed" ? "rgba(61,107,79,0.3)" : b.status === "cancelled" ? "rgba(229,115,115,0.15)" : "rgba(181,147,106,0.15)",
+                            color: b.status === "confirmed" ? "#4caf82" : b.status === "cancelled" ? "#e57373" : "#b5936a",
+                          }}>
+                            {b.status === "confirmed" ? "✓ 確認済み" : b.status === "cancelled" ? "✕ キャンセル" : "⏳ 未確認"}
+                          </span>
+                        </div>
+                        <p style={{ margin: "0 0 10px", fontSize: 13, color: "rgba(240,235,224,0.55)" }}>{b.email}</p>
+
+                        {/* 予約詳細 */}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 20px", fontSize: 13, color: "rgba(240,235,224,0.75)" }}>
+                          {b.available_slots && (
+                            <span>📅 {formatDateDisplay(b.available_slots.date)}　{b.available_slots.time_slot}</span>
+                          )}
+                          <span>🎋 {PLAN_LABELS[b.plan]?.split(" — ")[0]}</span>
+                          <span>👥 {b.guests}名</span>
+                          <span>🪑 {b.seating === "floor" ? "畳" : "椅子"}</span>
+                        </div>
+
+                        {(b.dietary || b.notes) && (
+                          <div style={{ marginTop: 10, padding: "8px 12px", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 4, fontSize: 12, color: "rgba(240,235,224,0.5)" }}>
+                            {b.dietary && <p style={{ margin: 0 }}>食事制限: {b.dietary}</p>}
+                            {b.notes && <p style={{ margin: b.dietary ? "4px 0 0" : 0 }}>備考: {b.notes}</p>}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* アクションボタン */}
+                      {b.status === "pending" && (
+                        <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                          <button
+                            onClick={() => updateBookingStatus(b.id, "confirmed")}
+                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontSize: 13, cursor: "pointer", backgroundColor: "rgba(61,107,79,0.4)", border: "1px solid #3d6b4f", color: "#f0ebe0", borderRadius: 4 }}
+                          >
+                            <Check size={13} /> 確認
+                          </button>
+                          <button
+                            onClick={() => updateBookingStatus(b.id, "cancelled")}
+                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", fontSize: 13, cursor: "pointer", backgroundColor: "transparent", border: "1px solid rgba(229,115,115,0.4)", color: "#e57373", borderRadius: 4 }}
+                          >
+                            <X size={13} /> キャンセル
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Container } from "@/components/ui/Container";
-import { LogIn } from "lucide-react";
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
-  // Already logged in?
   useEffect(() => {
     if (sessionStorage.getItem("admin_auth") === "1") {
       router.replace("/admin/slots");
@@ -19,37 +16,46 @@ export default function AdminLoginPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === "chakai2024") {
+    if (password === "chakai2024") {
       sessionStorage.setItem("admin_auth", "1");
       router.replace("/admin/slots");
     } else {
-      setError("Incorrect password.");
+      setError("パスワードが違います");
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-charcoal px-4">
-      <div className="w-full max-w-sm">
-        <p className="mb-2 text-xs uppercase tracking-[0.25em] text-gold">En Chakai</p>
-        <h1 className="mb-8 font-[family-name:var(--font-heading)] text-3xl font-medium text-cream">
-          Admin
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1e1e1a", padding: 24 }}>
+      <div style={{ width: "100%", maxWidth: 360 }}>
+        <p style={{ margin: "0 0 6px", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#b5936a" }}>
+          円茶会
+        </p>
+        <h1 style={{ margin: "0 0 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 28, fontWeight: 500, color: "#f0ebe0" }}>
+          管理画面
         </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full border border-cream/15 bg-charcoal-light px-4 py-3 text-base text-cream placeholder:text-cream/30 focus:border-gold focus:outline-none"
+            placeholder="パスワード"
             autoFocus
+            style={{
+              padding: "12px 16px", fontSize: 16, backgroundColor: "#2a2a25",
+              border: "1px solid rgba(240,235,224,0.15)", color: "#f0ebe0",
+              outline: "none", borderRadius: 4, width: "100%", boxSizing: "border-box",
+            }}
           />
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p style={{ margin: 0, fontSize: 13, color: "#e57373" }}>{error}</p>}
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 bg-gold py-3.5 text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light"
+            style={{
+              padding: "12px", fontSize: 13, fontWeight: 600, letterSpacing: "0.1em",
+              backgroundColor: "#b5936a", color: "#1e1e1a", border: "none",
+              cursor: "pointer", borderRadius: 4, marginTop: 4,
+            }}
           >
-            <LogIn size={16} />
-            Sign in
+            ログイン
           </button>
         </form>
       </div>
