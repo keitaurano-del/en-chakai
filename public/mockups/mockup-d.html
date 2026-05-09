@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern D — Paper Editorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --paper: #f7f2eb;
+    --ink: #3a3633;
+    --ink-muted: #6e6862;
+    --clay: #b58463;
+    --mist: #d8d2c7;
+    --border: rgba(58, 54, 51, 0.12);
+    --max: 640px;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 400; }
+
+  /* Nav */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    max-width: var(--max);
+    margin: 0 auto;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 17px;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+  }
+  .nav-links a {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-muted);
+    text-decoration: none;
+    margin-left: 22px;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--clay); }
+
+  /* Hero */
+  .hero {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .hero-photo {
+    width: 100%;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+    margin-top: 36px;
+    margin-bottom: 36px;
+    display: block;
+  }
+  .hero-kicker {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 46px;
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .hero-sub {
+    font-size: 15px;
+    color: var(--ink-muted);
+    margin-bottom: 36px;
+    max-width: 460px;
+    line-height: 1.65;
+  }
+  .btn {
+    display: inline-block;
+    padding: 16px 36px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn:hover { background: var(--clay); }
+  .btn-large { padding: 22px 56px; font-size: 13px; }
+
+  /* Sections */
+  section {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 80px 32px;
+  }
+
+  .section-rule {
+    width: 32px;
+    height: 1px;
+    background: var(--clay);
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 18px;
+  }
+
+  h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 32px;
+    max-width: 520px;
+  }
+
+  /* Editor's note */
+  .editor-note p {
+    font-size: 19px;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 540px;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+  }
+
+  /* Timeline */
+  .timeline-list { list-style: none; margin-bottom: 56px; }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-item:first-child { padding-top: 0; }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-time {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--clay);
+    padding-top: 4px;
+  }
+  .timeline-step h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 21px;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+  .timeline-step p {
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+
+  /* Plans */
+  .plans { display: flex; flex-direction: column; gap: 16px; }
+  .plan-card {
+    border: 1px solid var(--border);
+    padding: 28px;
+    background: var(--paper);
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .plan-card:hover { border-color: var(--clay); }
+  .plan-card.recommended { border-color: var(--clay); }
+  .plan-card.recommended::before {
+    content: "MOST CHOSEN";
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    background: var(--paper);
+    padding: 0 10px;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--clay);
+  }
+  .plan-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 23px;
+    margin-bottom: 4px;
+  }
+  .plan-meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 18px;
+  }
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .plan-price-jpy {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px;
+    color: var(--ink);
+  }
+  .plan-price-usd {
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .plan-includes {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+
+  /* Host */
+  .host-block {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .host-photo {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: var(--mist);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-muted);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+  }
+  .host-quote {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 23px;
+    line-height: 1.4;
+    color: var(--ink);
+    font-style: italic;
+    margin-bottom: 18px;
+  }
+  .host-byline {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 24px;
+  }
+  .host-link {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--clay);
+    padding-bottom: 4px;
+  }
+
+  /* Neighborhoods (small) */
+  .neighborhoods-mini {
+    padding: 64px 32px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    max-width: var(--max);
+    margin: 0 auto;
+  }
+  .neighborhoods-mini p {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 20px;
+    max-width: 520px;
+    font-style: italic;
+  }
+  .neighborhoods-mini .place-list {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Practical */
+  .practical-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .practical-item h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 10px;
+  }
+  .practical-item p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  .practical-item p .muted { color: var(--ink-muted); }
+
+  /* Reserve CTA */
+  .reserve-cta {
+    text-align: center;
+    padding: 100px 32px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .reserve-cta-inner { max-width: var(--max); margin: 0 auto; }
+  .reserve-cta .section-rule { background: var(--clay); margin: 0 auto 32px; }
+  .reserve-cta h2 {
+    color: var(--paper);
+    margin: 0 auto 24px;
+    font-size: 38px;
+  }
+  .reserve-cta p {
+    font-size: 15px;
+    color: rgba(247, 242, 235, 0.7);
+    margin-bottom: 40px;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .reserve-cta .btn {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .reserve-cta .btn:hover { background: var(--clay); color: var(--paper); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 40px 32px;
+    border-top: 1px solid var(--border);
+    max-width: var(--max);
+    margin: 0 auto;
+  }
+  footer p {
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Back link */
+  .back {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 11px;
+    padding: 8px 14px;
+    text-decoration: none;
+    z-index: 100;
+    letter-spacing: 0.15em;
+  }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back">← BACK</a>
+
+<nav>
+  <div class="logo">EN CHAKAI 円茶会</div>
+  <div class="nav-links">
+    <a href="#experience">Experience</a>
+    <a href="#neighborhoods">Neighborhoods</a>
+    <a href="#faq">FAQ</a>
+    <a href="#reserve">Reserve</a>
+  </div>
+</nav>
+
+<!-- HERO: single photo + headline + sub + reserve CTA -->
+<div class="hero">
+  <img src="images/room2.jpg" alt="Tea room with shoji light" class="hero-photo">
+  <div class="hero-kicker">Sengoku · Bunkyō · Tokyo</div>
+  <h1 class="serif">Tea, in the side of Tokyo<br>most travelers never see.</h1>
+  <p class="hero-sub">A 60-minute tea ceremony for up to four guests, hosted in English in a quiet corner of Bunkyō. ¥10,000 (≈ $70).</p>
+  <a href="#reserve" class="btn btn-large">Reserve a seat</a>
+</div>
+
+<!-- EDITOR'S NOTE -->
+<section class="editor-note">
+  <div class="section-rule"></div>
+  <div class="section-label">Editor's Note</div>
+  <p>"Most tea ceremonies for travelers happen in Asakusa or Kyoto, scheduled in 30-minute slots between costume rentals. We host one party at a time in a residential lane near Sengoku Station — a neighborhood Tokyoites consider quietly elegant and visitors rarely find."</p>
+</section>
+
+<!-- THE TEA CEREMONY -->
+<section id="experience">
+  <div class="section-rule"></div>
+  <div class="section-label">The Tea Ceremony</div>
+  <h2 class="serif">Sixty minutes, hosted in English.</h2>
+
+  <ul class="timeline-list">
+    <li class="timeline-item">
+      <div class="timeline-time">0:00</div>
+      <div class="timeline-step">
+        <h3>Welcome</h3>
+        <p>Remove shoes, settle into the tea room. Chair seating available; no seiza required.</p>
+      </div>
+    </li>
+    <li class="timeline-item">
+      <div class="timeline-time">0:10</div>
+      <div class="timeline-step">
+        <h3>Wagashi &amp; first bowl</h3>
+        <p>Seasonal wagashi sweets followed by the host's preparation of usucha — thin matcha — in the traditional manner.</p>
+      </div>
+    </li>
+    <li class="timeline-item">
+      <div class="timeline-time">0:30</div>
+      <div class="timeline-step">
+        <h3>Tasting &amp; explanation</h3>
+        <p>The host walks through the utensils, the season's hanging scroll, and the chabana arrangement.</p>
+      </div>
+    </li>
+    <li class="timeline-item">
+      <div class="timeline-time">0:45</div>
+      <div class="timeline-step">
+        <h3>Whisk your own</h3>
+        <p>You make a bowl yourself, with guidance. No prior experience expected.</p>
+      </div>
+    </li>
+    <li class="timeline-item">
+      <div class="timeline-time">0:55</div>
+      <div class="timeline-step">
+        <h3>Q&amp;A and farewell</h3>
+        <p>Open conversation. Ask anything.</p>
+      </div>
+    </li>
+  </ul>
+
+  <div class="plans">
+    <div class="plan-card">
+      <div class="plan-name serif">The Encounter</div>
+      <div class="plan-meta">45 minutes · up to 6 guests · shared</div>
+      <div class="plan-price">
+        <span class="plan-price-jpy">¥7,000</span>
+        <span class="plan-price-usd">≈ $50 USD</span>
+      </div>
+      <div class="plan-includes">Welcome usucha · one seasonal wagashi · brief explanation.</div>
+    </div>
+    <div class="plan-card recommended">
+      <div class="plan-name serif">The Conversation</div>
+      <div class="plan-meta">60 minutes · up to 4 guests · shared</div>
+      <div class="plan-price">
+        <span class="plan-price-jpy">¥10,000</span>
+        <span class="plan-price-usd">≈ $70 USD</span>
+      </div>
+      <div class="plan-includes">Usucha and koicha tasting · two wagashi · utensil appreciation · Q&amp;A with the host.</div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name serif">The Quiet Hour</div>
+      <div class="plan-meta">75 minutes · up to 2 guests · semi-private</div>
+      <div class="plan-price">
+        <span class="plan-price-jpy">¥12,000</span>
+        <span class="plan-price-usd">≈ $80 USD</span>
+      </div>
+      <div class="plan-includes">Everything in The Conversation · your party only · unhurried pace.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOST'S VOICE -->
+<section>
+  <div class="section-rule"></div>
+  <div class="section-label">Host's Voice</div>
+  <div class="host-block">
+    <div class="host-photo">[ Host portrait ]</div>
+    <div>
+      <p class="host-quote">"I host here because Bunkyō is where I learned that tea is, before anything else, a way of paying attention to the moment we're in."</p>
+      <p class="host-byline">Yamamoto · Urasenke 25 years</p>
+      <a href="#host" class="host-link">Read more about the host →</a>
+    </div>
+  </div>
+</section>
+
+<!-- NEIGHBORHOODS (small block at end) -->
+<div class="neighborhoods-mini" id="neighborhoods">
+  <div class="section-label">And the neighborhood…</div>
+  <p>"Five small worlds within walking distance — perfect for the half-day around your reservation."</p>
+  <div class="place-list">Sengoku · Hakusan · Sugamo · Gokokuji · Zōshigaya</div>
+  <a href="#" class="host-link">Read the guide →</a>
+</div>
+
+<!-- PRACTICAL INFO (one consolidated block) -->
+<section id="faq">
+  <div class="section-rule"></div>
+  <div class="section-label">Practical</div>
+  <h2 class="serif">Everything you'll want to know.</h2>
+
+  <div class="practical-grid">
+    <div class="practical-item">
+      <h3>Where</h3>
+      <p>A traditional tea room in Sengoku, Bunkyō-ku.<br><span class="muted">5-minute walk from Sengoku Station, Toei Mita Line, Exit A4.</span></p>
+    </div>
+    <div class="practical-item">
+      <h3>When</h3>
+      <p>Sessions at 10:00, 14:00, and 16:00.<br><span class="muted">Closed Mondays and Tuesdays. Outside hours by request.</span></p>
+    </div>
+    <div class="practical-item">
+      <h3>Reservation</h3>
+      <p>Submit a request via Google Form. We confirm by hand within 24 hours and send a Stripe payment link to complete the booking.<br><span class="muted">Visa, Mastercard, Amex, JCB.</span></p>
+    </div>
+    <div class="practical-item">
+      <h3>Cancellation</h3>
+      <p>Full refund 7+ days in advance.<br><span class="muted">50% refund 3-6 days before. No refund within 48 hours.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- BIG RESERVE CTA -->
+<div class="reserve-cta" id="reserve">
+  <div class="reserve-cta-inner">
+    <div class="section-rule"></div>
+    <h2 class="serif">Reserve a seat.</h2>
+    <p>Confirmed by hand within 24 hours. We write back with availability and a Stripe payment link.</p>
+    <a href="#" class="btn btn-large">Open reservation form ↗</a>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 En Chakai 円茶会 · hello@en-chakai.com</p>
+</footer>
+
+</body>
+</html>
