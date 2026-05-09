@@ -1,14 +1,25 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-charcoal: #1e1e1a;
-  --color-charcoal-light: #2a2a25;
+  /* mockup-d カラーシステム */
+  --color-paper: #f7f2eb;
+  --color-paper-dark: #ede8e0;
+  --color-ink: #3a3633;
+  --color-ink-muted: #6e6862;
+  --color-clay: #b58463;
+  --color-clay-light: #c4977a;
+  --color-mist: #d8d2c7;
+  --color-border: rgba(58, 54, 51, 0.12);
+
+  /* 後方互換エイリアス（admin画面など） */
+  --color-charcoal: #3a3633;
+  --color-charcoal-light: #4a4643;
   --color-deep-green: #3d6b4f;
   --color-deep-green-light: #4a7c5c;
-  --color-gold: #b5936a;
-  --color-gold-light: #c4a47c;
-  --color-cream: #f0ebe0;
-  --color-cream-dark: #e2dace;
+  --color-gold: #b58463;
+  --color-gold-light: #c4977a;
+  --color-cream: #f7f2eb;
+  --color-cream-dark: #ede8e0;
   --color-stone: #8a8275;
 
   --font-heading: "Cormorant Garamond", serif;
@@ -23,65 +34,43 @@ html {
 }
 
 body {
-  background-color: var(--color-charcoal);
-  color: var(--color-cream);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   font-family: var(--font-body);
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
-  /* iOS notch / Android gesture bar support */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
-/* Prevent iOS auto-zoom on form focus (font-size < 16px triggers zoom) */
 @media (max-width: 767px) {
-  input,
-  select,
-  textarea {
-    font-size: 16px;
-  }
+  input, select, textarea { font-size: 16px; }
 }
 
-/* Ensure embedded iframes scale on small screens */
-iframe {
-  max-width: 100%;
-}
+iframe { max-width: 100%; }
 
 ::selection {
-  background-color: var(--color-gold);
-  color: var(--color-charcoal);
+  background-color: var(--color-clay);
+  color: var(--color-paper);
 }
 
-/* Mobile viewport height fix */
 @supports (height: 100dvh) {
-  .min-h-screen-dynamic {
-    min-height: 100dvh;
-  }
+  .min-h-screen-dynamic { min-height: 100dvh; }
 }
 
-/* Smooth horizontal scroll for carousels */
 .scroll-snap-x {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
-.scroll-snap-x::-webkit-scrollbar {
-  display: none;
-}
-.scroll-snap-item {
-  scroll-snap-align: start;
-}
+.scroll-snap-x::-webkit-scrollbar { display: none; }
+.scroll-snap-item { scroll-snap-align: start; }
 
-/* Touch-friendly tap targets */
 @media (pointer: coarse) {
-  a, button, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
+  a, button, [role="button"] { min-height: 44px; min-width: 44px; }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -90,19 +79,9 @@ iframe {
   }
 }
 
-/* Scrollbar (desktop only) */
 @media (pointer: fine) {
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: var(--color-charcoal);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-deep-green);
-    border-radius: 3px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gold);
-  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--color-paper-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--color-mist); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-clay); }
 }

@@ -22,7 +22,6 @@ export function Header() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  // 茶道関連のページだけ前面に出す
   const navItems: { href: "/experience" | "/faq"; label: string }[] = [
     { href: "/experience", label: t("experience") },
     { href: "/faq", label: t("faq") },
@@ -32,45 +31,43 @@ export function Header() {
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? "bg-charcoal/95 backdrop-blur-md shadow-lg shadow-black/10 border-b border-cream/5"
-          : "bg-charcoal/60 backdrop-blur-sm"
+          ? "bg-paper/95 backdrop-blur-md shadow-sm border-b border-border"
+          : "bg-paper/80 backdrop-blur-sm border-b border-border"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-8">
         <Link
           href="/"
-          className="font-[family-name:var(--font-heading)] text-lg font-medium tracking-wide text-cream transition-colors hover:text-gold sm:text-xl"
+          className="font-[family-name:var(--font-heading)] text-[17px] tracking-[0.2em] text-ink transition-colors hover:text-clay"
         >
-          円茶会
+          EN CHAKAI 円茶会
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm tracking-wide text-cream/70 transition-colors hover:text-gold"
+              className="text-[11px] uppercase tracking-[0.18em] text-ink-muted transition-colors hover:text-clay"
             >
               {item.label}
             </Link>
           ))}
           <Link
             href="/booking"
-            className="bg-gold px-5 py-2 text-sm font-medium text-charcoal transition-colors hover:bg-gold-light"
+            className="bg-ink px-5 py-2 text-[11px] uppercase tracking-[0.18em] text-paper transition-colors hover:bg-clay"
           >
             {t("booking")}
           </Link>
         </nav>
 
-        <div className="flex items-center md:hidden">
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-10 w-10 items-center justify-center text-cream"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex h-10 w-10 items-center justify-center text-ink md:hidden"
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
 
       <AnimatePresence>
@@ -80,15 +77,15 @@ export function Header() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-cream/5 bg-charcoal/98 backdrop-blur-md md:hidden"
+            className="overflow-hidden border-t border-border bg-paper/98 backdrop-blur-md md:hidden"
           >
-            <div className="flex flex-col px-4 py-3">
+            <div className="flex flex-col px-8 py-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className="border-b border-cream/5 py-3.5 text-base tracking-wide text-cream/75 transition-colors hover:text-gold"
+                  className="border-b border-border py-4 text-[11px] uppercase tracking-[0.18em] text-ink-muted transition-colors hover:text-clay"
                 >
                   {item.label}
                 </Link>
@@ -96,7 +93,7 @@ export function Header() {
               <Link
                 href="/booking"
                 onClick={() => setMobileOpen(false)}
-                className="mt-4 bg-gold px-5 py-3.5 text-center text-sm font-medium uppercase tracking-[0.15em] text-charcoal transition-colors hover:bg-gold-light"
+                className="mt-4 bg-ink px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.18em] text-paper transition-colors hover:bg-clay"
               >
                 {t("booking")}
               </Link>

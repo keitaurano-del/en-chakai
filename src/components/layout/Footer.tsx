@@ -7,78 +7,64 @@ export function Footer() {
   const nav = useTranslations("nav");
 
   return (
-    <footer className="border-t border-cream/10 bg-charcoal">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="grid gap-10 sm:gap-12 md:grid-cols-4">
-          {/* ブランド */}
-          <div className="md:col-span-2">
-            <p className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream">
-              円茶会
+    <footer className="border-t border-border bg-paper">
+      <div className="mx-auto max-w-[640px] px-8 py-12 sm:py-16">
+        <div className="grid gap-10 sm:grid-cols-3">
+          <div className="sm:col-span-1">
+            <p className="font-[family-name:var(--font-heading)] text-[17px] tracking-[0.2em] text-ink">
+              EN CHAKAI 円茶会
             </p>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-cream/55">
+            <p className="mt-3 text-[13px] leading-relaxed text-ink-muted">
               {t("tagline")}
             </p>
           </div>
 
-          {/* 茶道関連ページ */}
           <div>
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-gold">
+            <h3 className="mb-4 text-[11px] uppercase tracking-[0.2em] text-clay">
               {t("links")}
             </h3>
             <ul className="space-y-2.5">
               <li>
-                <Link href="/experience" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/experience" className="text-[13px] text-ink-muted transition-colors hover:text-clay">
                   {nav("experience")}
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/faq" className="text-[13px] text-ink-muted transition-colors hover:text-clay">
                   {nav("faq")}
                 </Link>
               </li>
               <li>
-                <Link href="/booking" className="text-sm text-cream/65 transition-colors hover:text-gold">
+                <Link href="/booking" className="text-[13px] text-ink-muted transition-colors hover:text-clay">
                   {nav("booking")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/neighborhoods" className="text-[13px] text-ink-muted transition-colors hover:text-clay">
+                  {nav("neighborhoods")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/itineraries" className="text-[13px] text-ink-muted transition-colors hover:text-clay">
+                  {nav("itineraries")}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* 周辺情報 + 連絡先 */}
           <div>
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-[0.2em] text-gold">
-              {t("explore")}
-            </h3>
-            <ul className="space-y-2.5">
-              <li>
-                <Link href="/neighborhoods" className="text-sm text-cream/65 transition-colors hover:text-gold">
-                  {nav("neighborhoods")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/itineraries" className="text-sm text-cream/65 transition-colors hover:text-gold">
-                  {nav("itineraries")}
-                </Link>
-              </li>
-            </ul>
-
-            <h3 className="mb-4 mt-8 text-xs font-medium uppercase tracking-[0.2em] text-gold">
+            <h3 className="mb-4 text-[11px] uppercase tracking-[0.2em] text-clay">
               {t("contact")}
             </h3>
-            <ul className="space-y-2.5 text-sm text-cream/65">
+            <ul className="space-y-2.5 text-[13px] text-ink-muted">
               <li>
-                <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-gold">
+                <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-clay">
                   {CONTACT.email}
                 </a>
               </li>
               <li>{CONTACT.address}</li>
               <li>
-                <a
-                  href={TRIPADVISOR_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition-colors hover:text-gold"
-                >
+                <a href={TRIPADVISOR_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-clay">
                   {t("tripadvisor")}
                 </a>
               </li>
@@ -86,7 +72,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-cream/10 pt-6 text-center text-xs text-cream/35 sm:mt-16">
+        <div className="mt-12 border-t border-border pt-6 text-center text-[12px] text-ink-muted">
           © {new Date().getFullYear()} 円茶会 En Chakai. {t("rights")}
         </div>
       </div>
