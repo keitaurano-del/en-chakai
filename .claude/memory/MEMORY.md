@@ -8,3 +8,4 @@
 - [アシスタント名は凜（りん）](feedback_assistant_name.md) — メインセッションの名前は「凜」。Keita と直接対話する相棒ポジション、subagent とは別レイヤー
 - [Logic サムネは手書き+図解](feedback_logic_course_thumbnails.md) — コースサムネイルは手書きフォント+図解スタイルで統一。ダーク背景シーン構成は方針外
 - [designer subagent 新設](project_designer_subagent.md) — ビジュアルデザイン専門 subagent を ~/.claude/projects-meta/agents/designer.md に追加（2026-05-10）
+- [subagent 整理](project_agent_cleanup_20260511.md) — pm / dev-chakai を削除して 5体構成（ceo, secretary, dev-logic, marketing, designer）に整理（2026-05-11）
