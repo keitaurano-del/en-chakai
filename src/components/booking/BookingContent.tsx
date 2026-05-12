@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase, type Slot } from "@/lib/supabase";
 import {
   CLOSED_DAYS,
   TIME_SLOT_LABELS,
-  PLAN_LABELS,
-  PLAN_MAX_GUESTS,
   formatDateDisplay,
   type TimeSlot,
 } from "@/lib/booking";
@@ -15,8 +13,6 @@ import { Container } from "@/components/ui/Container";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { Link } from "@/i18n/navigation";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
-
-type Step = "date" | "details" | "done";
 
 const DEFAULT_PLAN = PLANS[0];
 
@@ -27,7 +23,6 @@ type FormState = {
   guests: number;
   name: string;
   email: string;
-  seating: "floor" | "chair" | "";
   dietary: string;
   notes: string;
 };
@@ -39,13 +34,12 @@ const EMPTY_FORM: FormState = {
   guests: 1,
   name: "",
   email: "",
-  seating: "",
   dietary: "",
   notes: "",
 };
 
 export function BookingContent() {
-  const [step, setStep] = useState<Step>("date");
+  const [done, setDone] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -54,6 +48,8 @@ export function BookingContent() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const timesRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
 
   // Load open slots for the visible month range
   useEffect(() => {
@@ -74,7 +70,23 @@ export function BookingContent() {
       });
   }, [calendarMonth]);
 
-  // Calendar helpers
+  // Auto-scroll when steps advance
+  useEffect(() => {
+    if (form.date && !form.time_slot && timesRef.current) {
+      setTimeout(() => {
+        timesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [form.date, form.time_slot]);
+
+  useEffect(() => {
+    if (form.time_slot && detailsRef.current) {
+      setTimeout(() => {
+        detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    }
+  }, [form.time_slot]);
+
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -100,9 +112,6 @@ export function BookingContent() {
 
   const selectedDateSlots = form.date ? openSlotsForDate(form.date) : [];
 
-  // Filtered guest options by plan
-  const maxGuests = form.plan ? PLAN_MAX_GUESTS[form.plan] ?? 6 : 6;
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -120,7 +129,7 @@ export function BookingContent() {
         throw new Error(data.error || "Something went wrong");
       }
 
-      setStep("done");
+      setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -129,7 +138,7 @@ export function BookingContent() {
   }
 
   // ── DONE ────────────────────────────────────────────────────────────────────
-  if (step === "done") {
+  if (done) {
     return (
       <div className="bg-paper pt-20 sm:pt-24">
         <section className="py-24 sm:py-32">
@@ -143,15 +152,21 @@ export function BookingContent() {
                   Request received.
                 </h1>
                 <p className="mt-6 text-lg leading-relaxed text-ink/75">
-                  We'll confirm your reservation at{" "}
-                  <span className="text-ink">{form.email}</span> within 24
-                  hours. If your date is unavailable, we'll suggest the nearest
-                  alternative.
+                  We&apos;ve sent an acknowledgement to{" "}
+                  <span className="text-ink">{form.email}</span>. You&apos;ll
+                  receive a confirmation email with your payment link shortly.
                 </p>
                 <div className="mt-10 border-t border-border pt-8 text-sm text-ink-muted">
-                  <p>{formatDateDisplay(form.date)} at {form.time_slot}</p>
-                  <p className="mt-1">{PLAN_LABELS[form.plan]}</p>
-                  <p className="mt-1">{form.guests} guest{form.guests > 1 ? "s" : ""} · {form.seating === "floor" ? "Floor (tatami)" : "Chair"}</p>
+                  <p>
+                    {formatDateDisplay(form.date)} at {form.time_slot}
+                  </p>
+                  <p className="mt-1">
+                    {DEFAULT_PLAN.name} · ${DEFAULT_PLAN.priceUsd} (¥
+                    {DEFAULT_PLAN.priceJpy.toLocaleString()}) per person
+                  </p>
+                  <p className="mt-1">
+                    {form.guests} guest{form.guests > 1 ? "s" : ""}
+                  </p>
                 </div>
                 <Link
                   href="/"
@@ -167,305 +182,274 @@ export function BookingContent() {
     );
   }
 
-  // ── STEP 1: Date + Time ──────────────────────────────────────────────────────
-  const stepDate = (
+  // ── SINGLE-PAGE FORM ────────────────────────────────────────────────────────
+  return (
     <div className="bg-paper pt-20 sm:pt-24">
       <section className="py-16 sm:py-24">
         <Container>
-          <FadeIn>
-            <div className="mx-auto max-w-3xl">
+          <div className="mx-auto max-w-3xl">
+            {/* Header + Plan summary */}
+            <FadeIn>
               <p className="mb-3 text-xs uppercase tracking-[0.25em] text-clay sm:text-sm">
                 Reserve
               </p>
               <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium leading-[1.1] text-ink sm:text-5xl md:text-6xl">
-                Choose a date.
+                Reserve your seat.
               </h1>
               <p className="mt-4 text-base text-ink-muted">
-                We're open Tuesday through Saturday. Select any highlighted day.
+                One party at a time. Open Tuesday through Saturday.
               </p>
 
-              {/* Calendar */}
-              <div className="mt-10 border border-border bg-paper-dark p-4 sm:p-7">
-                {/* Month nav */}
-                <div className="mb-5 flex items-center justify-between">
-                  <button
-                    onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
-                    disabled={new Date(year, month, 1) <= today}
-                    className="flex h-9 w-9 items-center justify-center text-ink-muted transition-colors hover:text-clay disabled:opacity-30"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <span className="font-[family-name:var(--font-heading)] text-lg font-medium text-ink">
-                    {calendarMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                  </span>
-                  <button
-                    onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
-                    className="flex h-9 w-9 items-center justify-center text-ink-muted transition-colors hover:text-clay"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-
-                {/* Day headers */}
-                <div className="mb-2 grid grid-cols-7 text-center">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                    <div key={d} className="py-1 text-xs tracking-wide text-ink/35">
-                      {d}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Days */}
-                <div className="grid grid-cols-7">
-                  {Array.from({ length: firstDay }).map((_, i) => (
-                    <div key={`empty-${i}`} />
-                  ))}
-                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
-                    const dateStr = padDay(d);
-                    const available = isDayAvailable(d);
-                    const selected = form.date === dateStr;
-                    const date = new Date(dateStr + "T00:00:00");
-                    const closed = CLOSED_DAYS.includes(date.getDay()) || date < today;
-
-                    return (
-                      <button
-                        key={d}
-                        disabled={!available}
-                        onClick={() => setForm((f) => ({ ...f, date: dateStr, time_slot: "" }))}
-                        className={`
-                          aspect-square flex items-center justify-center text-sm transition-colors
-                          ${selected ? "bg-ink text-paper font-medium" : ""}
-                          ${!selected && available ? "text-ink hover:bg-clay/40 hover:text-clay cursor-pointer" : ""}
-                          ${closed || !available ? "text-ink/20 cursor-default" : ""}
-                        `}
-                      >
-                        {d}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Time slots */}
-              {form.date && (
-                <FadeIn>
-                  <div className="mt-8">
-                    <p className="mb-4 text-sm uppercase tracking-[0.15em] text-clay">
-                      {formatDateDisplay(form.date)}
-                    </p>
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      {selectedDateSlots.map((slot) => (
-                        <button
-                          key={slot.time_slot}
-                          onClick={() => setForm((f) => ({ ...f, time_slot: slot.time_slot as TimeSlot }))}
-                          className={`border py-4 text-center text-sm transition-colors ${
-                            form.time_slot === slot.time_slot
-                              ? "border-clay bg-clay/20 text-ink"
-                              : "border-border text-ink/70 hover:border-clay hover:text-ink"
-                          }`}
-                        >
-                          {TIME_SLOT_LABELS[slot.time_slot as TimeSlot]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </FadeIn>
-              )}
-
-              {/* Next */}
-              <div className="mt-10">
-                <button
-                  disabled={!form.date || !form.time_slot}
-                  onClick={() => setStep("details")}
-                  className="bg-ink px-9 py-4 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-clay disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Continue →
-                </button>
-              </div>
-            </div>
-          </FadeIn>
-        </Container>
-      </section>
-    </div>
-  );
-
-  // ── STEP 2: Details form ─────────────────────────────────────────────────────
-  const stepDetails = (
-    <div className="bg-paper pt-20 sm:pt-24">
-      <section className="py-16 sm:py-24">
-        <Container>
-          <FadeIn>
-            <div className="mx-auto max-w-2xl">
-              <button
-                onClick={() => setStep("date")}
-                className="mb-8 flex items-center gap-2 text-sm text-ink-muted transition-colors hover:text-clay"
-              >
-                <ChevronLeft size={14} /> Change date
-              </button>
-
-              <div className="mb-8 border border-clay/30 bg-clay/10 px-5 py-4">
-                <p className="text-sm text-ink/70">
-                  {formatDateDisplay(form.date)} at{" "}
-                  <span className="text-ink">{form.time_slot}</span>
-                </p>
-              </div>
-
-              <h1 className="font-[family-name:var(--font-heading)] text-4xl font-medium text-ink sm:text-5xl">
-                Your details.
-              </h1>
-
-              <form onSubmit={handleSubmit} className="mt-10 space-y-7">
-                {/* Plan summary (single plan) */}
-                <div>
-                  <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Experience
-                  </label>
-                  <div className="border border-clay/40 bg-clay/10 p-4">
-                    <p className="text-sm font-medium text-ink">
+              <div className="mt-10 border border-clay/40 bg-clay/10 px-6 py-5 sm:px-7 sm:py-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-clay">
                       {DEFAULT_PLAN.name}
                     </p>
-                    <p className="mt-0.5 text-xs text-ink-muted">
-                      ${DEFAULT_PLAN.priceUsd} (¥{DEFAULT_PLAN.priceJpy.toLocaleString()}) · {DEFAULT_PLAN.durationMin} min · up to {DEFAULT_PLAN.maxGuests} guests
+                    <p className="mt-1 text-sm text-ink-muted">
+                      {DEFAULT_PLAN.durationMin} min · up to 6 guests · hosted in English
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-[family-name:var(--font-heading)] text-3xl text-ink sm:text-4xl">
+                      ${DEFAULT_PLAN.priceUsd}
+                      <span className="ml-1 text-sm font-normal text-ink-muted">
+                        per person
+                      </span>
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      ¥{DEFAULT_PLAN.priceJpy.toLocaleString()} JPY
                     </p>
                   </div>
                 </div>
+              </div>
+            </FadeIn>
 
-                {/* Guests */}
-                <div>
-                  <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Number of guests *
-                  </label>
-                  <div className="flex gap-2">
-                    {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
+            {/* 1. Date */}
+            <FadeIn delay={0.05}>
+              <div className="mt-12">
+                <p className="mb-4 text-xs uppercase tracking-[0.2em] text-clay">
+                  1. Choose a date
+                </p>
+                <div className="border border-border bg-paper-dark p-4 sm:p-7">
+                  <div className="mb-5 flex items-center justify-between">
+                    <button
+                      onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                      disabled={new Date(year, month, 1) <= today}
+                      className="flex h-9 w-9 items-center justify-center text-ink-muted transition-colors hover:text-clay disabled:opacity-30"
+                      aria-label="Previous month"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <span className="font-[family-name:var(--font-heading)] text-lg font-medium text-ink">
+                      {calendarMonth.toLocaleDateString("en-US", {
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <button
+                      onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                      className="flex h-9 w-9 items-center justify-center text-ink-muted transition-colors hover:text-clay"
+                      aria-label="Next month"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+
+                  <div className="mb-2 grid grid-cols-7 text-center">
+                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                      <div key={d} className="py-1 text-xs tracking-wide text-ink/35">
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7">
+                    {Array.from({ length: firstDay }).map((_, i) => (
+                      <div key={`empty-${i}`} />
+                    ))}
+                    {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
+                      const dateStr = padDay(d);
+                      const available = isDayAvailable(d);
+                      const selected = form.date === dateStr;
+                      const date = new Date(dateStr + "T00:00:00");
+                      const closed = CLOSED_DAYS.includes(date.getDay()) || date < today;
+
+                      return (
+                        <button
+                          key={d}
+                          disabled={!available}
+                          onClick={() =>
+                            setForm((f) => ({ ...f, date: dateStr, time_slot: "" }))
+                          }
+                          className={`
+                            aspect-square flex items-center justify-center text-sm transition-colors
+                            ${selected ? "bg-ink text-paper font-medium" : ""}
+                            ${!selected && available ? "text-ink hover:bg-clay/40 hover:text-clay cursor-pointer" : ""}
+                            ${closed || !available ? "text-ink/20 cursor-default" : ""}
+                          `}
+                        >
+                          {d}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* 2. Time */}
+            {form.date && (
+              <FadeIn>
+                <div ref={timesRef} className="mt-10 scroll-mt-24">
+                  <p className="mb-4 text-xs uppercase tracking-[0.2em] text-clay">
+                    2. Choose a time
+                  </p>
+                  <p className="mb-3 text-sm text-ink-muted">
+                    {formatDateDisplay(form.date)}
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {selectedDateSlots.map((slot) => (
                       <button
-                        type="button"
-                        key={n}
-                        onClick={() => setForm((f) => ({ ...f, guests: n }))}
-                        className={`h-10 w-10 border text-sm transition-colors ${
-                          form.guests === n
-                            ? "border-clay bg-ink text-paper"
+                        key={slot.time_slot}
+                        onClick={() =>
+                          setForm((f) => ({
+                            ...f,
+                            time_slot: slot.time_slot as TimeSlot,
+                          }))
+                        }
+                        className={`border py-4 text-center text-sm transition-colors ${
+                          form.time_slot === slot.time_slot
+                            ? "border-clay bg-clay/20 text-ink"
                             : "border-border text-ink/70 hover:border-clay hover:text-ink"
                         }`}
                       >
-                        {n}
+                        {TIME_SLOT_LABELS[slot.time_slot as TimeSlot]}
                       </button>
                     ))}
                   </div>
                 </div>
+              </FadeIn>
+            )}
 
-                {/* Name */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Your name *
-                  </label>
-                  <input
-                    required
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
-                    placeholder="Full name"
-                  />
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Email address *
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
-                    placeholder="you@example.com"
-                  />
-                </div>
-
-                {/* Seating */}
-                <div>
-                  <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Seating preference *
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(["floor", "chair"] as const).map((s) => (
-                      <button
-                        type="button"
-                        key={s}
-                        onClick={() => setForm((f) => ({ ...f, seating: s }))}
-                        className={`border py-3.5 text-center text-sm transition-colors ${
-                          form.seating === s
-                            ? "border-clay bg-clay/15 text-ink"
-                            : "border-border text-ink-muted hover:border-cream/30"
-                        }`}
+            {/* 3. Details */}
+            {form.date && form.time_slot && (
+              <FadeIn>
+                <div ref={detailsRef} className="mt-10 scroll-mt-24">
+                  <p className="mb-4 text-xs uppercase tracking-[0.2em] text-clay">
+                    3. Your details
+                  </p>
+                  <form onSubmit={handleSubmit} className="space-y-7">
+                    {/* Guests dropdown */}
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
+                        Number of guests *
+                      </label>
+                      <select
+                        value={form.guests}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, guests: Number(e.target.value) }))
+                        }
+                        className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink focus:border-clay focus:outline-none"
                       >
-                        {s === "floor" ? "Floor (tatami)" : "Chair"}
-                      </button>
-                    ))}
-                  </div>
+                        {[1, 2, 3, 4, 5, 6].map((n) => (
+                          <option key={n} value={n}>
+                            {n} {n === 1 ? "guest" : "guests"}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-2 text-xs text-ink-muted">
+                        Total: ${DEFAULT_PLAN.priceUsd * form.guests} (¥
+                        {(DEFAULT_PLAN.priceJpy * form.guests).toLocaleString()})
+                      </p>
+                    </div>
+
+                    {/* Name */}
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
+                        Your name *
+                      </label>
+                      <input
+                        required
+                        value={form.name}
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                        className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
+                        placeholder="Full name"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
+                        Email address *
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                        className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+
+                    {/* Dietary */}
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
+                        Dietary restrictions / allergies
+                        <span className="ml-2 normal-case tracking-normal text-ink-muted">
+                          — optional
+                        </span>
+                      </label>
+                      <input
+                        value={form.dietary}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, dietary: e.target.value }))
+                        }
+                        className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
+                        placeholder="e.g. nut allergy, vegetarian"
+                      />
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
+                        Anything else we should know
+                        <span className="ml-2 normal-case tracking-normal text-ink-muted">
+                          — optional
+                        </span>
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={form.notes}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, notes: e.target.value }))
+                        }
+                        className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
+                        placeholder="Accessibility needs, questions, etc."
+                      />
+                    </div>
+
+                    {error && <p className="text-sm text-red-400">{error}</p>}
+
+                    <button
+                      type="submit"
+                      disabled={submitting || !form.name || !form.email}
+                      className="w-full bg-ink py-4 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-clay disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? "Sending…" : "Send reservation request"}
+                    </button>
+
+                    <p className="text-center text-xs text-ink-muted">
+                      No charge until we send a payment link.
+                    </p>
+                  </form>
                 </div>
-
-                {/* Dietary */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Dietary restrictions / allergies
-                    <span className="ml-2 normal-case tracking-normal text-ink-muted">
-                      — optional
-                    </span>
-                  </label>
-                  <input
-                    value={form.dietary}
-                    onChange={(e) => setForm((f) => ({ ...f, dietary: e.target.value }))}
-                    className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
-                    placeholder="e.g. nut allergy, vegetarian"
-                  />
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Anything else we should know
-                    <span className="ml-2 normal-case tracking-normal text-ink-muted">
-                      — optional
-                    </span>
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={form.notes}
-                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                    className="w-full border border-border bg-paper-dark px-4 py-3 text-base text-ink placeholder:text-ink/30 focus:border-clay focus:outline-none"
-                    placeholder="Accessibility needs, questions, etc."
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-sm text-red-400">{error}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={
-                    submitting ||
-                    !form.plan ||
-                    !form.name ||
-                    !form.email ||
-                    !form.seating
-                  }
-                  className="w-full bg-ink py-4 text-sm font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-clay disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {submitting ? "Sending…" : "Send reservation request"}
-                </button>
-
-                <p className="text-center text-xs text-ink-muted">
-                  We confirm by hand within 24 hours. No charge until we send a payment link.
-                </p>
-              </form>
-            </div>
-          </FadeIn>
+              </FadeIn>
+            )}
+          </div>
         </Container>
       </section>
     </div>
   );
-
-  return step === "date" ? stepDate : stepDetails;
 }

@@ -68,48 +68,6 @@ export const NEIGHBORHOODS = [
 
 export type NeighborhoodSlug = (typeof NEIGHBORHOODS)[number]["slug"];
 
-export const ITINERARIES = [
-  {
-    id: "half-day",
-    name: "The Half-Day",
-    durationLabel: "3–4 hours",
-    summary:
-      "Sugamo's Jizō-dōri at noon, tea ceremony at two, Hakusan Shrine before dusk. The shortest route that still feels like a real day.",
-    stops: [
-      "Sugamo Jizō-dōri (lunch + Togenuki Jizō)",
-      "Tea ceremony at our room in Sengoku",
-      "Hakusan Shrine, walking back to Hakusan station",
-    ],
-  },
-  {
-    id: "literary-walk",
-    name: "The Literary Walk",
-    durationLabel: "5–6 hours",
-    summary:
-      "For readers. Trace Sōseki and Lafcadio Hearn through Zoshigaya, then Kishimojin, Gokokuji, and tea — chronological from grave to garden.",
-    stops: [
-      "Zoshigaya cemetery (Sōseki, Lafcadio Hearn)",
-      "Kishimojin temple",
-      "Gokokuji main hall and tea master graves",
-      "Tea ceremony at our room",
-    ],
-  },
-  {
-    id: "slow-day",
-    name: "The Slow Day",
-    durationLabel: "Full day",
-    summary:
-      "Begin at Rikugien at opening, lunch in Sugamo, tea in the afternoon, and end on the Toden Arakawa tram as it gets dark.",
-    stops: [
-      "Rikugien garden, Komagome",
-      "Sugamo lunch (any of the unagi shops on Jizō-dōri)",
-      "Tea ceremony at our room",
-      "Zoshigaya at dusk",
-      "Toden Arakawa Line at Kishimojin-mae",
-    ],
-  },
-] as const;
-
 export const TRIPADVISOR_URL = "https://www.tripadvisor.com/";
 
 export const CONTACT = {

@@ -84,19 +84,6 @@ export default async function NeighborhoodsIndexPage({
             ))}
           </div>
 
-          <FadeIn>
-            <div className="mt-16 border-t border-cream/15 pt-10 text-center sm:mt-24">
-              <p className="text-base text-cream/70 sm:text-lg">
-                {t("footer")}
-              </p>
-              <Link
-                href="/itineraries"
-                className="mt-4 inline-block text-sm uppercase tracking-[0.2em] text-gold transition-colors hover:text-gold-light"
-              >
-                {t("footerCta")} →
-              </Link>
-            </div>
-          </FadeIn>
         </Container>
       </section>
     </div>

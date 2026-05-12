@@ -466,7 +466,6 @@ export default function AdminSlotsPage() {
                           )}
                           <span>🎋 {PLAN_LABELS[b.plan]?.split(" — ")[0]}</span>
                           <span>👥 {b.guests}名</span>
-                          <span>🪑 {b.seating === "floor" ? "畳" : "椅子"}</span>
                         </div>
 
                         {(b.dietary || b.notes) && (

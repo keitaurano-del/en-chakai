@@ -44,11 +44,6 @@ export function Footer() {
                   {nav("neighborhoods")}
                 </Link>
               </li>
-              <li>
-                <Link href="/itineraries" className="text-[13px] text-ink-muted transition-colors hover:text-clay">
-                  {nav("itineraries")}
-                </Link>
-              </li>
             </ul>
           </div>
 
