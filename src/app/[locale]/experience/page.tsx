@@ -54,6 +54,21 @@ export default async function ExperiencePage({
         </Container>
       </section>
 
+      <section className="border-t border-cream/10 bg-charcoal py-14 sm:py-20">
+        <Container>
+          <FadeIn>
+            <div className="mx-auto max-w-3xl border-l border-gold/40 pl-6 sm:pl-8">
+              <h2 className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+                {t("authenticity.heading")}
+              </h2>
+              <p className="mt-5 text-base leading-relaxed text-cream/75 sm:text-lg">
+                {t("authenticity.body")}
+              </p>
+            </div>
+          </FadeIn>
+        </Container>
+      </section>
+
       <section className="bg-charcoal-light py-16 sm:py-20">
         <Container>
           <FadeIn>

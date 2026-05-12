@@ -14,7 +14,6 @@ export type Booking = {
   guests: number;
   name: string;
   email: string;
-  seating: "floor" | "chair";
   dietary: string | null;
   notes: string | null;
   status: "pending" | "confirmed" | "cancelled";

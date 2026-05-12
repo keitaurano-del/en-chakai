@@ -21,6 +21,7 @@ export async function generateMetadata({
 
 const SECTION_ANCHORS = [
   "booking",
+  "language",
   "payment",
   "experience",
   "cancellation",
