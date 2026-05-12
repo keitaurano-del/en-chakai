@@ -9,12 +9,7 @@ export function Ceremony() {
   const t = useTranslations("ceremony");
   const tp = useTranslations("plans");
   const timeline = t.raw("timeline") as TimelineItem[];
-
-  const PLAN_KEYS: Record<string, string> = {
-    encounter: "encounter",
-    conversation: "conversation",
-    "quiet-hour": "quietHour",
-  };
+  const plan = PLANS[0];
 
   return (
     <section className="border-t border-border bg-paper py-20 sm:py-28">
@@ -54,47 +49,24 @@ export function Ceremony() {
 
         {/* プランカード */}
         <FadeIn delay={0.1}>
-          <div className="flex flex-col gap-4">
-            {PLANS.map((plan) => {
-              const key = PLAN_KEYS[plan.id];
-              const isRecommended = "recommended" in plan && plan.recommended;
-              const isPrivate = plan.privacy === "private";
-
-              return (
-                <div
-                  key={plan.id}
-                  className={`relative border p-7 transition-colors hover:border-clay ${
-                    isRecommended ? "border-clay" : "border-border"
-                  }`}
-                >
-                  {isRecommended && (
-                    <span className="absolute -top-[9px] left-6 bg-paper px-2.5 text-[10px] uppercase tracking-[0.25em] text-clay">
-                      {tp("recommended")}
-                    </span>
-                  )}
-                  <p className="font-[family-name:var(--font-heading)] mb-1 text-[23px] font-normal text-ink">
-                    {tp(`${key}.name`)}
-                  </p>
-                  <p className="mb-5 text-[12px] tracking-[0.05em] text-ink-muted">
-                    {plan.durationMin} min ·{" "}
-                    {isPrivate
-                      ? `up to ${plan.maxGuests} guests · private`
-                      : `up to ${plan.maxGuests} guests · shared`}
-                  </p>
-                  <div className="mb-4 flex items-baseline gap-3">
-                    <span className="font-[family-name:var(--font-heading)] text-[28px] text-ink">
-                      ¥{plan.priceJpy.toLocaleString()}
-                    </span>
-                    <span className="text-[12px] text-ink-muted">
-                      ≈ ${plan.priceUsdDisplay} USD · {tp("perParty")}
-                    </span>
-                  </div>
-                  <p className="text-[13px] leading-[1.65] text-ink-muted">
-                    {tp(`${key}.tagline`)}
-                  </p>
-                </div>
-              );
-            })}
+          <div className="border border-clay p-7">
+            <p className="font-[family-name:var(--font-heading)] mb-1 text-[23px] font-normal text-ink">
+              {tp(`${plan.id}.name`)}
+            </p>
+            <p className="mb-5 text-[12px] tracking-[0.05em] text-ink-muted">
+              {plan.durationMin} min · up to {plan.maxGuests} guests
+            </p>
+            <div className="mb-4 flex items-baseline gap-3">
+              <span className="font-[family-name:var(--font-heading)] text-[32px] text-ink">
+                ${plan.priceUsd}
+              </span>
+              <span className="text-[12px] text-ink-muted">
+                ≈ ¥{plan.priceJpy.toLocaleString()} · {tp("perParty")}
+              </span>
+            </div>
+            <p className="text-[13px] leading-[1.65] text-ink-muted">
+              {tp(`${plan.id}.tagline`)}
+            </p>
           </div>
 
           <div className="mt-10">

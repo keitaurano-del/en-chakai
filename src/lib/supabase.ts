@@ -10,7 +10,7 @@ export type Slot = {
 export type Booking = {
   id: string;
   slot_id: string;
-  plan: "encounter" | "conversation" | "quiet-hour";
+  plan: "conversation";
   guests: number;
   name: string;
   email: string;

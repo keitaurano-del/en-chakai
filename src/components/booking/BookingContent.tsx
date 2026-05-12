@@ -18,6 +18,8 @@ import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 
 type Step = "date" | "details" | "done";
 
+const DEFAULT_PLAN = PLANS[0];
+
 type FormState = {
   date: string;
   time_slot: TimeSlot | "";
@@ -33,7 +35,7 @@ type FormState = {
 const EMPTY_FORM: FormState = {
   date: "",
   time_slot: "",
-  plan: "",
+  plan: DEFAULT_PLAN.id,
   guests: 1,
   name: "",
   email: "",
@@ -313,45 +315,18 @@ export function BookingContent() {
               </h1>
 
               <form onSubmit={handleSubmit} className="mt-10 space-y-7">
-                {/* Plan */}
+                {/* Plan summary (single plan) */}
                 <div>
                   <label className="mb-3 block text-xs uppercase tracking-[0.15em] text-clay">
-                    Experience plan *
+                    Experience
                   </label>
-                  <div className="grid gap-3">
-                    {PLANS.map((plan) => {
-                      const key = plan.id;
-                      return (
-                        <button
-                          type="button"
-                          key={key}
-                          onClick={() =>
-                            setForm((f) => ({
-                              ...f,
-                              plan: key,
-                              guests: Math.min(f.guests, PLAN_MAX_GUESTS[key]),
-                            }))
-                          }
-                          className={`flex items-start justify-between border p-4 text-left transition-colors ${
-                            form.plan === key
-                              ? "border-clay bg-clay/15"
-                              : "border-border hover:border-cream/30"
-                          }`}
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-ink">
-                              {PLAN_LABELS[key].split(" — ")[0]}
-                            </p>
-                            <p className="mt-0.5 text-xs text-ink-muted">
-                              {PLAN_LABELS[key].split(" — ")[1]}
-                            </p>
-                          </div>
-                          {form.plan === key && (
-                            <Check size={16} className="mt-0.5 shrink-0 text-clay" />
-                          )}
-                        </button>
-                      );
-                    })}
+                  <div className="border border-clay/40 bg-clay/10 p-4">
+                    <p className="text-sm font-medium text-ink">
+                      {DEFAULT_PLAN.name}
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink-muted">
+                      ${DEFAULT_PLAN.priceUsd} (¥{DEFAULT_PLAN.priceJpy.toLocaleString()}) · {DEFAULT_PLAN.durationMin} min · up to {DEFAULT_PLAN.maxGuests} guests
+                    </p>
                   </div>
                 </div>
 

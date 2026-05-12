@@ -8,15 +8,11 @@ export const TIME_SLOT_LABELS: Record<TimeSlot, string> = {
 };
 
 export const PLAN_LABELS: Record<string, string> = {
-  encounter: "The Encounter — ¥7,000 / 45 min / Up to 6 guests",
-  conversation: "The Conversation — ¥10,000 / 60 min / Up to 4 guests",
-  "quiet-hour": "The Quiet Hour — ¥12,000 / 75 min / Private, up to 2 guests",
+  conversation: "The Tea Ceremony — $70 (¥10,000) / 60 min / Up to 4 guests",
 };
 
 export const PLAN_MAX_GUESTS: Record<string, number> = {
-  encounter: 6,
   conversation: 4,
-  "quiet-hour": 2,
 };
 
 // Sunday = 0, Monday = 1
