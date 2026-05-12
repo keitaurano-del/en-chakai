@@ -9,3 +9,15 @@ services:
     envVars:
       - key: NEXT_PUBLIC_BASE_URL
         sync: false
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NOTIFICATION_EMAIL
+        value: keita.urano@gmail.com
+      - key: ADMIN_PASSWORD
+        sync: false

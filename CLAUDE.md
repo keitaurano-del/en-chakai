@@ -89,7 +89,7 @@ There is no test suite. Type-check with `npx tsc --noEmit`.
 
 ## Architecture
 
-**en-chakai** is a bilingual (EN/JA) marketing and booking website for a Japanese tea ceremony business in Tokyo. It is a pure frontend app — no backend API, no database. All bookings go through embedded Google Forms; payments use Stripe Payment Links.
+**en-chakai** is a bilingual (EN/JA) marketing and booking website for a Japanese tea ceremony business in Tokyo. Frontend is Next.js with App Router. Bookings flow through a custom React form → Next.js API route → Supabase (Postgres). Host notification emails are sent via Resend on each new reservation. Payments still use Stripe Payment Links.
 
 ### Stack
 
@@ -98,6 +98,8 @@ There is no test suite. Type-check with `npx tsc --noEmit`.
 - **Tailwind CSS 4** (PostCSS plugin, not the old CLI)
 - **next-intl 4** — URL-based locale routing (`/en/…`, `/ja/…`), default locale: `en`
 - **Framer Motion 12** — scroll-triggered `FadeIn` wrapper, mobile menu animation
+- **Supabase (Postgres)** — `available_slots` / `bookings` tables (schema in `supabase/schema.sql`). Browser uses anon key for reads + booking insert; API routes use service role for admin queries.
+- **Resend** — transactional email. `src/app/api/bookings/route.ts` sends a host notification on each successful booking. Customer-facing confirmation email is **not yet implemented**.
 
 ### Routing
 
@@ -109,7 +111,13 @@ All copy lives in `src/messages/en.json` and `src/messages/ja.json`. Components 
 
 ### Content / Business Logic
 
-Constants are centralised in `src/lib/constants.ts`: plan definitions (Ume/Take/Matsu tiers with JPY pricing and guest limits), contact info, Stripe Payment Link URLs, and Google Form URLs. Edit this file when business data changes.
+Constants are centralised in `src/lib/constants.ts`: plan definitions (Ume/Take/Matsu tiers with JPY pricing and guest limits), contact info, and Stripe Payment Link URLs. Edit this file when business data changes. (`GOOGLE_FORM_URL` is a leftover from the previous Google Forms flow and is no longer referenced.)
+
+### Booking Flow
+
+- Customer picks date / time / plan / guests in `src/components/booking/BookingContent.tsx` (multi-step React form, locale-aware copy)
+- Submit → `POST /api/bookings` (`src/app/api/bookings/route.ts`): re-validates slot availability against `available_slots`, inserts a row into `bookings`, then sends a Resend email to `NOTIFICATION_EMAIL` (defaults to `keita.urano@gmail.com`)
+- Admin dashboard at `/admin/slots` (gated by `ADMIN_PASSWORD`) toggles slot availability and lists incoming bookings. Backed by `src/app/api/admin/{slots,bookings}/route.ts`
 
 ### Component Layers
 
@@ -118,7 +126,7 @@ src/components/
   layout/      Header (nav, lang switcher, mobile menu), Footer
   sections/    One file per homepage section (Hero, Plans, Gallery, …)
   ui/          Primitives: Container, Button, SectionHeading, FadeIn
-  booking/     BookingContent (Google Form embed)
+  booking/     BookingContent (custom React reservation form)
   cancellation/ CancellationContent
 ```
 
@@ -130,7 +138,16 @@ src/components/
 
 ### Deployment
 
-Deployed on Render.com via `render.yaml`. Build command: `npm install && npm run build`. Start command: `npm run start`. No environment variables are required for the frontend.
+Deployed on Render.com via `render.yaml`. Build command: `npm install && npm run build`. Start command: `npm run start`. Render service name is still `sengoku-chakai` (immutable — would require new service for rename).
+
+Required env vars (set in Render dashboard, `sync: false`):
+
+- `NEXT_PUBLIC_BASE_URL` — canonical site origin
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` — browser Supabase client
+- `SUPABASE_SERVICE_ROLE_KEY` — admin API routes
+- `RESEND_API_KEY` — host notification email (requires verified domain for the `bookings@en-chakai.com` sender)
+- `NOTIFICATION_EMAIL` — host notification destination (default `keita.urano@gmail.com`)
+- `ADMIN_PASSWORD` — gates `/admin` and `/api/admin/*` (fallback `chakai2024` is hardcoded — replace before serious launch)
 
 <!-- BEGIN: claude-config-memory (auto-synced — do not edit) -->
 ## 蓄積メモリ
