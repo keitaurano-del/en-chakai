@@ -1,46 +1,17 @@
 export const PLANS = [
   {
-    id: "encounter",
-    name: "The Encounter",
-    durationMin: 45,
-    maxGuests: 6,
-    privacy: "shared",
-    priceJpy: 7000,
-    priceUsdDisplay: 50,
-    includes: [
-      "Welcome usucha (thin matcha)",
-      "One seasonal wagashi sweet",
-      "Brief explanation of the ceremony",
-    ],
-  },
-  {
     id: "conversation",
-    name: "The Conversation",
+    name: "The Tea Ceremony",
     durationMin: 60,
     maxGuests: 4,
     privacy: "shared",
+    priceUsd: 70,
     priceJpy: 10000,
-    priceUsdDisplay: 70,
-    recommended: true,
     includes: [
       "Usucha and koicha (thick matcha) tasting",
       "Two seasonal wagashi",
       "Tea utensil appreciation",
       "Q&A with the host",
-    ],
-  },
-  {
-    id: "quiet-hour",
-    name: "The Quiet Hour",
-    durationMin: 75,
-    maxGuests: 2,
-    privacy: "private",
-    priceJpy: 12000,
-    priceUsdDisplay: 80,
-    includes: [
-      "Everything in The Conversation",
-      "Your party only — no shared session",
-      "Unhurried pace and longer Q&A",
     ],
   },
 ] as const;

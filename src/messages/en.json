@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "En Chakai — Tea ceremony in the side of Tokyo most travelers never see",
-    "description": "A 60-minute tea ceremony in a Bunkyō tea room, hosted in English. From ¥7,000. Reservations confirmed by hand within 24 hours."
+    "description": "A 60-minute tea ceremony in a Bunkyō tea room, hosted in English. $70 (¥10,000) per person. Reservations confirmed by hand within 24 hours."
   },
   "nav": {
     "experience": "Experience",
@@ -16,7 +16,7 @@
     "tagline": "A sixty-minute ceremony in a quiet ward of north Tokyo. Hosted in English. No seiza required.",
     "primaryCta": "Reserve a seat",
     "secondaryCta": "Read the guide",
-    "meta": "60 minutes · From ¥10,000 · Hosted in English"
+    "meta": "60 minutes · $70 (¥10,000) · Hosted in English"
   },
   "editorsNote": {
     "kicker": "Editor's note",
@@ -46,26 +46,16 @@
     "readMore": "Read more about the ceremony"
   },
   "plans": {
-    "kicker": "Three ways to attend",
-    "heading": "Choose the room, not the activity.",
-    "body": "All three are the same ceremony. The difference is privacy and pace.",
+    "kicker": "The session",
+    "heading": "One hour, one ceremony.",
+    "body": "Sixty minutes of unhurried tea, in a small group of up to four. We host one party at a time.",
     "perParty": "per person",
     "minutesShort": "min",
-    "shared": "Shared room (up to {n})",
-    "private": "Your party only (up to {n})",
-    "recommended": "Most chosen",
+    "shared": "Up to {n} guests",
     "reserve": "Reserve",
-    "encounter": {
-      "name": "The Encounter",
-      "tagline": "The shortest version. Useful if you have an afternoon to fill."
-    },
     "conversation": {
-      "name": "The Conversation",
-      "tagline": "Our standard hour. Most first-timers pick this."
-    },
-    "quietHour": {
-      "name": "The Quiet Hour",
-      "tagline": "Same ceremony, your party only. We don't add another booking."
+      "name": "The Tea Ceremony",
+      "tagline": "Welcome usucha and koicha tasting, two seasonal wagashi, utensil appreciation, and Q&A with the host."
     }
   },
   "host": {
@@ -100,7 +90,7 @@
         { "title": "Card only, in JPY", "body": "Visa, Master, Amex, JCB via Stripe. We send the link in the confirmation email." }
       ]
     },
-    "plansHeading": "The three rooms"
+    "plansHeading": "What's included"
   },
   "neighborhoods": {
     "metaTitle": "The neighborhoods — En Chakai",
@@ -184,7 +174,7 @@
         "1st choice date",
         "2nd choice date (backup)",
         "Number of guests",
-        "Experience plan (The Encounter ¥7,000 / The Conversation ¥10,000 / The Quiet Hour ¥12,000)",
+        "Experience plan (The Tea Ceremony · $70 / ¥10,000)",
         "Seating preference (chair or floor)",
         "Dietary restrictions or allergies",
         "Anything else we should know"
@@ -232,7 +222,7 @@
           { "q": "Do I have to do seiza?", "a": "No. We have low chairs. Tell us on the form so we set the room up correctly." },
           { "q": "What should I wear?", "a": "Anything comfortable. Light or white socks are traditional and help with the tatami. We don't lend kimono." },
           { "q": "Can I take photos?", "a": "Quietly, between movements. The host will tell you when." },
-          { "q": "How long does it take?", "a": "Forty-five, sixty, or seventy-five minutes depending on the plan. Allow another fifteen minutes either side." }
+          { "q": "How long does it take?", "a": "About sixty minutes for the ceremony itself. Allow another fifteen minutes either side." }
         ]
       },
       {
