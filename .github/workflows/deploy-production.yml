@@ -1,0 +1,54 @@
+name: 🚀 Deploy to Production (Render)
+
+on:
+  # 手動トリガーのみ — mainへのpushでは自動実行しない
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '本番デプロイを実行しますか？ (yes と入力)'
+        required: true
+        default: 'no'
+
+jobs:
+  check-confirm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm input
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "yes" ]; then
+            echo "❌ 'yes' と入力されなかったためデプロイを中止します"
+            exit 1
+          fi
+          echo "✅ 承認確認OK"
+
+  build:
+    needs: check-confirm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://www.en-chakai.com
+    steps:
+      - name: Trigger Render production deploy
+        run: |
+          echo "🚀 Render 本番デプロイをトリガーします..."
+          RESPONSE=$(curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
+          echo "Response: $RESPONSE"
+          DEPLOY_ID=$(echo "$RESPONSE" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('deploy',{}).get('id','?'))")
+          echo "✅ Deploy triggered: $DEPLOY_ID"
+          echo "📊 Monitor: https://dashboard.render.com"
