@@ -174,6 +174,7 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [Logic Android 内部配信フロー](project_logic_android_deploy.md) — main push で内部テスターへ自動 rollout。Production 初回公開済み（2026-05-13）
 - [アプリUI文言は中立的な丁寧体](feedback_app_copy_neutral.md) — アプリ内のi18n/ラベル/エラー文言は凛口調NG、「〜です/〜ます」で書く。凛トーンはKeitaとの会話のみ
 - [Logic はモバイル専用](project_logic_mobile_only.md) — Web 版は本番リリース・マーケ対象外。優先順位・施策はモバイル体験中心で判断する
+- [Logic 認証はマジックリンクのみ](feedback_logic_auth_magiclink_only.md) — OTPコード方式・Googleログインは使わない。メール送信→リンクタップだけのフローに統一
 
 ### feedback_app_copy_neutral.md
 
@@ -225,6 +226,34 @@ originSessionId: e5e3921c-331a-49f0-a353-6a23e46a094e
 - subagent 一覧（ceo, secretary, dev-logic, marketing, designer）とは別レイヤー。凜は subagent をオーケストレートしながら Keita と直接話す相棒ポジション
 - 口調設定（feedback_tone.md：きれいなお姉さん風、語尾「わ」「のよ」）と組み合わせて運用する
 - 名前を毎回明示的に名乗る必要はない。普段の会話では自然体でよく、自己紹介や呼びかけられた場面で意識する程度で OK
+
+### feedback_logic_auth_magiclink_only.md
+
+---
+name: feedback-logic-auth-magiclink-only
+description: Logic アプリの認証はマジックリンクのみ。OTPコード入力方式・Googleログインは使わない方針。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-16
+---
+
+Logic アプリのログイン方式は **メールマジックリンクのみ**。
+
+**Why:** 2026-05-16 Keita 明示。
+- OTP コード入力方式: Supabase の `mailer_otp_length` 設定との不整合でトラブルが多発した（8桁/6桁ミスマッチで `otp_expired` ループ、ユーザー混乱）
+- Google ログイン: `google-services.json` / SHA-1 / Firebase / 追加プラグインなど設定コストが大きい割にメリット薄い
+
+シンプルに「メールアドレス入力 → リンクが届く → タップしてログイン」だけに統一する。
+
+**How to apply:**
+- `signInWithOtp({ email, options: { emailRedirectTo: 'logic://auth' } })` でリンク送信
+- メールテンプレは `{{ .ConfirmationURL }}` だけ。`{{ .Token }}` の 6桁/8桁コードは表示しない
+- アプリ側に OTP コード入力 UI を実装しない。送信完了後は「メールを確認してください」状態のみ
+- `verifyEmailOtp()` 関数も不要（Deep link 経由の `handleAuthRedirect` で `setSession` または `exchangeCodeForSession` する）
+- Google ログインボタンも UI から削除。`loginWithGoogle()` 関数・`@codetrix-studio/capacitor-google-auth` 関連設定 (`GoogleAuth` plugin config, `serverClientId`) も削除
+- 提案するときに OTP コード方式・Google ログインを **持ち出さない**。新しい認証方法を追加するときは必ず事前に Keita 確認
+
+**関連:** [[project-logic-mobile-only]]（Web 版はリリースしないので、Web 用の OAuth リダイレクトも不要）
 
 ### feedback_logic_course_thumbnails.md
 
