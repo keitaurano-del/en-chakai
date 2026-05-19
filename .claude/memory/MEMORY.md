@@ -17,3 +17,6 @@
 - [アプリUI文言は中立的な丁寧体](feedback_app_copy_neutral.md) — アプリ内のi18n/ラベル/エラー文言は凛口調NG、「〜です/〜ます」で書く。凛トーンはKeitaとの会話のみ
 - [Logic はモバイル専用](project_logic_mobile_only.md) — Web 版は本番リリース・マーケ対象外。優先順位・施策はモバイル体験中心で判断する
 - [Logic 認証はマジックリンクのみ](feedback_logic_auth_magiclink_only.md) — OTPコード方式・Googleログインは使わない。メール送信→リンクタップだけのフローに統一
+- [Logic Play Billing 不備](project_logic_play_billing_gaps.md) — acknowledgePurchase 未実装等の既知ギャップ。1.0.0 はリスク受容でリリースしたので近い将来必修正
+- [Gemini API 設定](reference_gemini_api.md) — keita.urano2@gmail.com で AI Studio セットアップ済み。画像生成は Paid plan 必須・Billing 紐付け完了
+- [Gemini プロンプトのコツ](feedback_gemini_prompt_tricks.md) — Nano Banana の長英単語スペル崩し対策。短縮タイトル化と spell 強調が効く
