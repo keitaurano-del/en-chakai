@@ -160,7 +160,7 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 
 - [cxo-agentリポジトリを使わない](feedback_no_cxo_agent.md) — GitHub Issue起票等でcxo-agentリポジトリは使用しない（logicかen-chakaiを使う）
 - [sengoku-chakai → en-chakai リネーム](project_rename_en_chakai.md) — GitHub リポ・ローカルディレクトリを sengoku-chakai → en-chakai に rename 完了（2026-05-11）。ブランド名は円茶会
-- [口調スタイル](feedback_tone.md) — きれいなお姉さん風：落ち着いてテキパキ、語尾に「わ」「のよ」などを自然に混ぜる
+- [口調スタイル](feedback_tone.md) — おじいちゃん口調：「〜じゃ」「〜のう」「ほっほっ」を自然に混ぜる（2026-05-22 更新）
 - [Logic マーケティング方針](feedback_logic_marketing.md) — 「コーヒー1杯」系の安さアピールNG。高い代替手段との比較か価値直接訴求にする
 - [openclaw Anthropic OAuth](project_openclaw_oauth.md) — Claude.ai プラン OAuth で認証済み、env var の API キーは削除。default は sonnet-4-6
 - [agent-config 同期リポ](project_agent_config_sync.md) — Claude設定を keitaurano-del/agent-config で同期。projects-meta/ が実体、~/projects は symlink
@@ -179,6 +179,8 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [Logic Play Billing 不備](project_logic_play_billing_gaps.md) — acknowledgePurchase 未実装等の既知ギャップ。1.0.0 はリスク受容でリリースしたので近い将来必修正
 - [Gemini API 設定](reference_gemini_api.md) — keita.urano2@gmail.com で AI Studio セットアップ済み。画像生成は Paid plan 必須・Billing 紐付け完了
 - [Gemini プロンプトのコツ](feedback_gemini_prompt_tricks.md) — Nano Banana の長英単語スペル崩し対策。短縮タイトル化と spell 強調が効く
+- [Metabase Phase 1 セットアップ](project_metabase_setup.md) — Supabase 側自動完了済（2026-05-23）。Render Blueprint deploy + Metabase 初回ログイン + 5 Question 登録は Keita 手動操作待ち
+- [Hermes ローカルツール](reference_hermes_local.md) — Keita ローカル WSL の Nous Research 製 AI エージェント。config 壊れた時は `~/.hermes/config.yaml.bak.*` から復旧
 
 ### feedback_app_copy_neutral.md
 
@@ -649,6 +651,74 @@ Logic の Render Production environment は **required reviewers なし** で自
 
 関連 memory: [[reference-deploy-commands]]、[[project-logic-mobile-only]]
 
+### project_metabase_setup.md
+
+---
+name: project-metabase-setup
+description: Logic アプリの Metabase 分析ダッシュボード Phase 1 セットアップ進捗。Supabase 側は完了、Render 以降は Keita 手動操作待ち。
+metadata:
+  type: project
+  originSessionId: 2026-05-23
+---
+
+Logic アプリの分析基盤として **Metabase Phase 1** を立ち上げ中。2026-05-23 にコード・SQL・migration・docs を main へ push 済（commit `cbca1fd`）。
+
+**Why:** ceo 分析で「まず既存 Supabase データで MVP ダッシュボードを 1 週間で作るのがコスパ最大」と結論。PostHog 等のイベント計装は次フェーズ。
+
+## ✅ 完了済（自動セットアップ済）
+
+- Supabase Logic プロジェクト (`yctlelmlwjwlcpcxvmgx`, ap-southeast-2) に migration 021 適用
+- `metabase_readonly` role 作成 (LOGIN, NOINHERIT, BYPASSRLS, public 全テーブル SELECT)
+- `metabase_app` role 作成 (LOGIN, metabase schema 全権限)
+- `public.metabase_users` view 作成 (auth.users から email_domain だけ抜き出し)
+- `metabase` schema 作成
+
+## ⏳ 未完了（Keita 手動操作待ち、別セッションで再開可）
+
+### B. Render service 作成（15 分）
+1. Render Dashboard > New > Blueprint
+2. Repository: `keitaurano-del/logic`
+3. Blueprint file: `infra/metabase/render.yaml`
+4. 環境変数（パスワードは 1Password「Metabase Logic」参照）:
+   - `MB_DB_USER` = `postgres.yctlelmlwjwlcpcxvmgx`（Pooler 形式）
+   - `MB_DB_HOST` = `aws-0-ap-southeast-2.pooler.supabase.com`
+   - `MB_DB_PORT` = `6543`
+   - `MB_DB_DBNAME` = `postgres`
+   - `MB_DB_PASS` = （1Password 参照）
+   - `MB_SITE_URL` = service URL 確定後に設定
+
+### C. Metabase 初回ログイン + データソース登録（10 分）
+- Admin: `keita.urano@gmail.com`
+- データソース「Logic Production」:
+  - Host: `aws-0-ap-southeast-2.pooler.supabase.com`
+  - Port: `6543`
+  - User: `postgres.yctlelmlwjwlcpcxvmgx` or `metabase_readonly`（Pooler の形式は Supabase Dashboard > Settings > Database > Connection string で要確認）
+  - Pass: 1Password 参照
+  - SSL: required
+
+### D. 5 Question + 1 Dashboard 登録（30 分）
+- `+New > Question > Native Query` で `supabase/sql/dashboards/01_*.sql` 〜 `05_*.sql` をコピペ → Save
+- `+New > Dashboard` で「Logic KPI Phase 1」作成、5 Question 配置（推奨: 上段=1,5 / 中段=2,3 / 下段=4）
+
+## 関連ファイル
+
+- `docs/ANALYTICS_DASHBOARD.md` — 全手順 + 指標の読み方 + トラブルシュート
+- `supabase/migrations/021_metabase_readonly.sql` — migration 本体（適用済）
+- `supabase/sql/dashboards/01〜05_*.sql` — 5 ボード SQL
+- `infra/metabase/render.yaml` + `Dockerfile` — Render Blueprint
+
+## パスワード管理
+
+- `metabase_readonly` パスワード: 1Password「Metabase Logic Readonly」
+- `metabase_app` パスワード: 1Password「Metabase Logic App」
+- 漏洩時は `ALTER ROLE <role> WITH PASSWORD '...'` で即再発行可能（Supabase MCP `execute_sql` から実行）
+
+## 関連 memory
+
+- [[project-logic-mobile-only]] — 分析対象はモバイル中心
+- [[reference-deploy-commands]] — Render 手動デプロイコマンド
+- [[project-logic-render-auto-deploy]] — Render Production の自動デプロイ設定
+
 ### project_openclaw_oauth.md
 
 ---
@@ -794,5 +864,66 @@ Gemini API 経由の画像生成を Logic プロジェクトで使う設定情�
 - `logic/scripts/lessonPromptsV2.ts` — プロンプト定義
 
 **関連 memory:** [[feedback-gemini-prompt-tricks]]、[[feedback-logic-course-thumbnails]]
+
+### reference_hermes_local.md
+
+---
+name: reference-hermes-local
+description: Keita がローカル WSL で使う Hermes Agent (Nous Research) の設定場所と壊れた時の復旧手順
+metadata:
+  type: reference
+  originSessionId: 2026-05-23
+---
+
+Keita のローカル WSL に **Hermes Agent (Nous Research 製)** が入っとる。Claude Code とは別の AI エージェントツールで、TUI で動く。
+
+**Why:** 2026-05-23 に「`Error code: 400 - model: String should have at least 1 character`」エラーで Hermes が起動できない事故が発生。config.yaml の `providers: {}` が空 + `model.model: claude-opus-4-7` の "anthropic/" provider prefix が抜けてた。バックアップから戻して復旧。
+
+## 設定パス
+- `~/.hermes/` が実体（`~/.config/hermes/` は使われてない）
+- `~/.hermes/config.yaml` — メイン設定
+- `~/.hermes/config.yaml.bak.<タイムスタンプ>` — Hermes が自動で取るバックアップ
+- `~/.hermes/.env` — API キー類
+- `~/.hermes/auth.json` — OAuth / 認証情報
+
+## 起動エラー時の復旧パターン
+
+### 症状: `model: String should have at least 1 character` で 400 エラー
+原因: `model.model` の値に provider prefix（例: `anthropic/`）が無い、または `providers:` セクションが空。
+
+### 復旧手順
+```bash
+# 1. 壊れた現状を退避
+cp ~/.hermes/config.yaml ~/.hermes/config.yaml.broken
+
+# 2. 一番新しいバックアップを戻す
+ls -la ~/.hermes/config.yaml.bak.*  # 最新のを確認
+cp ~/.hermes/config.yaml.bak.<最新タイムスタンプ> ~/.hermes/config.yaml
+
+# 3. 再起動
+hermes
+```
+
+## model 名の指定形式（重要）
+
+正: `default: "anthropic/claude-opus-4.6"`（provider prefix 必須）
+誤: `model: "claude-opus-4-7"`（prefix なしだと provider 解決できず空 string になる）
+
+主要 provider prefix:
+- `anthropic/` — 直 Anthropic API（`ANTHROPIC_API_KEY` 必要）
+- `nous/` — Nous Portal OAuth（`hermes login`）
+- `openrouter/` — OpenRouter
+- `openai-codex/` — OpenAI Codex
+- `gemini/` — Google AI Studio
+- `ollama-cloud/` — Ollama Cloud
+- 他 多数あり（config.yaml.bak の冒頭コメント参照）
+
+## Hermes 内のシェルコマンドの罠
+
+Hermes TUI 内で `ls` 等のシェルコマンドを打つと、AI への query 扱いになって毎回 API リクエストが飛ぶ。設定壊れ時は **Ctrl+C で抜けてから** 通常シェルで作業すること。
+
+## 関連 memory
+- [[project-openclaw-oauth]] — openclaw（別ツール）の OAuth 認証
+- [[reference-gemini-api]] — Gemini API キー（Hermes でも gemini/ provider として使える）
 
 <!-- END: claude-config-memory -->
