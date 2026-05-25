@@ -23,3 +23,4 @@
 - [Gemini プロンプトのコツ](feedback_gemini_prompt_tricks.md) — Nano Banana の長英単語スペル崩し対策。短縮タイトル化と spell 強調が効く
 - [Metabase Phase 1 セットアップ](project_metabase_setup.md) — Supabase 側自動完了済（2026-05-23）。Render Blueprint deploy + Metabase 初回ログイン + 5 Question 登録は Keita 手動操作待ち
 - [Hermes ローカルツール](reference_hermes_local.md) — Keita ローカル WSL の Nous Research 製 AI エージェント。config 壊れた時は `~/.hermes/config.yaml.bak.*` から復旧
+- [Markdown 太字記法を多用しない](feedback_no_markdown_emphasis.md) — `**word**` 等の強調記号は Hermes 等で記号が見えて読みづらい。装飾なしで素直に書く

@@ -181,6 +181,7 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [Gemini プロンプトのコツ](feedback_gemini_prompt_tricks.md) — Nano Banana の長英単語スペル崩し対策。短縮タイトル化と spell 強調が効く
 - [Metabase Phase 1 セットアップ](project_metabase_setup.md) — Supabase 側自動完了済（2026-05-23）。Render Blueprint deploy + Metabase 初回ログイン + 5 Question 登録は Keita 手動操作待ち
 - [Hermes ローカルツール](reference_hermes_local.md) — Keita ローカル WSL の Nous Research 製 AI エージェント。config 壊れた時は `~/.hermes/config.yaml.bak.*` から復旧
+- [Markdown 太字記法を多用しない](feedback_no_markdown_emphasis.md) — `**word**` 等の強調記号は Hermes 等で記号が見えて読みづらい。装飾なしで素直に書く
 
 ### feedback_app_copy_neutral.md
 
@@ -384,6 +385,38 @@ GitHub IssueやタスクをKeitaのリポジトリに起票する際、`cxo-agen
 **Why:** Keitaから明示的に「cxo-agentは使わないで、これからずっと」と指示された。
 
 **How to apply:** Issue起票・タスク管理などでリポジトリを選ぶ際、cxo-agentは選択肢から除外する。`logic` か `sengoku-chakai`、またはKeitaが指定したリポジトリを使う。
+
+### feedback_no_markdown_emphasis.md
+
+---
+name: feedback-no-markdown-emphasis
+description: Keita との会話で太字記法（`**`）等の Markdown 装飾記号を多用しない。Hermes など記号がそのまま見える環境で読みづらいため。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-24
+---
+
+Keita との会話レスポンスで **太字記法 (`**word**`)** や類似の Markdown 強調記号を多用しない。
+
+**Why:** 2026-05-24 Keita 明示「変な ** とかはなくして」。理由は (a) Hermes Agent や一部 CLI ターミナルでは Markdown が render されず `**` がそのまま表示されて読みづらい、(b) 凛口調の会話と機械的な強調記号が合わない、(c) 強調が多すぎて結局どこが大事かわからなくなる。
+
+**How to apply:**
+- `**word**` の太字記法を**避ける**。装飾なしで自然な日本語で書く
+- `__word__` の下線、`***word***` の太字斜体も同様に避ける
+- 強調したい時は語順や言い回しで対応:
+  - ❌「**完了じゃ**、push 済み」 → ✅「完了じゃ、push 済み」or「終わったぞ、push 済み」
+  - ❌「**重要**: 〜」 → ✅「ここ重要じゃが〜」「注意点として〜」
+- 例外: コード（バッククォート `code`）、リスト（`-`, `1.`）、見出し（`#`）、表（`|`）は機能として OK
+- リスト内のラベルも素直に書く:
+  - ❌「**項目**: 値」 → ✅「項目: 値」
+- 引用ブロック（`> ...`）も控えめに。1-2 行ならインライン化
+
+**注意点:**
+- コードブロックや表記コマンド（`git commit -m "..."`）はバッククォートを使うのは引き続き OK（識別性に必要）
+- 報告フォーマットで「## サマリ」「## 詳細」みたいな見出しは続けて使ってよい（構造化された情報はむしろ読みやすい）
+- 強調を一切しないわけじゃない、過剰な `**` 多用をやめる、というニュアンス
+
+関連 memory: [[feedback-tone]]（おじいちゃん口調維持）、[[feedback-app-copy-neutral]]（アプリ UI 文言は別ルール）
 
 ### feedback_no_pixa.md
 
