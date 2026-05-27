@@ -24,3 +24,10 @@
 - [Metabase Phase 1 セットアップ](project_metabase_setup.md) — Supabase 側自動完了済（2026-05-23）。Render Blueprint deploy + Metabase 初回ログイン + 5 Question 登録は Keita 手動操作待ち
 - [Hermes ローカルツール](reference_hermes_local.md) — Keita ローカル WSL の Nous Research 製 AI エージェント。config 壊れた時は `~/.hermes/config.yaml.bak.*` から復旧
 - [Markdown 太字記法を多用しない](feedback_no_markdown_emphasis.md) — `**word**` 等の強調記号は Hermes 等で記号が見えて読みづらい。装飾なしで素直に書く
+- [コース/レッスン title は Doing 形維持](feedback_logic_title_doing.md) — title は「〜する」動詞句で維持。category 名は名詞句でOK（別レイヤー）
+- [Logic 全コンテンツ監査キャンペーン(2026-05-25)](project_logic_content_audit_20260525.md) — カテゴリ再編+全レッスン監査。成果物 logic/docs/CONTENT_AUDIT_20260525.md、triage は Bucket 仕分け
+- [監査triageはcorrectness優先で即修正](feedback_audit_triage_correctness_first.md) — 内容と図/計算の食い違い等の誤り修正はサンプル承認待ちにせず即Bucket1。承認待ちは新規生成系のみ
+- [報告はパス参照でなく内容を直接書く](feedback_direct_content_not_path.md) — Obsidian sync 差で Keita がファイルを開けない場合があるため、重要内容は会話本文に直接展開する（パス案内は補足）
+- [レッスン本文の視覚化はハイブリッド](feedback_logic_lesson_visual_hybrid.md) — 図解(SVG diagram)に加え、体系的=SVGアイコン/話題物=絵文字 のハイブリッドで読みやすく。本文限定、UI chromeはアイコンのみ。図解カバレッジは約30%
+- [Logic CI lint は eslint . で全体](reference_logic_ci_lint_scope.md) — CI は `eslint .` でリポ全体を lint。ローカル scoped lint だと docs/samples-src を見逃し push 後に赤くなる。デプロイ前は `eslint .` で確認
+- [task-manager subagent 新設](project_task_manager.md) — タスク管理専任 subagent を 2026-05-27 新設。ステータス管理・抜けもれ提言・完了検証の調整役、実装はせず委譲。正本は各プロジェクト docs/TASK_TRACKER.md

@@ -182,6 +182,13 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [Metabase Phase 1 セットアップ](project_metabase_setup.md) — Supabase 側自動完了済（2026-05-23）。Render Blueprint deploy + Metabase 初回ログイン + 5 Question 登録は Keita 手動操作待ち
 - [Hermes ローカルツール](reference_hermes_local.md) — Keita ローカル WSL の Nous Research 製 AI エージェント。config 壊れた時は `~/.hermes/config.yaml.bak.*` から復旧
 - [Markdown 太字記法を多用しない](feedback_no_markdown_emphasis.md) — `**word**` 等の強調記号は Hermes 等で記号が見えて読みづらい。装飾なしで素直に書く
+- [コース/レッスン title は Doing 形維持](feedback_logic_title_doing.md) — title は「〜する」動詞句で維持。category 名は名詞句でOK（別レイヤー）
+- [Logic 全コンテンツ監査キャンペーン(2026-05-25)](project_logic_content_audit_20260525.md) — カテゴリ再編+全レッスン監査。成果物 logic/docs/CONTENT_AUDIT_20260525.md、triage は Bucket 仕分け
+- [監査triageはcorrectness優先で即修正](feedback_audit_triage_correctness_first.md) — 内容と図/計算の食い違い等の誤り修正はサンプル承認待ちにせず即Bucket1。承認待ちは新規生成系のみ
+- [報告はパス参照でなく内容を直接書く](feedback_direct_content_not_path.md) — Obsidian sync 差で Keita がファイルを開けない場合があるため、重要内容は会話本文に直接展開する（パス案内は補足）
+- [レッスン本文の視覚化はハイブリッド](feedback_logic_lesson_visual_hybrid.md) — 図解(SVG diagram)に加え、体系的=SVGアイコン/話題物=絵文字 のハイブリッドで読みやすく。本文限定、UI chromeはアイコンのみ。図解カバレッジは約30%
+- [Logic CI lint は eslint . で全体](reference_logic_ci_lint_scope.md) — CI は `eslint .` でリポ全体を lint。ローカル scoped lint だと docs/samples-src を見逃し push 後に赤くなる。デプロイ前は `eslint .` で確認
+- [task-manager subagent 新設](project_task_manager.md) — タスク管理専任 subagent を 2026-05-27 新設。ステータス管理・抜けもれ提言・完了検証の調整役、実装はせず委譲。正本は各プロジェクト docs/TASK_TRACKER.md
 
 ### feedback_app_copy_neutral.md
 
@@ -233,6 +240,62 @@ originSessionId: e5e3921c-331a-49f0-a353-6a23e46a094e
 - subagent 一覧（ceo, secretary, dev-logic, marketing, designer）とは別レイヤー。林は subagent をオーケストレートしながら Keita と直接話す相棒ポジション
 - 口調設定（[[feedback-tone]]：おじいちゃん口調、語尾「〜じゃ」「〜のう」）と組み合わせて運用する
 - 名前を毎回明示的に名乗る必要はない。普段の会話では自然体でよく、自己紹介や呼びかけられた場面で意識する程度で OK
+
+### feedback_audit_triage_correctness_first.md
+
+---
+name: feedback-audit-triage-correctness-first
+description: 監査で検出した correctness 系（内容と図/データの食い違い等）の指摘は、サンプル承認を待たず即修正(Bucket1)に寄せる。サンプル承認ルールはコンテンツ"生成"の話で、"誤り修正"には適用しない。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-25
+---
+
+監査（logic-coach / designer 等）で検出した指摘を triage するとき、**correctness バグ（内容と表示が食い違っている＝明確な誤り）はデフォルトで即修正（Bucket1）に入れる**。サンプル承認待ち（Bucket2/3）に回さない。
+
+**Why:** 2026-05-25 のコンテンツ監査で、designer の Phase3 が「ADHD レッスンの LeveragePoints 図が default のまま（ADHDの4資源と無関係）」「ThreePillars/LogicTree の default 流用」「lesson-304 アブダクションに演繹図（概念逆転）」を正しく検出していた。にもかかわらず林が「バルクのコンテンツ展開はサンプル承認を取ってから」（[[feedback-logic-course-thumbnails]] の慎重ルール）を当てはめ、これらを Bucket2/3 に回して本番に残してしまった。Keita が実機で気づいて指摘。検出は効いていたので、欠陥は triage 判断の方にあった。
+
+**How to apply:**
+- 「サンプル1枚で承認 → 全体展開」のルールは **新規コンテンツ"生成"**（サムネ大量生成、visualProps の文言を新規に大量作文 等、見た目の好みが分かれるもの）に適用する。
+- **既に間違っているものを正す"correctness 修正"**（内容と図の食い違い、計算ミス、概念逆転、誤訳、誤配置）は、サンプル承認を待たず即修正に回す。間違った表示を本番に残す方がユーザー体験上の害が大きい。
+- 監査レポートで重大度「高〜中」かつ correctness 系（"内容とズレ" "誤り" "矛盾" "逆転"）と判定されたものは、デフォルト Bucket1（即実装→QA→PR）。Bucket2/3 に回すのは「構造再編・主観・新規デザイン・大量新規作文」など本質的に Keita 判断が要るものに限る。
+- 迷ったら「これは"誤りを正す"のか"新しく作る"のか」で振り分ける。前者は即、後者はサンプル承認。
+
+**関連:** [[project-logic-content-audit-20260525]]、[[feedback-logic-course-thumbnails]]（サンプル承認ルールの元）
+
+### feedback_direct_content_not_path.md
+
+---
+name: feedback-direct-content-not-path
+description: Keita への報告でファイルパスだけ参照するのではなく、内容を直接会話に書く。Obsidian sync 環境差で Keita が実際にファイル開けない可能性があるため。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-25
+---
+
+Keita への応答で、obsidian-vault / docs / その他リポ内のファイルを案内する時、ファイルパスだけ書いて「ここを見て」で終わらせない。**内容を会話に直接書く** か、要点を貼り付ける。
+
+**Why:** 2026-05-25 Keita 明示「パスを参照じゃなくて直接書いてほしい。これは全体的に言えること」。Keita のローカル Obsidian と クラウド側の obsidian-vault が必ずしも sync されていない（obsidian-git 未セットアップ等）ため、`/root/projects/obsidian-vault/...` を案内されても Keita 視点では開けない / 見つけられないケースがある。Daily Note / カテゴリ素案 / 判断待ちまとめ等を凜が外部ファイルに書いて「あそこを見て」で済ますと、Keita は実際に確認できない。
+
+**How to apply:**
+- 凜が obsidian-vault や docs/ に書いた重要内容は、Keita への応答で本文に直接書く（要約 or 全文）
+- パス案内は補足として末尾に添えるだけ、メインは会話内テキスト
+- Daily Note / 判断待ちまとめ / コース・レッスン一覧 / 設計案 / 監査レポート など、Keita が見るべきものは特に直接展開
+- 「obsidian で開けばわかる」「20-Projects/logic/courses/ を見て」みたいな案内はやめる
+- 表 / リスト / 設計案も会話内マークダウンで提示、その上で「ファイルでも保存済（path）」と添える
+
+**例:**
+- ❌「コース一覧は `/root/projects/obsidian-vault/20-Projects/logic/courses/README.md` にある」
+- ✅「コース一覧は以下じゃ：\n（マークダウン表ここに直接展開）\n\nファイルでも保存済（path）」
+- ❌「判断待ち項目は 2026-05-26-keita-decisions.md に書いた」
+- ✅「判断待ちは 3 つ：\n1. cron 登録 (内容...)\n2. カテゴリ再設計 (内容...)\n（ファイルも別途保存：path）」
+
+**注意点:**
+- 内容が極端に長い場合（数百行）は要約 + パス案内で OK、ただし要約は具体的に
+- 純粋にコードファイル位置を指す時（debug 用に `src/foo.ts:42` を見せる等）は path 表記 OK
+- Keita が「ファイル全文見せて」と明示した時は Read して全文展開
+
+関連 memory: [[feedback-no-markdown-emphasis]]（読みやすさ優先）、[[feedback-tone]]（おじいちゃん口調）
 
 ### feedback_gemini_prompt_tricks.md
 
@@ -358,6 +421,48 @@ Logic アプリのコースサムネイルは **`public/images/v3/course-*.png`�
 - サンプル1枚で承認を取ってから全体展開する（過去事故の再発防止）
 - Gemini で再生成する時のスペル崩し対策は [[feedback-gemini-prompt-tricks]] 参照
 
+### feedback_logic_lesson_visual_hybrid.md
+
+---
+name: feedback-logic-lesson-visual-hybrid
+description: Logic レッスン本文の視覚化方針。図解(SVG diagram)に加え、インライン視覚要素は SVGアイコン+絵文字のハイブリッドで読みやすくする。UI chrome は従来通りアイコンのみ。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-26
+---
+
+Logic のレッスンは「文字ベースすぎる」ので、視覚化して読みやすくする取り組みを進める。2026-05-26 Keita 指示。
+
+**Why:** レッスン本文が文字の塊で分かりにくい。図解(diagram)だけでなく、本文中のインライン視覚要素（アイコン・絵文字）でも情報の塊を視覚的に整理して可読性を上げたい。Keita 明示「図解以外でも、絵文字やSVGアイコンを使ってもっと読みやすくしたい」。方針は「ハイブリッド」を選択。
+
+**How to apply（インライン視覚要素のハイブリッド方針）:**
+- 体系的・反復的なもの（✓/✗ の良い例悪い例、要点、注意、ポイント、手順番号など）は `src/icons/index.tsx` の SVG アイコンで統一する（ブランド統一・テーマ色追従・端末差なし）。現状41種、足りなければ追加。
+- 手頃なアイコンが無い・話題物（その回特有のモチーフ）には絵文字も許可する。
+- ✓/× の良い例・悪い例マーカーは SVGアイコン（`[icon:good]`/`[icon:bad]`）でも絵文字（✅/❌）でもどちらでもよい（2026-05-26 Keita 明示「×とか✓も絵文字とかSVG使っていい」）。見出しだけでなく個別項目への対比マーカー付与も可。ブランド統一を取るなら SVG 推奨だが絵文字を禁止しない。
+- 適用範囲は**レッスン本文（lesson body / explain step）限定**。UI chrome（ナビ・ボタン・ラベル等）は従来どおり SVG アイコンのみ、絵文字NGを維持。
+- これは「UI では絵文字NG・src/icons の SVG を使う」という従来の明文ルール（logic/CLAUDE.md「Common gotchas」#5、ジャーナルの mood/weather/phase/streak のみ例外）への**追加例外**。レッスン本文に絵文字があっても旧ルールで消し戻さないこと。
+- 読み上げ(TTS)対策: 本文に入れたアイコントークン・絵文字は `stripMarkup`（src/richText.ts）で剥がし、読み上げで「炎 絵文字」等と喋らせない。emoji unicode 範囲とアイコントークンを strip 対象に追加する。
+- ロールアウトはサンプル先行: 1レッスンで見た目を作って Keita 承認 → カテゴリ単位で展開（過去のサムネ事故の教訓と同じ、[[feedback-logic-course-thumbnails]] のサンプル承認フロー踏襲）。
+
+**関連する別取り組み（図解 diagram の拡充）:**
+- レッスンは `visual:`（図の種類）+ `visualProps:`（データ）で SVG 図解を表示できる。図解コンポーネントは `src/visuals/index.ts` に68種登録済み。
+- カバレッジは ja explain ステップ 744 中 222（約30%）に図解あり（2026-05-26 集計）。残り約7割は文字のみ。手薄な高価値カテゴリ: numeracy(12%/50説明) > cognitive(13%) > issue(12%) > peakPerformance(13%) など。career系・easternPhilosophy は3〜7%。
+- インライン視覚要素（本記事の主題）と図解拡充は両輪で「文字ベースすぎる」を解消する。
+
+**実装状況（2026-05-26、全36レッスンファイル展開 完了・本番反映済み）:**
+- 記法は実装済み: 本文に `[icon:name]`（インラインSVGアイコン。`icon:` 固定prefixで `3:1`/`10:30` 等のコロンと衝突しない）と `:::tip` / `:::warn` / `:::point` / `:::note`（注記ボックス、kind別アイコン+テーマ色）。
+- 実装場所: `src/richText.ts`（パーサ・stripMarkup）、`src/components/RichLessonText.tsx`（ICON_REGISTRY・描画）、`src/lessonSlides.ts`（splitBody を callout-aware 化＝`:::`ブロックは分割の atomic unit）。
+- 執筆ガイドは `logic/CLAUDE.md` gotchas #5 に記載: 正準アイコン名は good/bad/point/warn（エイリアスは内部互換用）、name は小文字＋ハイフンのみ、意味アイコンは語ラベル併記、callout は1スライド最大1個・構造化済みの塊には使わない、密度目安 callout最大1/inlineアイコン2〜3、絵文字は話題物限定で `✓✗★` は生記号でなくアイコン記法。
+- 全展開完了: 2026-05-26 に全36レッスンファイル（ja/en）へ展開し本番反映。8デプロイバッチ（PR #219〜228）、各バッチ logic-coach 監査通過（哲学の概念正確性・career の事実精度・logic の論理概念も検証、誤り混入ゼロ）。図解タップナビ誤判定バグ（visual スライドの左右タップゾーンが図解操作を奪う）も同時修正済み。
+- Phase 2 候補（新規図解部品バックログ・任意・未着手）: AnswerContrastDiagram（良い回答/悪い回答の汎用対比、career 横断で効く）、RuleOf72・正規分布68/95/99.7・偽陽性グリッド・シンプソン・寄与度分解（numeracy）、クロノタイプ/1日の波形（peakPerformance）、QuestionLadder（critical）、So-What チェーン、空雨傘3段、StaircaseDiagram など。また既存 WhyWhyChain/SoWhat 等の visual は props ハードコードで事例差し替え不可→データ駆動化すれば文字重ステップに挿せる（dev-logic 拡張候補）。
+- 既知の別件（視覚化と無関係・別タスク）: career/feedbackCase 等の本文プローズに残る全角 `／`（TTS 債務、callout 外）、fermi-224/225 の数値・式の不整合。
+
+**注意点:**
+- 絵文字は端末/フォントで見た目が変わるので、ブランドの肝になる所は SVG を優先（だからハイブリッド）。
+- 新カテゴリへ展開する時は上記の執筆ガイド（logic/CLAUDE.md gotchas #5）に従い、サンプル先行→Keita 承認→カテゴリ単位展開のフローを守る。
+
+関連 memory: [[feedback-logic-course-thumbnails]]（サンプル承認フロー）、[[feedback-no-markdown-emphasis]]、[[project-logic-content-audit-20260525]]（レッスン品質の取り組み）
+
 ### feedback_logic_marketing.md
 
 ---
@@ -371,6 +476,28 @@ originSessionId: 2169e3c1-961b-480d-a217-61896b5d5363
 **Why:** チープに見えてブランド価値を下げる。ターゲット（若手ビジネスパーソン）に刺さらない。
 
 **How to apply:** 価格の安さを commodity（コーヒー・ランチ等）と比較しない。高い代替手段（面接塾・ビジネス書）との比較か、価値の直接訴求にとどめる。
+
+### feedback_logic_title_doing.md
+
+---
+name: feedback-logic-title-doing
+description: Logic のコース/レッスンの title は「〜する」動詞句（Doing 形）を維持する。category 名（分類ラベル）は名詞句に揃えてよいが title は別レイヤーで Doing を守る。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-25
+---
+
+Logic アプリの**コース title / レッスン title は「〜する」系の動詞句（Doing 形）で維持する**。
+
+**Why:** 2026-05-25 Keita 明示。logic-coach のカテゴリ監査で M-5「カテゴリ名『数字に強くなる』を名詞句『数値感覚』に統一」を提案した際、Keita から「タイトルは〜する という Doing を維持してね」と指示。title はユーザーに行動を促すトーンを保つのが狙い。分類ラベル（category 名）の一貫性とは目的が違う。
+
+**How to apply:**
+- コース title・レッスン title は「〜する」「〜を見る」「〜で考える」等の動詞句を維持する。リネームや新規作成の提案で title を名詞化しない。
+  - 例: コース title「数字に強くなる」はそのまま維持。一方 category 名は「数値感覚」のような名詞句に揃えてよい（title と category は別レイヤー）
+- category 名（分類ラベル）は名詞句で統一して OK（[[feedback-logic-course-thumbnails]] とは別軸の話）
+- 新コース提案・レッスン再編時も、提案する title は必ず Doing 形にする
+
+**関連 memory:** [[feedback-app-copy-neutral]]（アプリ UI 文言は中立丁寧体）、[[feedback-logic-course-thumbnails]]
 
 ### feedback_no_cxo_agent.md
 
@@ -579,6 +706,37 @@ Logic Android の内部テスト配信は **main 自動配信** で動いてい�
 
 関連: [[reference_deploy_commands]]
 
+### project_logic_content_audit_20260525.md
+
+---
+name: project-logic-content-audit-20260525
+description: 2026-05-25 に実施した Logic 全コンテンツ大規模監査キャンペーンの結果と成果物。カテゴリ再編は実装済(branch)、コンテンツ修正は Bucket 仕分けで進行中。
+metadata:
+  type: project
+  originSessionId: 2026-05-25
+---
+
+2026-05-25、Keita 不在(約2h)の間に林が subagent を並列オーケストレーションして Logic アプリの全コンテンツ監査キャンペーンを実施した。
+
+**Why:** カテゴリ監査(logic-coach)を起点に Keita が「レッスンのコース適合 / Visual 整合 / 受講順序 / レッスン単位の矛盾・スライド」まで全面見直しを指示。各エージェント提案→林 triage→実装→reviewer/test→push(ブランチ止め) のパイプラインで進めた。
+
+**実施フェーズ（すべて完了）:**
+- Phase1 カテゴリ/グループ再編(dev-logic): 7グループ構成へ。`restructure/categories` branch commit `3d07153`、QA green(tsc/eslint/vitest 122pass、Playwright の onboarding age step 1fail は既存バグで無関係と検証済)。カテゴリ改名は永続化に無影響(progress は lesson ID ベース)。
+- Phase2 レッスン↔コース適合(logic-coach): 最大論点 client-01/02 の title↔中身入れ替わり。
+- Phase3 Visual 整合(designer): ja 全239 explain 走査。lesson-304 アブダクションに演繹図(概念事故)、ThreePillars 等 default 流用多数。
+- Phase4 受講順序(logic-coach): extra(3xx)をまとめ後置の順序逆転6コース。並べ替えのみで解消。
+- Phase5 A-D レッスン精査(logic-coach×2/content-creator×2): focus の visualProps 実害バグ(default fallback)、fermi-224 計算誤り(ja のみ)、fermi-225 設問破綻、en パリティ多数。
+
+**成果物:** `logic/docs/CONTENT_AUDIT_20260525.md` に全 findings + triage(Bucket1=客観実装/2=要Keita判断/3=デザイン/4=別トラック)。
+
+**How to apply:**
+- 続きを再開するときはこの doc の triage を見る。Bucket1 は dev-logic 実装中、Bucket2/3/4 は Keita 判断待ち。
+- push ゲート方針: main は Keita 帰宅後にマージ。今回は branch+PR 止め(ceo 助言、本番自動デプロイ回避)。
+- 監査ノウハウは logic-coach 定義の「監査プレイブック」に反映済([[project-designer-subagent]] の logic-coach 版成長)。
+- 重要原則: バルクのコンテンツ生成(visualProps 一括追加・en 翻訳 backfill)はサンプル承認を取ってから展開([[feedback-logic-course-thumbnails]] と同じ運用)。
+
+**関連:** [[feedback-logic-title-doing]]、[[feedback-app-copy-neutral]]、[[project-logic-render-auto-deploy]]、[[reference-deploy-commands]]
+
 ### project_logic_mobile_only.md
 
 ---
@@ -659,7 +817,9 @@ metadata:
   originSessionId: 2026-05-22
 ---
 
-Logic の Render Production environment は **required reviewers なし** で自動デプロイされる設定（2026-05-22 設定変更）。
+Logic の Render Production environment は **required reviewers なし** で `deploy-production.yml` を承認なしで実行できる設定（2026-05-22 設定変更）。
+
+**【2026-05-26 訂正・重要】** 「main push で Render web が auto-deploy される」という下記の記述は実態と異なる。2026-05-26 にレッスン視覚化を8回 main にマージしたが、Render web は一度も自動再ビルドされず、本番 web は 5/25 の古いバンドルのまま取り残された。`gh workflow run deploy-production.yml -f confirm=yes` を手動実行して初めて当日ビルドに更新された。つまり **Render web の本番反映には手動 deploy-production.yml が必要**（main push の自動デプロイは当てにしない）。一方 **Android は android-deploy.yml が main push ごとに毎回フレッシュビルドして内部配信される**ので、モバイル本番は main マージで自動反映される（[[project-logic-android-deploy]]）。Logic はモバイル専用（[[project-logic-mobile-only]]）なので web 停滞のユーザー影響は無いが、「web で確認して最新が見えない」時はまず deploy-production.yml を手動実行すること。
 
 **Why:** 2026-05-22 Keita 明示「毎回 approve したくないよ。次回からは自動にして」。それまで Production environment に `required_reviewers` 保護ルールがあり、`gh workflow run deploy-production.yml -f confirm=yes` でも `workflow_dispatch` のたびに GitHub の environment 承認画面で Keita が手動 approve する必要があった。実害として：
 
@@ -671,7 +831,7 @@ Logic の Render Production environment は **required reviewers なし** で自
 
 **How to apply:**
 - 今後 Logic の Render Production への deploy は **承認操作不要**。`gh workflow run deploy-production.yml --repo keitaurano-del/logic -f confirm=yes` で即実行される
-- main への push でも Render の auto-deploy が動く（こちらは `render.yaml` の hook 経由、GitHub Action とは独立）
+- **main への push では Render web の auto-deploy は当てにしない**（上記 2026-05-26 訂正参照）。`render.yaml` に `autoDeploy: true` があるが実際は発火しないことが多い。2026-05-27 も PR #233 を main マージ後 12 分待っても未反映で、手動 `deploy-production.yml -f confirm=yes` を実行して初めて反映された（バンドル index-Cd_qnb4B.js → index-B-v5OeCk.js）。**Render web 反映は手動 workflow_dispatch で行うこと**。Android は main push で android-deploy.yml が毎回走るので自動反映される
 - 「Render に最新が反映されてない」と Keita が感じたら、まず確認すべきは：
   1. ブラウザキャッシュ無効化（DevTools → Network → Disable cache）でリロード
   2. `curl -s https://logic-u5wn.onrender.com/ | grep -oE "index-[a-zA-Z0-9_-]+\.js"` で現バンドル ID を見て、`curl -sI` の `last-modified` を確認
@@ -801,6 +961,31 @@ GitHub リポ `keitaurano-del/sengoku-chakai` → `keitaurano-del/en-chakai` に
 - まだ残ってる作業: (1) `render.yaml` の `name: sengoku-chakai` → `en-chakai`（Render サービス名は不可変なので新サービス作成 → 切り替え）、(2) ドメイン `en-chakai.com` の取得確認・DNS 設定・301 リダイレクト。これは [[task-en-chakai-domain]] / [[task-render-rename]] として個別判断。
 - 「千石」「Sengoku」が残っている12ファイルはほぼ全部が**地名としての文京区千石**（駅・所在地）なので保持して OK。
 - GitHub は古い URL から自動リダイレクトが効くので外部リンクは一定期間は動く。
+
+### project_task_manager.md
+
+---
+name: project-task-manager
+description: タスク管理専任 subagent「task-manager」を 2026-05-27 新設。ステータス管理・抜けもれ検知提言・担当アサイン提案・完了検証を担い、実装はせず委譲する調整役。正本は各プロジェクト docs/TASK_TRACKER.md。
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: db856c97-8f54-458c-a336-6dcb6aff69c6
+---
+
+2026-05-27、Keita 依頼で **task-manager** subagent を新設（`~/.claude/projects-meta/agents/task-manager.md`、agent-config に登録して全 sub-repo へ sync 済み）。
+
+**役割:** タスクを構造化してステータス（TODO / IN_PROGRESS / BLOCKED / REVIEW / DONE / CANCELLED）を一元管理し、依頼に明示されない暗黙サブタスク（i18n・両OS・テスト・回帰・受け入れ条件・永続化など）を先回りで洗い出して提言する。担当エージェントへのアサイン提案、依存・優先度管理、完了検証（DoD 照合）、ブロッカーのエスカレーションも担う。
+
+**Why:** 「タスクの抜けもれゼロを保証する調整役」が欲しいという Keita 依頼。過去に pm を削除した（[[project-agent-cleanup-20260511]]）が、今回は「実装はせず管理に専念」という明確な役割分担で再導入した。
+
+**How to apply:**
+- 自分ではコードを書かない（実装は dev-logic / designer / content-creator 等に委譲）。push / デプロイ判断はしない（Keita 専権）。
+- single source of truth は各プロジェクトの `docs/TASK_TRACKER.md`。状態更新は必ずそのファイルに反映してから報告する（[[feedback-direct-content-not-path]] 準拠で会話本文にも内容を展開）。
+- 報告は「結論 → 抜けもれ提言 → 次アクション」の順で簡潔に。
+- 初運用（2026-05-27）: logic 7件修正バッチ（T1-T7）と西丸町チラシ（NF-1〜4）を並行管理。`logic/docs/TASK_TRACKER.md` と `obsidian-vault/20-Projects/nishimarucho-flyer/TASK_TRACKER.md` で運用実証済み。
+
+関連: [[project-agent-cleanup-20260511]]、[[feedback-direct-content-not-path]]
 
 ### reference_deploy_commands.md
 
@@ -958,5 +1143,27 @@ Hermes TUI 内で `ls` 等のシェルコマンドを打つと、AI への query
 ## 関連 memory
 - [[project-openclaw-oauth]] — openclaw（別ツール）の OAuth 認証
 - [[reference-gemini-api]] — Gemini API キー（Hermes でも gemini/ provider として使える）
+
+### reference_logic_ci_lint_scope.md
+
+---
+name: reference-logic-ci-lint-scope
+description: Logic の CI(build-and-lint) は `eslint .` でリポ全体を lint する。ローカルの scoped eslint だと docs/samples-src を見逃し、push 後に CI が赤になる罠。
+metadata:
+  type: reference
+  originSessionId: 2026-05-26
+---
+
+Logic リポの CI（`.github/workflows/ci.yml` の build-and-lint ジョブ）は `npm run lint` = **`eslint .`（リポ全体）** を叩く。lint error が1件でもあるとジョブが失敗する（warning は失敗させない）。
+
+**Why（2026-05-26 に2回ハマった）:** logic/CLAUDE.md が案内するローカル lint コマンドは `eslint src/AppV3.tsx src/screens/ src/components/ src/hooks/ src/icons/` のように src 配下に限定されている。これだと `docs/samples-src/`（ドキュメント用サンプルの別パッケージ "logic-lesson-samples"）を lint せず、そこの error を見逃す。ローカルで「lint 0 error」でも、CI は `eslint .` で docs/samples-src まで見るので push 後に赤になる。実際 monthHue 未使用変数 → setState-in-effect と連続で踏んだ。
+
+**How to apply:**
+- デプロイ/PR 前のチェックは、scoped lint だけでなく **`node node_modules/.bin/eslint .`（CI と同じ全体 lint）で 0 error を確認**する。
+- ローカルに残置 git worktree（`.claude/worktrees/...`）があると `eslint .` がその古いコピーまで lint して紛らわしい false error を出す。真の数は `eslint . --ignore-pattern '.claude/**'` で確認するか、`git worktree list` で残骸を把握する。CI はクリーンチェックアウトなので worktree は影響しない。
+- error が出るのが docs/samples-src（本番アプリと無関係なサンプル）の場合の選択肢: (a) その場で直す、(b) eslint.config.js の `globalIgnores` に `docs/samples-src` を足して lint 対象から外す（別パッケージなので除外は妥当だが CI スコープ変更なので Keita 確認推奨）。2026-05-26 時点では (a) で個別対応した。
+- `eslint -f unix` フォーマッタはこの環境で使えない（出力空）。`-f compact` かデフォルト形式を使う。
+
+**関連 memory:** [[feedback-logic-lesson-visual-hybrid]]、[[reference-deploy-commands]]
 
 <!-- END: claude-config-memory -->
