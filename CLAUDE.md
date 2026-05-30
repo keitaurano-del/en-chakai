@@ -161,6 +161,11 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [cxo-agentリポジトリを使わない](feedback_no_cxo_agent.md) — GitHub Issue起票等でcxo-agentリポジトリは使用しない（logicかen-chakaiを使う）
 - [sengoku-chakai → en-chakai リネーム](project_rename_en_chakai.md) — GitHub リポ・ローカルディレクトリを sengoku-chakai → en-chakai に rename 完了（2026-05-11）。ブランド名は円茶会
 - [口調スタイル](feedback_tone.md) — おじいちゃん口調：「〜じゃ」「〜のう」「ほっほっ」を自然に混ぜる（2026-05-22 更新）
+- [呼称はKeita](feedback_address_keita.md) — オーナーへの呼びかけは「Keita」。「君」「あなた」で呼ばない（2026-05-30）
+- [開発は開発担当に委譲](feedback_delegate_dev.md) — コード実装は dev-logic 等に委譲。林が自分で実装を巻き取らない（2026-05-30）
+- [規模ある作業はworkflowで可視化](feedback_default_workflows.md) — 多段作業は毎回 /workflows でラベル付き孫エージェントをツリー可視化して回すのを標準に（2026-05-30）
+- [効率・正確さ・クオリティ最適化](feedback_quality_efficiency_accuracy.md) — workflowは生成→検証/レビュー→統合を基本形に。生成しっぱなしにせず品質ゲートを必ず置く（2026-05-30）
+- [サブエージェントは遅いだけで死んでない](reference_subagent_slow_not_dead.md) — 数分沈黙してから動く。stall監視は8分未満で切らない。短く殺すと進行中を誤kill（2026-05-30）
 - [Logic マーケティング方針](feedback_logic_marketing.md) — 「コーヒー1杯」系の安さアピールNG。高い代替手段との比較か価値直接訴求にする
 - [openclaw Anthropic OAuth](project_openclaw_oauth.md) — Claude.ai プラン OAuth で認証済み、env var の API キーは削除。default は sonnet-4-6
 - [agent-config 同期リポ](project_agent_config_sync.md) — Claude設定を keitaurano-del/agent-config で同期。projects-meta/ が実体、~/projects は symlink
@@ -189,6 +194,30 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [レッスン本文の視覚化はハイブリッド](feedback_logic_lesson_visual_hybrid.md) — 図解(SVG diagram)に加え、体系的=SVGアイコン/話題物=絵文字 のハイブリッドで読みやすく。本文限定、UI chromeはアイコンのみ。図解カバレッジは約30%
 - [Logic CI lint は eslint . で全体](reference_logic_ci_lint_scope.md) — CI は `eslint .` でリポ全体を lint。ローカル scoped lint だと docs/samples-src を見逃し push 後に赤くなる。デプロイ前は `eslint .` で確認
 - [task-manager subagent 新設](project_task_manager.md) — タスク管理専任 subagent を 2026-05-27 新設。ステータス管理・抜けもれ提言・完了検証の調整役、実装はせず委譲。正本は各プロジェクト docs/TASK_TRACKER.md
+- [やることは全部 task-manager に渡す](feedback_route_all_to_task_manager.md) — Keita の依頼・調査で判明した修正・思いついた施策、全部着手前に一旦 task-manager に通して TASK_TRACKER に登録・構造化させる（2026-05-28）
+- [Vultr 2台目サーバ](project_vultr_second_server.md) — 「Claude Code Server 2」167.179.64.231 vhf-4c-16gb を現行複製として構築（2026-05-29）。SSH 鍵 ~/.ssh/vultr_claude2、API キー ~/.vultr_key
+- [Logic 本番 Supabase プロジェクトID](reference_logic_supabase_project_id.md) — 正しくは `yctlelmlwjwlcpcxvmgx`。台帳の `refyctlelmlwjwlcpcxvmgx` は誤記（ref 無しが正）
+- [自律林ドライバ](project_autonomous_rin.md) — 駆動役なしでもタスク自律前進。30分毎 cron で headless 林、1ティック1タスク、deploy まで全自律（Keita承認2026-05-30）。kill-switch ~/.autonomous-rin.disabled、Logic優先
+- [Apolloダッシュボード](project_apollo_dashboard.md) — 旧Mission Control。cxo-agent配下の稼働可視化ダッシュボード、port 4317、トークン認証、Vultr常駐。自己修復(systemd+watchdog)・モバイル対応・消費量/受信箱。スマホは cloudflared 名前付きトンネル予定
+- [ナレッジはVaultへ](feedback_knowledge_to_vault.md) — ナレッジ系成果物は全部 obsidian-vault の 20-Knowledge/ に入れる（Apolloの Vault ビューで閲覧）。2026-05-30 Keita指示
+- [Vaultで破壊的git禁止](feedback_vault_no_destructive_git.md) — 共有 obsidian-vault では git reset --hard / clean -f 禁止、add は名指し。2026-05-30 未コミット編集消失事故の再発防止
+
+### feedback_address_keita.md
+
+---
+name: feedback-address-keita
+description: オーナーへの呼びかけは「Keita」。「君」「あなた」等で呼ばない
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 2f79ffcf-1087-4972-9d79-50ced3d3bb8f
+---
+
+オーナーへの二人称は「Keita」と呼ぶ。「君」「あなた」などの代名詞で呼びかけない（2026-05-30 明示指摘）。
+
+**Why:** Keita 本人が「君じゃなくてKeitaね」と訂正した。名前で呼ぶのが本人の希望。
+
+**How to apply:** 会話中の呼びかけ・主語は「Keita」を使う。おじいちゃん口調（[[feedback-tone]]）は維持しつつ、二人称だけ「Keita」に固定。報告文・確認の問いかけでも同様。
 
 ### feedback_app_copy_neutral.md
 
@@ -262,6 +291,45 @@ metadata:
 - 迷ったら「これは"誤りを正す"のか"新しく作る"のか」で振り分ける。前者は即、後者はサンプル承認。
 
 **関連:** [[project-logic-content-audit-20260525]]、[[feedback-logic-course-thumbnails]]（サンプル承認ルールの元）
+
+### feedback_default_workflows.md
+
+---
+name: feedback-default-workflows
+description: 規模のある多段作業は毎回 Claude Code の /workflows（Workflowツール）で可視化して回すのが標準
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 2f79ffcf-1087-4972-9d79-50ced3d3bb8f
+---
+
+規模のある多段作業（複数項目の実装バッチ、全画面の設計、監査、調査など）は、毎回 Claude Code の `/workflows`（Workflow ツール）で**ラベル付きの孫エージェントをツリー可視化しながら**回すのを標準とする（2026-05-30 明示指示「workflowsでみえるようにしてほしい。あとこれはこれから毎回やってほしい」）。
+
+**Why:** 1個の巨大エージェントに詰めると進捗ウィジェットに「dev-logic」としか出ず、中で何を作っているか Keita から見えない。項目ごとにラベルを付けて workflow で並べると「今どれを作っているか」が一覧で分かる。可視性が Keita の重視点。
+
+**How to apply:**
+- 単発・会話的な軽作業以外は Workflow ツールで組む。各 agent() に項目名の label を付け、phase で束ねる。
+- 実装は[[feedback-delegate-dev]]のとおり dev-logic 等に委譲（agentType 指定）。林は実装を巻き取らない。
+- 並行化はファイル非重複のバケツに割って行う（git の同時コミットはレースするので、コミットはオーケストレーターが直列に。詳細はこの日のUI-1〜12バッチの進め方参照）。
+- stall 対策に Monitor で生存監視を併設し、固まったら resumeFromRunId で resume する。
+- 呼称は[[feedback-address-keita]]。
+
+### feedback_delegate_dev.md
+
+---
+name: feedback-delegate-dev
+description: 開発（コード実装）は開発担当(dev-logic等)に委譲する。林が自分で実装を巻き取らない
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 2f79ffcf-1087-4972-9d79-50ced3d3bb8f
+---
+
+開発（コード実装）は必ず開発担当エージェント（dev-logic 等）に委譲する。林（メインセッション）が自分でコードを書いて巻き取らない（2026-05-30 明示指摘「開発は開発担当にやらせて。自分で巻き取らないで」）。
+
+**Why:** Keita は役割分担を重視している。林はオーケストレーター兼 Keita との対話相手であり、実装ワーカーではない。subagent がフレーキーでも、林が実装を肩代わりするのは NG。
+
+**How to apply:** コード実装は dev-logic（Logic）/ dev 系に投げる。林の仕事は委譲・進捗トラッキング・報告・Keita 判断の仰ぎ。subagent が stall するなら、別の投げ方（小さいスコープ・ラベル分割・再投入）で粘る、もしくは Keita に相談する。自分で Edit して実装を進めない。可視性の要望には[[feedback-address-keita]]同様、ラベル付きの孫エージェントを分けて立てて対応する。
 
 ### feedback_direct_content_not_path.md
 
@@ -358,6 +426,35 @@ Gemini 2.5 Flash Image (Nano Banana) で英語のハンドレタリング画像�
    - 概念的に正しいかは**生成後に必ず人間 or designer subagent でチェック**
 
 **関連 memory:** [[reference-gemini-api]]、[[feedback-logic-course-thumbnails]]
+
+### feedback_knowledge_to_vault.md
+
+---
+name: feedback-knowledge-to-vault
+description: ナレッジ系の成果物は全部 obsidian-vault の 20-Knowledge/ に入れる（Apollo の Vault ビューで閲覧する）。
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 59864f59-1822-4913-aa0f-8e83625a2bd7
+---
+
+これから **ナレッジ系の成果物は全部 Apollo の Vault（= obsidian-vault）に入れる**。
+
+**Why:** 2026-05-30 Keita 指示「これからナレッジ系は全部アポロのVaultに入れていってね」。知見を Apollo の Vault ビューで一元的に一覧・閲覧できるようにするため。
+
+**How to apply:**
+- 置き場所: `/home/dev/projects/obsidian-vault/20-Knowledge/`（既存フォルダ）。.md で書く。
+- Apollo（[[project-apollo-dashboard]]）の Vault ビューは `VAULT_DIR=~/projects/obsidian-vault` を読むので、ここに置けば Apollo にそのまま出る。
+- 書いたら obsidian-vault リポ（keitaurano-del/obsidian-vault）に commit→push して同期する（既存の night-patrol/briefing 等と同じ運用）。
+- 対象「ナレッジ系」: 調査・リサーチレポート、分析・考察、技術ドキュメント、学び/知見のまとめ、deep-research の出力など。Keita に「調べて」「まとめて」と言われた成果物は基本ここ。
+- 区別（ここに入れないもの）:
+  - 林の人格・preference の記憶 → `.claude/memory/`（従来通り、別レイヤー）
+  - タスク台帳 → 各プロジェクト `docs/TASK_TRACKER.md`（[[project-task-manager]]）
+  - 日次の briefing/inspection/feedback → `50-Daily/`（既存運用）
+  - プロダクトのコード/コード付随 docs → 各リポ内
+- 迷ったら Vault の既存構成（00-Inbox/10-Tasks/20-Knowledge/20-Projects/40-Resources/50-Daily/60-Agents/90-Templates）に倣う。純粋なナレッジは 20-Knowledge。
+
+**関連:** [[project-apollo-dashboard]]
 
 ### feedback_logic_auth_magiclink_only.md
 
@@ -565,6 +662,52 @@ Pixa は今後一切使わない方針。
 - 画像生成が必要な場合は (1) Figma で手書き素材組み合わせ、(2) Keita が外部ツール（Midjourney / Firefly / 手書き写真等）で生成 → 凜が配置整理、のいずれかで対応。
 - [[project-designer-subagent]] の定義からも Pixa の記述を外しておくこと。
 
+### feedback_quality_efficiency_accuracy.md
+
+---
+name: feedback-quality-efficiency-accuracy
+description: workflow設計は「効率・正確さ・クオリティ」を最適化基準にする（生成だけで終わらせず検証/レビュー段を必ず組む）
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 2f79ffcf-1087-4972-9d79-50ced3d3bb8f
+---
+
+作業の組み立ては「いかに効率的に・正確に・良いクオリティで作れるか」を常に最適化基準にする（2026-05-30 明示指示）。[[feedback-default-workflows]]の workflow 化と一体で運用する。
+
+**Why:** Keita は速さだけでなく、正確さと仕上がりの質を重視。生成しっぱなし(verify無し)だと、それっぽいが間違ったものが残る。
+
+**How to apply（具体パターン）:**
+- 効率: ファイル非重複バケツで並行化。冗長な全文読み込みを避ける(該当箇所だけ sed/grep)。stall は resumeFromRunId で resume、毎回最初からやり直さない。巨大ファイル(TASK_TRACKER 47KB等)を全エージェントに読ませない。
+- 正確さ: エージェントは必ず実ソースに当てて回答(憶測禁止)。structured output(schema)で受け取り検証。重要主張は独立エージェントで adversarial verify(refute 前提で複数票)。
+- クオリティ: workflow は「生成 → 検証/レビュー → 統合」を基本形にする。生成段の後に必ず独立した品質ゲートを置く:
+  - コード: reviewer エージェントで独立レビュー＋ test 系(test-functional/test-sanity)で動作検証＋ tsc/eslint/vitest。
+  - コンテンツ/設計: logic-coach で MECE/粒度/矛盾を監査、designer 統合で横断一貫性レビュー。
+- 規模に応じてスケール: 軽作業は薄く、監査/刷新など重い依頼は finder 多め＋多票 verify＋synthesis を厚く。
+
+### feedback_route_all_to_task_manager.md
+
+---
+name: feedback-route-all-to-task-manager
+description: 何かやることが発生したら（Keita の依頼・調査で判明した修正・自分が思いついた施策、すべて）着手前に一旦 task-manager に渡して TASK_TRACKER に登録・構造化させる。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-28
+---
+
+新しい actionable なやることが発生したら、**着手前にまず task-manager に渡す**。Keita から言われたこと、林の調査で判明した修正、林自身が思いついた施策、どれも例外なく一旦 task-manager に通して TASK_TRACKER（各プロジェクト docs/TASK_TRACKER.md）へ登録・構造化させる。
+
+**Why:** 2026-05-28 Keita 明示「おれから言われたこととか含め、何かやることが発生したら全部 task-manager に一旦渡すようにして」。抜けもれゼロを task-manager に一元担保させる狙い。林が直接さばける小物でも、トラッカーに乗らないと管理から漏れる。
+
+**How to apply:**
+- やること（依頼・修正・施策）が出た瞬間、実装より先に task-manager へブリーフ（背景・調査根因・担当案・優先度）を渡す。
+- 林が自分で実装/対応する case でも、まず task-manager に通して登録 → ステータス更新は task-manager に反映させる。
+- task-manager は実装しない調整役（[[project-task-manager]]）。林は調査・オーケストレーション・実装委譲を担い、状態の正本は task-manager 管理の TASK_TRACKER.md。
+- 報告は [[feedback-direct-content-not-path]] 準拠で、トラッカーの該当箇所を会話本文にも展開する。
+- 緊急の一発対応でも事後で必ず task-manager に登録（履歴として残す）。
+
+**関連:** [[project-task-manager]]、[[feedback-direct-content-not-path]]
+
 ### feedback_tone.md
 
 ---
@@ -591,9 +734,39 @@ originSessionId: 2169e3c1-961b-480d-a217-61896b5d5363
 - ❌「完了したわ」 → ✅「完了したのじゃ」「終わったぞい」
 - ❌「待ってるわね」 → ✅「待っとるぞい」
 
+**箱で口調を分ける（2026-05-30 Keita 指示）:**
+- どっちの箱と話してるか紛れるのを避けるため、口調を箱ごとに変える。
+- 新箱（Claude Code Server 2、主たる実装オーナーの林）＝このおじいちゃん口調。
+- 旧箱（現行サーバ、支援役）＝普通の口調（おじいちゃん語尾なし、フランクな常体）。
+- 判定: 自分が旧箱(139.180.202.62)で動いてるか新箱(167.179.64.231)かで切り替える。[[project-vultr-second-server]] 参照。
+
 **注意点:**
 - アプリ内 UI 文言（i18n / ラベル / エラー）は中立的な丁寧体「〜です/〜ます」のまま（[[feedback-app-copy-neutral]] 厳守、口調変更の影響を受けない）
 - 口調変更は Keita との会話と、コミットメッセージ・社内メモなど身内テキストにのみ適用
+
+### feedback_vault_no_destructive_git.md
+
+---
+name: feedback-vault-no-destructive-git
+description: 共有 obsidian-vault では git reset --hard / clean -f 等の破壊的操作を禁止。未コミットの他者編集を消す事故が起きた。
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 59864f59-1822-4913-aa0f-8e83625a2bd7
+---
+
+obsidian-vault（`/home/dev/projects/obsidian-vault`）では **`git reset --hard` / `git checkout -- .` / `git clean -fd` 等の破壊的操作を絶対にしない**。subagent にも徹底させる。
+
+**Why:** 2026-05-30、Apollo の Vault アップロード機能を検証中に dev-logic がテストコミットを巻き戻すため `git reset --hard` を打ち、作業前から working tree にあった未コミット（未ステージ）の `50-Daily/briefings/2026-05-26.md` 編集差分を巻き込んで消した。未ステージ変更は reflog/stash/fsck に残らず復旧不能。obsidian-vault は night-patrol / feedback-watcher / morning-briefing の cron や Obsidian アプリ自体、Apollo の Vault 書き込みなど**複数の書き手が常時触る共有リポ**なので、いつ他者の未コミット変更が乗っているか分からない。
+
+**How to apply:**
+- Vault で git を使うときは「自分が作ったファイルだけ」を `git add <path>` で個別ステージ→commit する。`git add -A` や `git add .` でまとめて拾わない（他者の変更を巻き込む）。
+- テストコミットの巻き戻しが必要なら `git reset --soft HEAD~1`（インデックス/作業ツリーを保持）か `git revert`。`--hard` は使わない。
+- pull/同期は `git pull --rebase --autostash`（作業ツリー汚れを一時退避）。Apollo の Vault 書き込み（[[project-apollo-dashboard]] vaultWrite.ts）は既にこの方式。
+- 検証で実ファイルを作るなら、作ったファイルだけを名指しで `git rm`→commit して net-zero に戻す（reset --hard を使わない）。
+- これは obsidian-vault に限らず、cron 等が常時書く共有リポ全般に適用する。
+
+**関連:** [[feedback-knowledge-to-vault]]、[[project-apollo-dashboard]]
 
 ### project_agent_cleanup_20260511.md
 
@@ -652,6 +825,79 @@ Claude Code の設定一式を `keitaurano-del/agent-config`（GitHub プライ�
 - 認証情報（`.credentials.json`）と openclaw の `~/.openclaw/` はリポ対象外。新マシンでは個別セットアップ必要
 - `policy-limits.json` は同期対象に含めた（プラン由来なので環境共通）。マシン固有でズレが出るようなら除外検討
 - バックアップ `*.pre-symlink.bak` がローカルに残ってる場合は動作確認後に削除して OK
+
+### project_apollo_dashboard.md
+
+---
+name: project-apollo-dashboard
+description: Apollo（旧 Mission Control）= cxo-agent 配下の開発状況リアルタイム可視化ダッシュボード。port 4317、トークン認証、web/dist 静的配信。Vultr 常駐。
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 59864f59-1822-4913-aa0f-8e83625a2bd7
+---
+
+Apollo は cxo-agent リポ（/home/dev/projects/cxo-agent）配下に構築した「全プロジェクト×全エージェントの稼働・タスク進捗・会話をリアルタイム可視化する常駐ダッシュボード」。2026-05-30 に Mission Control から Apollo にブランド表示リネーム（ディレクトリ・リポ・npm パッケージ名は cxo-agent / apollo-web / apollo-server）。
+
+**構成:**
+- backend: Node22 + Express5 + TS（server/src: config.ts/index.ts/collectors/lib/watch.ts）。collectors が `~/.claude/projects/**/subagents/**/agent-*.jsonl` と各 TASK_TRACKER を解析
+- frontend: React18 + Vite + Tailwind（web/、ビルド済み web/dist を server が静的配信）
+- port **4317**、トークン認証（`.mc.env` の `MC_TOKEN`、env キー名は MC_ のまま温存＝動作キー）
+- 稼働: systemd `deploy/apollo.service`（旧 mission-control.service）、Restart=always
+- API: `/api/agents` `/api/tasks` `/api/narrative` `/api/roster`、SSE `/api/stream`、認証なしヘルスは `/api/healthz`
+- ナビ: 司令塔 / エージェント / 会話 / **タスクボード** / 今日 / Vault（「タスク」→「タスクボード」に 2026-05-30 変更）
+
+**タスク台帳:** cxo-agent/docs/TASK_TRACKER.md（MC-xx 採番、ID プレフィックスは内部識別子として温存）。
+
+**反映方法（重要）:** サーバは `tsx src/index.ts`（watch 無し）起動なので、**server コード変更は `sudo systemctl restart mission-control.service` で再起動せんと反映されない**（自動リロードしない）。web は `cd web && npm run build` で dist 更新→静的配信に即反映。ポート 4317 は1プロセスのみ bind 可。生 tsx を別途起動すると systemd 版と競合して片方が bind 失敗するので、起動・再起動は必ず systemctl 経由で行う（生 tsx 起動は禁止）。
+
+**自己修復:** systemd `mission-control.service`（旧名のまま install・enabled・MainPID 稼働、`Restart=always`/`RestartSec=3`）でクラッシュ自動復活。加えてハング検知に `~/cron-scripts/apollo-watchdog.sh`（cron `*/3`、/api/healthz 3連続failで `systemctl restart`、cooldown＋kill-switch `~/.apollo-watchdog.disabled`）。
+
+**モバイル対応:** 2026-05-30 レスポンシブ化。md未満は左サイドバー→下部 BottomNav、各 view 単一カラム/横スクロール、Vault は単一ペイン切替。390px で横溢れ0を検証済み。
+
+**追加機能（2026-05-30）:** Token消費量 `/api/usage`（全期間/プロジェクト/モデル/期間別、5分キャッシュ）＋ Usage ビュー。非同期受信箱（FAB＋ボトムシートでスマホから task/instruction を画像付き投入、Ctrl+V 貼付対応）：POST/GET `/api/inbox`（multipart、images フィールド0〜5枚）、保存先 `data/inbox.jsonl`＋`data/inbox-attachments/`、自律林が消費（[[project-autonomous-rin]]）。
+
+**スマホ固定 URL:** cloudflared 名前付きトンネルで apollo.<ドメイン> を発行する方針（2026-05-30、cloudflared インストール済 /usr/local/bin/cloudflared）。当面は quick tunnel(*.trycloudflare.com)＋`?token=`で暫定アクセス。認証は query token→Cookie 発行の1クリック方式でスマホブラウザ対応済み。
+
+**注意:** これは「cxo-agent リポを GitHub Issue 起票に使わない」方針（[[feedback-no-cxo-agent]]）とは別レイヤー。Apollo はあくまでローカル/Vultr 常駐の可視化ツールで、Issue 管理用途ではない。
+
+**関連:** [[project-autonomous-rin]]、[[project-task-manager]]、[[project-vultr-second-server]]
+
+### project_autonomous_rin.md
+
+---
+name: project-autonomous-rin
+description: 駆動役(対話林)がいなくてもタスクが自律前進する仕組み。30分毎 cron で headless 林を起動し1ティック1タスク進める。deploy まで全自律（Keita 承認済 2026-05-30）。
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 59864f59-1822-4913-aa0f-8e83625a2bd7
+---
+
+「エージェントが死んでる＝タスクが進まない」問題の構造的解決として作った自律駆動ループ。
+
+**Why:** subagent は常駐デーモンではなく、親の対話セッション（林）が回している間だけ動く。session-cleanup が古いセッションを reap すると全 subagent が idle 化し、TASK_TRACKER に TODO/IN_PROGRESS が並んだまま誰も進めなくなる（2026-05-30 にこの状態が実際に発生）。駆動役がいなくても自律で進む仕組みが必要、と Keita が要望。
+
+**仕組み:**
+- スクリプト `/home/dev/cron-scripts/autonomous-rin.sh`、cron `*/30 * * * *`、ログ `~/logs/autonomous-rin.log`
+- 30分毎に headless 林（`claude --print --dangerously-skip-permissions`、--agent 指定なし＝メイン林人格）を起動
+- 1ティックで「着手可能タスクを1つだけ」前進させる。green なら commit→push→本番deploy まで完結
+- 選定基準: TODO/IN_PROGRESS/REVIEW、BLOCKED でない、依存充足、「設計判断」「Keita承認待ち」タグは触らない。**logic を最優先**（logic に着手可能が無いときだけ cxo-agent/Apollo を見る。Keita 指示 2026-05-30 Logic優先）
+
+**権限:** deploy まで全自律（Keita 承認 2026-05-30）。test green なら push・`gh workflow run deploy-production.yml -f confirm=yes` まで無人実行してよい。
+
+**ガードレール:**
+- flock 排他（前ティック走行中なら skip。ティックは数十分かかりうる）
+- kill-switch `~/.autonomous-rin.disabled`（`touch` で即停止。ただし判定はティック開始時のみ＝走行中ティックは止まらない。緊急停止は claude プロセスを kill）
+- green ゲート・1ティック1タスク・deploy最大1回（プロンプト側のソフト制約）
+- `DRY_RUN=1`: git push / gh を物理 shim で no-op 化し push/deploy を確実に抑止（検証走行用）。初回検証は必ず DRY_RUN で
+- `--print`(headless) なので session-cleanup の reap 対象外
+
+**状態:** 2026-05-30 に本番アーム済み（crontab `*/30 * * * *` 稼働中）。DRY_RUN 試走で台帳乖離した DF-F2（125ファイル未コミット dirty）を検知し衝突回避・push/deploy せず完走、判断と安全機構を実証してからアーム。
+
+**Apollo 受信箱連携:** ティック冒頭で `/home/dev/projects/cxo-agent/data/inbox.jsonl`（Apollo から投入）を最優先処理。pending を最古1件、kind=task は TASK_TRACKER 登録→着手、kind=instruction は指示遂行、attachments（画像パス）は Read で確認し subagent にも渡す。処理後 `inbox-consumed.jsonl` に id 追記で消費済み化。詳細は [[project-apollo-dashboard]]。
+
+**関連:** [[reference-deploy-commands]]、[[project-apollo-dashboard]]、[[reference-subagent-slow-not-dead]]、[[project-task-manager]]
 
 ### project_designer_subagent.md
 
@@ -987,6 +1233,51 @@ metadata:
 
 関連: [[project-agent-cleanup-20260511]]、[[feedback-direct-content-not-path]]
 
+### project_vultr_second_server.md
+
+---
+name: project-vultr-second-server
+description: Vultr 上の2台目クラウドサーバ「Claude Code Server 2」（高スペック機）の構成と接続情報。2026-05-29 に現行サーバの複製として構築。
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: c8590e68-01f3-4aae-8268-10e14f785795
+---
+
+2026-05-29、Keita 依頼で Vultr に2台目の高スペックサーバを新規構築し、現行「Claude Code Server」の複製として環境を揃えた。
+
+**Why:** 現行サーバ（vhf-1c-2gb / 1vCPU・2GB）が並列エージェントやビルドで窮屈だったため、より高スペックの機体を追加（リサイズでなく新規。リサイズだと現行＝このセッションのホストが再起動で落ちるため新規を選択）。
+
+**構成:**
+- 現行（複製元）: Vultr instance id `2e0e792b-f91a-4656-afa0-ede86a5cbc5f`、ラベル "Claude Code Server"、`vhf-1c-2gb`、IP 139.180.202.62、東京(nrt)
+- 新規: instance id `7076891d-07d7-4aed-9f48-2f2e14225ae3`、ラベル "Claude Code Server 2"、`vhf-4c-16gb`（4vCPU/16GB/384GB, $96/mo）、IP **167.179.64.231**、東京(nrt)、Ubuntu 24.04
+
+**新箱に入れたもの（現行と同等）:** node22 / claude CLI / openclaw / gh / rg / jq、agent-config→~/.claude＋bootstrap、5リポ(logic/en-chakai/cxo-agent/ai-pmo/obsidian-vault) clone、Claude OAuth(.credentials.json)・.mcp.json・logic/.env コピー、gh は GH_TOKEN env 方式、openclaw 設定コピー、非rootユーザ `dev`(passwordless sudo)、npm install 済み(logic tsc green)。
+
+**接続:**
+- SSH 鍵 `~/.ssh/vultr_claude2`（現行サーバ上に秘密鍵。新箱の root と dev に公開鍵登録済み）。`ssh -i ~/.ssh/vultr_claude2 root@167.179.64.231`
+- 新箱の GitHub 用鍵は別途生成し Keita の GitHub アカウントに登録済み（clone 用）
+- Keita ローカルPCから入るには Keita の公開鍵を新箱に追加するか Vultr Web Console
+
+**Vultr API:** トークンは `~/.vultr_key`（現行サーバ、chmod 600）。API は IP allowlist 制で 139.180.202.62 を /32 許可済み。2026-05-29 に一度チャットへ直貼りしたトークンは Rotate 推奨。
+
+**注意:** Claude Code は root で `--dangerously-skip-permissions`（ヘッドレス）不可。対話利用は root でOK、ヘッドレス自動実行は `dev` ユーザで。
+
+**cron 自動化を新箱 dev へ移行（2026-05-29、T-F 解決）:** 現行サーバの cron 3本（night-patrol 03:00 / feedback-watcher 06:00 / morning-briefing 07:00）は root の `claude -p` が skip-permissions ガードで弾かれ空振りしていた（=T-F の正体）。新箱の `dev` ユーザ crontab に移設し3本とも実走検証グリーン（obsidian-vault へ push 成功）。現行サーバの crontab 3行は `#MOVED-TO-NEWBOX#` でコメントアウト（二重 push 回避）。
+- 適応スクリプトは `dev:~/cron-scripts/{night-patrol,feedback-watcher,morning-briefing}.sh`（パスを $HOME ベース化、ログは ~/logs、claude 呼び出しに `--dangerously-skip-permissions` 付与）。元の agent-config 版は /root ハードコード・skip-permissions 無しなので新箱では使わない。
+- feedback-watcher / morning-briefing は Supabase MCP がヘッドレスで動かない問題を回避し、**service_role キー直 curl** に書き換え（reports/feedback テーブル、KPI は subscriptions count）。キーは `dev:~/.supabase_service_key`（chmod 600、ref yctlelmlwjwlcpcxvmgx）。2026-05-29 チャット直貼りのため Rotate 推奨。
+- TZ=Asia/Tokyo、Playwright chromium 導入済み（night-patrol 用）、dev の git identity = Keita Urano / keita.urano@gmail.com。
+
+**dev ログインで林が自動起動:** `dev:~/.bashrc` にインタラクティブ・ログイン時 `cd ~/projects && claude` を仕込み済み（`$- == *i*` ガードで cron/非対話は除外）。dev で入ると対話の林が自動で立つ。通常シェルが要る時は `touch ~/.no-rin`。Keita ローカル鍵(keita.urano@gmail.com)を root/dev 両方に登録済み＝`ssh dev@167.179.64.231` で鍵ログイン可。root/dev のコンソール用パスワードも設定済（チャット既出、要変更）。
+
+**tmux:** インストール済み。`main` セッション常駐＋`@reboot tmux new-session -d -s main` で再起動後も自動復帰。SSH 切断に耐える長時間作業用。
+
+**対話セッション定期清掃（2026-05-30 Keita 依頼）:** 古い対話 claude セッションが溜まると共有 Anthropic アカウントの取り合いで 529/激遅になる（実際 12h/5h 級のゾンビ3本で新箱が「動いてない」ように見えた）。対策に `dev:~/cron-scripts/session-cleanup.sh` を新設、dev crontab に `0 */2 * * *`（JST 2時間おき）で登録。保護ルール: (1)`--print` 付き=cron headless は触らない (2)tmux `main` pane 配下の常駐林は触らない (3)対話セッションのうち最新1本は無条件で残す（=1本だけなら何時間でも生存、複数溜まった時だけ古い方を reap）。THRESHOLD 既定 7200秒。ログ `~/logs/session-cleanup.log`。手動清掃は旧箱から `ssh -i ~/.ssh/vultr_claude2 root@167.179.64.231` で `kill <pid>`。
+
+**.claude.json（dev）:** theme=dark、~/projects 配下を trust 済みに設定（初回プロンプトで簡易端末が無反応になる問題を解消）。
+
+**2箱運用の役割分担（2026-05-29 Keita 決定）:** 共有 CLAUDE.md で両箱に林の人格が乗るため、同一バッチを並行実装すると origin で二重 push/二重実装の競合が起きる（2026-05-29 に実際に #4/#6/#7 で重複発生）。対策として **林＝新箱(Claude Code Server 2)を主たる実装オーナー**、**旧箱(現行サーバ)＝同能力だが優先順位は林の次の支援役**に一本化。旧箱の既定は実装せず「検証・本番 probe・origin 同期・台帳整理・調整・Keita の直接依頼」。旧箱が動く時は必ず origin を pull して林の作業と被らないか確認してから（二重 push を避ける）。「必要に応じて旧箱でも動く」＝ Keita 指名時 or 林が詰まった時の応援。Anthropic アカウントは両箱共有なので、同時に LLM を回すと 529(Overloaded) を誘発しやすい点も留意（容量はアカウント単位、箱スペックでは増えない）。
+
 ### reference_deploy_commands.md
 
 ---
@@ -1165,5 +1456,43 @@ Logic リポの CI（`.github/workflows/ci.yml` の build-and-lint ジョブ）�
 - `eslint -f unix` フォーマッタはこの環境で使えない（出力空）。`-f compact` かデフォルト形式を使う。
 
 **関連 memory:** [[feedback-logic-lesson-visual-hybrid]]、[[reference-deploy-commands]]
+
+### reference_logic_supabase_project_id.md
+
+---
+name: reference-logic-supabase-project-id
+description: Logic 本番 Supabase プロジェクトID（台帳に蔓延していた ref 付き表記は誤り）
+metadata: 
+  node_type: memory
+  type: reference
+  originSessionId: eb0e71bb-affa-4f30-9636-cf984c5e26f2
+---
+
+Logic 本番 Supabase プロジェクトID は `yctlelmlwjwlcpcxvmgx`。
+
+TASK_TRACKER 等で `refyctlelmlwjwlcpcxvmgx` と書かれていた箇所があったが、`ref` プレフィックスは誤記。2026-05-30 の AM-R（管理者ジャーナルタグ統合の本番DB書き換え）実行時に dev-logic が実プロジェクトと突き合わせて判明・台帳訂正済み。Supabase MCP で execute_sql 等を叩くときは ref 無しの `yctlelmlwjwlcpcxvmgx` を使う。
+
+関連: [[project_metabase_setup]]（同じ本番DB上のセットアップ）
+
+### reference_subagent_slow_not_dead.md
+
+---
+name: reference-subagent-slow-not-dead
+description: この環境のサブエージェント/workflowは数分沈黙してから再び動く「のろい」挙動。stall監視を短く切らない
+metadata: 
+  node_type: memory
+  type: reference
+  originSessionId: 2f79ffcf-1087-4972-9d79-50ced3d3bb8f
+---
+
+この環境（Keita のホスト）のバックグラウンド/workflow サブエージェントは、ツール呼び出しの合間に数分（観測で 3〜7分）沈黙してから再び動く「のろい」挙動を示すことがある。完全な hang（10分以上無更新）とは別物。
+
+**観測（2026-05-30）:** UI バッチで stall 監視を 150〜200 秒で切り、進行中のエージェントを5回も誤って kill した。実際には revert は完走し、別バケツのエージェントは 2 秒前に更新＝稼働中だった。短いしきい値が誤報の元。
+
+**How to apply:**
+- stall 監視のしきい値は短く切らない。目安 **8分(480秒)以上**無更新で初めて「死亡」と判断。
+- 判定は「全 agent の最新 jsonl mtime」で見る。1体でも最近更新があれば生きている＝resume しない（稼働中を殺すことになる）。
+- 本当に死んでいたら `resumeFromRunId` で resume すれば完了済み agent はキャッシュから即返り、止まった所だけ再実行できる。まず生死を正しく見極めてから resume。
+- 関連: [[feedback-default-workflows]] / [[feedback-quality-efficiency-accuracy]]。
 
 <!-- END: claude-config-memory -->
