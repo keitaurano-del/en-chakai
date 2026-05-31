@@ -203,6 +203,11 @@ agent-config の `projects/-root-projects/memory/` から sync。個別ファイ
 - [Vaultで破壊的git禁止](feedback_vault_no_destructive_git.md) — 共有 obsidian-vault では git reset --hard / clean -f 禁止、add は名指し。2026-05-30 未コミット編集消失事故の再発防止
 - [エージェント9体厳選+人格付与](project_agent_roster_20260531.md) — 2026-05-31 未使用6体削除し開発9体へ。全9体に技術的気質ベースの人格付与（蓮/棚町/紺野/編/関/論堂/試野/夜目/耳塚）。会話はApollo Feedに出る
 - [TODO残してる時に勝手に終わらない](feedback_never_stop_with_open_todos.md) — 着手可能TODOがある限り「締める」判断をせず自律前進。24時間継続が基本。停止は全消化orKeita明示or BLOCKEDのみ残った時だけ（2026-05-31）
+- [タスクID採番はスクリプトで](reference_task_id_numbering.md) — 目視で数えず next-task-id.sh を使う。起票は直列化＋pull後採番。MC-64/65衝突の再発防止（2026-05-31）
+- [Apollo番人エージェント](project_apollo_keeper.md) — 林と独立した Apollo インフラ専任番人。apollo-watchdog(cron */3 死活) + apollo-keeper(cron 15,45 深い点検)の2層。restart自動・コード修正は報告。roster は人格保有11体に整理（2026-05-31）
+- [タスクボードベース実行](feedback_taskboard_based_execution.md) — 全タスクは先にTASK_TRACKER起票→ボードから拾って実行。task-manager=台帳正本/apollo番人=遅延監視の共同責任。inbox/FB由来も全部起票（2026-05-31）
+- [REVIEWはエージェント検証でDONE化](feedback_review_agent_verify_then_done.md) — REVIEWの最終ゲートはKeita実機確認不要。test-functional等が実機検証→必要なら修正→DONE。BLOCKED(判断待ち)とは別（2026-05-31）
+- [全エージェント タスクボードベース](feedback_all_agents_taskboard_based.md) — 全agentが着手前に起票・着手でIN_PROGRESS・完了でDONE/REVIEW。ボード外作業禁止。表行を正とする。task-manager=台帳/apollo番人=遅延監視（2026-05-31）
 
 ### feedback_address_keita.md
 
@@ -220,6 +225,36 @@ metadata:
 **Why:** Keita 本人が「君じゃなくてKeitaね」と訂正した。名前で呼ぶのが本人の希望。
 
 **How to apply:** 会話中の呼びかけ・主語は「Keita」を使う。おじいちゃん口調（[[feedback-tone]]）は維持しつつ、二人称だけ「Keita」に固定。報告文・確認の問いかけでも同様。
+
+### feedback_all_agents_taskboard_based.md
+
+---
+name: feedback-all-agents-taskboard-based
+description: 全エージェント（dev-logic/designer/content-creator/reviewer/logic-coach/test-functional/task-manager/night-patrol/feedback-watcher/apollo番人/autonomous-rin/林）がタスクボード（TASK_TRACKER.md）ベースで仕事する。着手前に必ず起票、着手でIN_PROGRESS、完了でDONE/REVIEWに更新。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-31
+---
+
+開発チームの全エージェントは Apollo タスクボード（各プロジェクトの docs/TASK_TRACKER.md）ベースで仕事をする。ボードに乗っていない作業をしない。
+
+**Why:** 2026-05-31 Keita 明示「全エージェントタスクボードベースで仕事をするように徹底させて」。同日の一連（「全タスクをボードに」「タスクの実行はすべてタスクボードベースで」）の総仕上げ。ボードを single source of truth にして、誰が何をやっているか・何が抜けているか・何が遅れているかを Apollo で一望できる状態を全員で保つ。
+
+**How to apply（全エージェント共通の鉄則）:**
+- **着手前に起票**: どのエージェントも、作業を始める前に対象タスクが TASK_TRACKER に在ることを確認する。無ければ task-manager に起票させる（[[feedback-route-all-to-task-manager]] / [[feedback-taskboard-based-execution]]）。思いつき・調査で出た修正・inbox 依頼・フィードバック由来、すべて先に起票。
+- **着手時に IN_PROGRESS**: タスクに着手したらステータスを IN_PROGRESS に更新（誰が触っているか分かるように）。
+- **完了時に DONE/REVIEW**: 実装完了→検証で DONE、検証残あれば REVIEW。検証根拠を note に file:line で残す（[[feedback-review-agent-verify-then-done]]）。
+- **ボード外作業の禁止**: ボードに無いタスクを勝手に進めない。例外は「インフラ緊急対応（apollo番人の restart 等）」「Keita の即時口頭指示」だが、それも事後に必ず起票して履歴化する。
+- **台帳更新は実ファイルに**: ステータス変更は必ず docs/TASK_TRACKER.md に反映してから報告。表行（summary table）のステータスを正とする（Apollo collector も表行を正に読む）。同一IDの詳細セクションと表行で食い違わせない。
+- **採番は next-task-id.sh**（[[reference-task-id-numbering]]）、**起票は直列化**、編集は pull --rebase 後に該当行のみ。
+
+**役割別の管理責任（2026-05-31 決定）:**
+- task-manager（棚町）= 台帳の正本管理（登録・構造化・完了検証・抜け漏れ提言）
+- apollo番人（apollo）= 抜け漏れ・遅延の監視（[[project-apollo-keeper]]、ティック毎に停滞検知→task-manager提言/Keitaエスカレ）
+- 各実装/検証エージェント = 自分が触るタスクのステータスを正しく上げる責任
+- 林 = オーケストレーション、ボードに無い依頼を必ず起票に通してから委譲
+
+**関連:** [[feedback-taskboard-based-execution]]、[[feedback-route-all-to-task-manager]]、[[feedback-review-agent-verify-then-done]]、[[project-task-manager]]、[[project-apollo-keeper]]、[[reference-task-id-numbering]]、[[feedback-never-stop-with-open-todos]]
 
 ### feedback_app_copy_neutral.md
 
@@ -710,6 +745,29 @@ metadata:
   - コンテンツ/設計: logic-coach で MECE/粒度/矛盾を監査、designer 統合で横断一貫性レビュー。
 - 規模に応じてスケール: 軽作業は薄く、監査/刷新など重い依頼は finder 多め＋多票 verify＋synthesis を厚く。
 
+### feedback_review_agent_verify_then_done.md
+
+---
+name: feedback-review-agent-verify-then-done
+description: REVIEW ステータスの最終ゲートは Keita 実機確認を待たず、エージェント（test-functional 等）が実機/実効性検証して必要なら修正し DONE 化してよい。Keita の確認は不要。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-31
+---
+
+タスクが REVIEW（実装・テスト・デプロイ済みだが最終確認待ち）の状態のとき、**エージェントが実機/実効性を検証し、必要なら修正して DONE 化してよい。Keita の確認は不要**。
+
+**Why:** 2026-05-31 Keita 明示「エージェントで実機確認して必要であれば修正してDONEして。Keitaの確認は不要だよ」。それまで REVIEW の最終ゲートを「Keita 実機目視確認待ち」にしていたため、実装・デプロイ済みのタスクが REVIEW のまま大量に滞留していた（logic 7件・Apollo 14件）。Keita のボトルネックを外し、検証もエージェントに委ねて自走させる狙い。
+
+**How to apply:**
+- REVIEW タスクは test-functional（試野 緑）等の検証エージェントに実機/実効性検証を投げる。検証 OK なら DONE 化、不具合があれば dev-logic 等に修正させてから DONE 化（[[feedback-never-stop-with-open-todos]] と整合＝止めずに前進）。
+- 検証の根拠（テスト結果・実機挙動・file:line）を DONE の note に残す。「Keita 実機確認待ち」を DONE の条件にしない。
+- ただし push・本番デプロイ・破壊的操作の Keita 承認ルールは維持（[[feedback-default-workflows]]）。「Keita 確認不要」は REVIEW→DONE の判定に限る話で、本番反映そのものの承認を飛ばす意味ではない（既にデプロイ済みのものを DONE 化するのが大半なのでデプロイ承認は別途）。
+- 設計判断・仕様未確定で BLOCKED のものは別。これは Keita 判断が要るので勝手に進めない。REVIEW（実装完了・検証だけ残）と BLOCKED（判断待ち）を取り違えない。
+- autonomous-rin / apollo-keeper もこのルールで REVIEW を消化してよい（24h 自走で REVIEW を溜めない）。
+
+**関連:** [[feedback-never-stop-with-open-todos]]、[[feedback-taskboard-based-execution]]、[[project-task-manager]]、[[feedback-default-workflows]]
+
 ### feedback_route_all_to_task_manager.md
 
 ---
@@ -732,6 +790,34 @@ metadata:
 - 緊急の一発対応でも事後で必ず task-manager に登録（履歴として残す）。
 
 **関連:** [[project-task-manager]]、[[feedback-direct-content-not-path]]
+
+### feedback_taskboard_based_execution.md
+
+---
+name: feedback-taskboard-based-execution
+description: 全タスクは Apollo タスクボード（各 TASK_TRACKER.md）に必ず登録し、実行はボードベースで行う。inbox 依頼・フィードバック由来・思いつき、すべて先に起票してから着手。抜け漏れ・遅延は task-manager（台帳正本）と apollo番人（監視）が共同責任で管理する。
+metadata:
+  type: feedback
+  originSessionId: 2026-05-31
+---
+
+タスクの実行はすべて Apollo タスクボードベースで行う。依頼・修正・施策は、着手より先に必ず TASK_TRACKER（= Apollo タスクボードのソース）へ登録し、ボードから拾って実行する。思いつきや inbox 依頼で直接実装に飛ばない。
+
+**Why:** 2026-05-31 Keita 明示。「タスクは全部アポロのタスクボードに追加して」「タスクの実行はすべてタスクボードベースで実施して」「アポロ番人とタスクマネージャーで責任をもって抜け漏れ、遅延なく管理して」「inboxにこれまで上がったタスクとか、フィードバックからのタスクとか全部上げて」。ボードを single source of truth にして、何が未着手・進行中・遅延かを一望できる状態を保つ狙い。
+
+**How to apply:**
+- 新しい actionable（Keita 依頼 / inbox / フィードバック / 調査で判明した修正 / 林の施策）が出たら、着手前に必ず task-manager に通して TASK_TRACKER へ起票（[[feedback-route-all-to-task-manager]] の徹底版）。起票せず直接実装しない。
+- 起票先は対象プロジェクトの TASK_TRACKER.md（logic / cxo-agent / en-chakai / 西丸町）。これらが Apollo の TASK_SOURCES（cxo-agent server/src/config.ts）。en-chakai は 2026-05-31 に雛形を追加（EC-xx 採番）。**en-chakai を TASK_SOURCES に加える config 変更は dev-logic タスクとして必要**（雛形だけでは Apollo に出ない）。
+- 採番は必ず `bash /home/dev/cron-scripts/next-task-id.sh <PREFIX>`（[[reference-task-id-numbering]]）。起票は直列化（並行で番号レースさせない）。
+- 実行はボードのタスクを拾って行い、着手で IN_PROGRESS、完了で DONE/REVIEW にステータス更新。autonomous-rin も「ボードから1ティック1タスク」で動く（既にこの設計）。
+- inbox から拾った依頼は、起票後に inbox-consumed.jsonl へ消費記録（二重処理防止）。
+
+**責任分担（Keita 2026-05-31 決定）:**
+- **task-manager（棚町 結）= 台帳の正本管理**: 全タスクの登録・構造化・分解・優先度付け・完了条件の逆引き検証・抜け漏れ提言。正本は各 docs/TASK_TRACKER.md。
+- **apollo番人（apollo）= 抜け漏れ・遅延の監視**: apollo-keeper のティック毎（cron 15,45分）に全 TASK_TRACKER を走査し、IN_PROGRESS のまま3日以上停滞（TASK_STALL_DAYS=3）・REVIEW 長期放置・BLOCKED 放置・inbox/フィードバック由来で未起票のまま宙に浮いた依頼を検知。検知したら task-manager に対応を促し、停滞が続くものは Keita にエスカレーション。apollo 自身はプロダクト実装をしない（[[project-apollo-keeper]]）。軽量プリチェックは `apollo-task-stall-check.sh`（bash のみ、遅延あれば apollo-keeper の LLM を起動）。
+- 二重チェック（task-manager の能動管理＋apollo の受動監視）で抜け漏れ・遅延を構造的に潰す。
+
+**関連:** [[feedback-route-all-to-task-manager]]、[[project-task-manager]]、[[project-apollo-keeper]]、[[project-apollo-dashboard]]、[[reference-task-id-numbering]]、[[feedback-never-stop-with-open-todos]]
 
 ### feedback_tone.md
 
@@ -928,6 +1014,36 @@ Apollo は cxo-agent リポ（/home/dev/projects/cxo-agent）配下に構築し�
 **注意:** これは「cxo-agent リポを GitHub Issue 起票に使わない」方針（[[feedback-no-cxo-agent]]）とは別レイヤー。Apollo はあくまでローカル/Vultr 常駐の可視化ツールで、Issue 管理用途ではない。
 
 **関連:** [[project-autonomous-rin]]、[[project-task-manager]]、[[project-vultr-second-server]]
+
+### project_apollo_keeper.md
+
+---
+name: project-apollo-keeper
+description: Apollo（:4317 ダッシュボード）専任の番人エージェント。林/autonomous-rin とは独立に Apollo インフラの監視・障害対応・24h稼働維持を引き受ける。cron で headless 自走。
+metadata:
+  type: project
+  originSessionId: 2026-05-31
+---
+
+2026-05-31、Keita 依頼で **Apollo（apollo）= Apollo ダッシュボード専任の番人エージェント**を新設。林（プロダクト開発の autonomous-rin）とは独立した存在で、責務は Apollo 自体の管理・監視・障害対応・24時間稼働の維持・メンテナンスに限る。
+
+**Why:** Keita 指示「りんとは別に、Apollo の管理・モニタリング・動かなくなった時の対応・24h稼働のためのモニタリングをやる Apollo というエージェントを作って」。さらに「subagent でなく独立したエージェントにして」。Apollo の restart/healthz 確認を林が手でやっていたのを専任に切り出した。
+
+**2層構成（cron 常駐監視＋headless LLM）:**
+- 下層 `~/cron-scripts/apollo-watchdog.sh`（cron `*/3`、既存）— /api/healthz を叩き、3連続失敗で `systemctl restart`。cooldown 120s・kill-switch `~/.apollo-watchdog.disabled`。プロセス死は systemd Restart=always、ハングはこれが拾う。
+- 上層 `~/cron-scripts/apollo-keeper.sh`（cron `15,45`、新設）— headless `claude --print` で深い点検。healthz=200 かつ非09時なら LLM を起動せず即終了（token節約）、異常時 or 09時台の日次巡回時のみ LLM 起動。flock 排他・kill-switch `~/.apollo-keeper.disabled`。
+
+**点検範囲:** 死活(healthz/systemd)、主要API疎通(/api/agents,tasks,workflows,narrative を MC_TOKEN で)、リソース(df/free/プロセス)、ログ異常(watchdog フラッピング/journalctl)、dist 陳腐化。
+
+**権限境界（Keita 2026-05-31 決定: restart自動・コード修正は報告）:**
+- 自動でやってよい: systemctl restart、web の dist 再ビルド(npm run build)、ゾンビ掃除、ログローテ。
+- エスカレーション: server/web のコード・設定修正が要る障害は dev-logic に委譲＋ cxo-agent/docs/TASK_TRACKER.md に MC 起票（採番 `next-task-id.sh MC`）＋ Keita 報告。自分で本番コードを書いて壊さない。
+- 破壊的操作（rm -rf / git reset --hard / DB変更）禁止。cxo-agent 台帳編集時は pull --rebase + 名指しadd（autonomous-rin とのレース回避）。
+- 責務は Apollo インフラだけ。プロダクト機能開発はやらない（林/autonomous-rin の領分）。
+
+**roster 表示:** Apollo の roster は obsidian-vault/60-Agents/*.md を読む。2026-05-31 に人格保有エージェントだけに整理（開発9体＋hayashi-rin＋apollo の11体）。古い6体（ceo/marketing/secretary/test-unit/sanity/smoke）の md を 60-Agents から削除して Apollo 表示から消した（コード変更不要、collector が都度読む）。apollo の roster エントリ = `60-Agents/apollo.md`。
+
+**関連:** [[project-apollo-dashboard]]、[[project-autonomous-rin]]、[[project-agent-roster-20260531]]、[[feedback-never-stop-with-open-todos]]
 
 ### project_autonomous_rin.md
 
@@ -1560,5 +1676,33 @@ metadata:
 - 判定は「全 agent の最新 jsonl mtime」で見る。1体でも最近更新があれば生きている＝resume しない（稼働中を殺すことになる）。
 - 本当に死んでいたら `resumeFromRunId` で resume すれば完了済み agent はキャッシュから即返り、止まった所だけ再実行できる。まず生死を正しく見極めてから resume。
 - 関連: [[feedback-default-workflows]] / [[feedback-quality-efficiency-accuracy]]。
+
+### reference_task_id_numbering.md
+
+---
+name: reference-task-id-numbering
+description: TASK_TRACKER のタスクID採番は目視で数えず next-task-id.sh を使う。重複事故（MC-64/65衝突等）の再発防止。
+metadata:
+  type: reference
+  originSessionId: 2026-05-31
+---
+
+TASK_TRACKER.md に新タスクIDを採番するときは、目視で最大値を数えず、必ず採番ヘルパーを使う。
+
+```
+bash /home/dev/cron-scripts/next-task-id.sh <PREFIX> [個数]
+#   MC  → MC-68     FB 2 → FB-11 FB-12     UI → UI-28     AF → AF-03
+```
+
+**Why:** 2026-05-31、task-manager が古い台帳状態を見て MC-64/65 を採番し、林が直前に起票した MC-64(deploy連動)/MC-65(autonomous-rin可視化) と衝突した。原因は3つ重なる: (1) 台帳が60〜85KBと巨大で末尾を見落とす、(2) 並行起票のレース（先行起票を知らずに採番）、(3) ツール出力注入で Read 結果が汚染される。「目視で数えて+1」方式が構造的に弱い。
+
+**How to apply:**
+- スクリプト `/home/dev/cron-scripts/next-task-id.sh` は全 TASK_TRACKER（logic/cxo-agent/en-chakai/西丸町）を bash で直接 grep し、指定プレフィックスの実在最大連番+1 を返す。複数要るときは個数指定で一括予約。bash 実ファイル読みなので注入の影響を受けない。
+- 起票は **直列化** する。複数の task-manager を同時に走らせない（オーケストレーターの林が1件ずつ投げる）。並行で投げると採番がレースする。
+- 起票直前に `git pull --rebase` で最新を取り込んでから採番。
+- このスクリプトは Vultr 新箱（実運用の主機）固有。autonomous-rin / headless 林 / 対話林すべてこのマシンで動くので実害なし。別マシンで採番が要るときはパスを読み替える。
+- 新プレフィックスを足すとき（例 新プロジェクト）は next-task-id.sh の TRACKERS 配列に台帳パスを追加する。
+
+**関連:** [[project-task-manager]]、[[feedback-route-all-to-task-manager]]、[[reference-tool-output-injection-incident]]
 
 <!-- END: claude-config-memory -->
