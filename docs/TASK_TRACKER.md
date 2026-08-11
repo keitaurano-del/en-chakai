@@ -15,7 +15,7 @@ ID 採番: **EC-xx**。採番は `bash /home/dev/cron-scripts/next-task-id.sh EC
 
 | ID | タイトル | 優先度 | ステータス | 担当 | 備考 |
 |----|---------|--------|-----------|------|------|
-| EC-1 | 円茶会 再構築（Render/Supabase脱却・自宅サーバ化） | 高 | IN_PROGRESS | Son | 2026-08-11 Keita「render/supabase使わずClipItNow方式で作り直し」。方針: 予約/枠データをローカル保存へ置換→build→:3002常駐→公開経路(ドメイン/トンネル)は別途Keita確認 |
+| EC-1 | 円茶会 再構築（Render/Supabase脱却・自宅サーバ化） | 高 | DONE | Son | 2026-08-11完了。DoD: ①成果物=en-chakai repo main(219f875/b6395bc)+en-chakai.service(:3002)+cloudflared ingress追加 ②検証=実測 top200/公開API200/admin旧PW401/新PW200/https://chakai.apollomansion.com/en 200・既存2ホスト無傷 ③本番反映=済(systemd常駐+Tunnel公開・push済)。過去データ移行不要(Keita指示)。残: Resendキー未設定=メール通知スキップ動作、予約枠の登録はadmin画面から |
 
 ---
 
