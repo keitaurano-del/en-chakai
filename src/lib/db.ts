@@ -25,6 +25,8 @@ export type Booking = {
   notes: string | null;
   status: "pending" | "confirmed" | "cancelled";
   created_at: string;
+  // 確定操作日時（履歴タイムライン用・後方互換のため任意）
+  confirmed_at?: string;
   // Stripe 決済（optional — 既存データとの後方互換のため任意フィールド）
   payment_link_id?: string;
   payment_url?: string;
@@ -37,6 +39,7 @@ export type BookingWithSlot = Booking & { available_slots: Slot | null };
 const DATA_DIR = path.join(process.cwd(), "data");
 const SLOTS_FILE = path.join(DATA_DIR, "slots.json");
 const BOOKINGS_FILE = path.join(DATA_DIR, "bookings.json");
+const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
 
 function readJson<T>(file: string): T[] {
   try {
@@ -151,6 +154,46 @@ export function updateBooking(
   writeJson(BOOKINGS_FILE, rows);
   const slot = readJson<Slot>(SLOTS_FILE).find((s) => s.id === booking.slot_id) ?? null;
   return { ...booking, available_slots: slot };
+}
+
+// ── Settings（管理画面設定・data/settings.json） ─────────────────────────────
+
+export type AdminSettings = {
+  closed_days: number[]; // 0=日 … 6=土
+};
+
+export const DEFAULT_CLOSED_DAYS = [0, 1]; // 日・月（従来ハードコード値と同じ）
+
+function sanitizeClosedDays(value: unknown): number[] | null {
+  if (!Array.isArray(value)) return null;
+  const days = value.filter(
+    (d): d is number => typeof d === "number" && Number.isInteger(d) && d >= 0 && d <= 6
+  );
+  return [...new Set(days)].sort((a, b) => a - b);
+}
+
+export function getSettings(): AdminSettings {
+  try {
+    const raw = fs.readFileSync(SETTINGS_FILE, "utf8");
+    const parsed = JSON.parse(raw) as { closed_days?: unknown };
+    const days = sanitizeClosedDays(parsed?.closed_days);
+    if (days) return { closed_days: days };
+  } catch {
+    // ファイル無し・破損時はデフォルトへフォールバック
+  }
+  return { closed_days: [...DEFAULT_CLOSED_DAYS] };
+}
+
+export function updateSettings(patch: Partial<AdminSettings>): AdminSettings {
+  const current = getSettings();
+  const next: AdminSettings = {
+    closed_days: sanitizeClosedDays(patch.closed_days) ?? current.closed_days,
+  };
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const tmp = `${SETTINGS_FILE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(next, null, 2) + "\n", "utf8");
+  fs.renameSync(tmp, SETTINGS_FILE);
+  return next;
 }
 
 export function updateBookingStatus(id: string, status: Booking["status"]): BookingWithSlot | null {

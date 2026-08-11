@@ -41,6 +41,11 @@ export async function PATCH(req: NextRequest) {
 
   let warning: string | undefined;
 
+  // 確定日時を記録（履歴タイムライン用・初回確定時のみ）
+  if (status === "confirmed" && !booking.confirmed_at) {
+    booking = updateBooking(booking.id, { confirmed_at: new Date().toISOString() }) ?? booking;
+  }
+
   if (status === "confirmed" && booking.available_slots) {
     const slot = booking.available_slots;
 

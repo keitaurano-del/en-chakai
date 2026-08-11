@@ -1,7 +1,7 @@
 "use client";
 
-// 管理画面の共有パーツ: バッジ・詳細行・予約一覧・予約詳細モーダル・CSV出力
-import { useMemo, useState } from "react";
+// 管理画面の共有パーツ: バッジ・詳細行・予約一覧・予約詳細ドロワー・CSV出力
+import { useEffect, useMemo, useState } from "react";
 import { type Slot, type Booking } from "@/lib/db";
 import { formatDateDisplay, PLAN_LABELS, TIME_SLOT_LABELS, type TimeSlot } from "@/lib/booking";
 import { PLANS } from "@/lib/constants";
@@ -109,27 +109,6 @@ export function DetailRow({ label, children }: { label: string; children: React.
       <dt className="text-xs uppercase tracking-[0.1em] text-cream/40">{label}</dt>
       <dd className="text-cream/90">{children}</dd>
     </div>
-  );
-}
-
-export function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded px-3 py-2 text-sm transition-colors ${
-        active ? "bg-clay/15 text-clay" : "text-cream/50 hover:text-cream"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -426,7 +405,7 @@ function BookingRowCard({
   );
 }
 
-// ── 予約詳細モーダル ──────────────────────────────────────────────────────────
+// ── 予約詳細ドロワー ──────────────────────────────────────────────────────────
 
 // 訪日外国人客向けの英語定型返信文
 function buildReplyTemplate(b: BookingRow) {
@@ -456,7 +435,45 @@ Warm regards,
 En Chakai 円茶会`;
 }
 
-export function BookingDetailModal({
+// 履歴タイムライン: 申込 → 確定(あれば) → 支払(あれば)。データに無い日時は表示しない。
+function formatDateTimeJa(iso: string) {
+  return new Date(iso).toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function HistoryTimeline({ booking }: { booking: BookingRow }) {
+  const events: { label: string; at: string; tone: string }[] = [
+    { label: "申込", at: booking.created_at, tone: "bg-cream/40" },
+  ];
+  if (booking.confirmed_at)
+    events.push({ label: "確定", at: booking.confirmed_at, tone: "bg-deep-green-light" });
+  if (booking.paid_at) events.push({ label: "支払", at: booking.paid_at, tone: "bg-clay" });
+  events.sort((a, b) => a.at.localeCompare(b.at));
+
+  return (
+    <div>
+      <p className="mb-2 text-xs uppercase tracking-[0.1em] text-cream/40">履歴</p>
+      <ol className="relative ml-1.5 space-y-3 border-l border-cream/15 pl-4">
+        {events.map((e) => (
+          <li key={e.label} className="relative">
+            <span
+              className={`absolute -left-[21.5px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-charcoal-light ${e.tone}`}
+            />
+            <p className="text-sm text-cream/90">{e.label}</p>
+            <p className="text-xs text-cream/45">{formatDateTimeJa(e.at)}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+export function BookingDrawer({
   booking,
   onClose,
   onStatusChange,
@@ -465,11 +482,18 @@ export function BookingDetailModal({
   onClose: () => void;
   onStatusChange: (status: BookingStatus) => Promise<void>;
 }) {
+  const [entered, setEntered] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const { usd, jpy } = planPrices(booking.plan);
   const totalUsd = usd * booking.guests;
   const totalJpy = jpy * booking.guests;
+
+  // マウント直後にスライドイン
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   async function copyTemplate() {
     try {
@@ -493,15 +517,22 @@ export function BookingDetailModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50">
+      {/* Overlay */}
       <div
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-cream/15 bg-charcoal-light shadow-2xl"
+        className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
+          entered ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={onClose}
+      />
+
+      {/* 右からのスライドドロワー: モバイルはほぼ全画面 / PC は幅480px */}
+      <div
+        className={`absolute inset-y-0 right-0 flex w-full flex-col border-l border-cream/15 bg-charcoal-light shadow-2xl transition-transform duration-300 sm:w-[480px] ${
+          entered ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        <div className="flex items-center justify-between border-b border-cream/10 px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-cream/10 px-5 py-4 sm:px-6">
           <div>
             <p className="text-xs uppercase tracking-[0.15em] text-cream/40">予約詳細</p>
             <h3 className="mt-1 font-[family-name:var(--font-heading)] text-xl">{booking.name}</h3>
@@ -509,13 +540,13 @@ export function BookingDetailModal({
           <button
             onClick={onClose}
             className="rounded p-2 text-cream/40 transition-colors hover:bg-cream/10 hover:text-cream"
-            aria-label="Close"
+            aria-label="閉じる"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="space-y-5 px-6 py-5 text-sm">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 text-sm sm:px-6">
           <div className="flex items-center gap-3">
             <StatusBadge status={booking.status} />
             <PaymentBadge booking={booking} />
@@ -567,31 +598,16 @@ export function BookingDetailModal({
               </div>
             </DetailRow>
           )}
-          {booking.paid_at && (
-            <DetailRow label="支払日時">
-              {new Date(booking.paid_at).toLocaleString("ja-JP", {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </DetailRow>
-          )}
           {booking.dietary && <DetailRow label="食事制限">{booking.dietary}</DetailRow>}
           {booking.notes && <DetailRow label="備考">{booking.notes}</DetailRow>}
-          <DetailRow label="申込日時">
-            {new Date(booking.created_at).toLocaleString("ja-JP", {
-              year: "numeric",
-              month: "numeric",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </DetailRow>
+
+          {/* 履歴タイムライン */}
+          <div className="border-t border-cream/10 pt-4">
+            <HistoryTimeline booking={booking} />
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 border-t border-cream/10 bg-black/20 px-6 py-4">
+        <div className="flex shrink-0 flex-wrap gap-2 border-t border-cream/10 bg-black/20 px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6">
           {booking.status === "pending" && (
             <>
               <button

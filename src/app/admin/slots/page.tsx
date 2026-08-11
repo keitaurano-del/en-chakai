@@ -1,38 +1,34 @@
 "use client";
 
+// 管理画面シェル: ナビゲーション（モバイル=下部タブバー / PC=左サイドバー）と
+// データ取得・更新をここに集約し、各ビュー（ホーム/カレンダー/予約/設定）へ配る。
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { type Slot } from "@/lib/db";
-import { TIME_SLOTS, TIME_SLOT_LABELS, formatDateDisplay } from "@/lib/booking";
-import {
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
-  Calendar,
-  Users,
-  LayoutDashboard,
-  Plus,
-  Trash2,
-  X,
-  Eye,
-  EyeOff,
-  CalendarCheck,
-} from "lucide-react";
+import { TIME_SLOTS } from "@/lib/booking";
+import { Calendar, Home, LogOut, Settings, Users } from "lucide-react";
 import {
   type BookingRow,
   type BookingStatus,
   BookingsList,
-  BookingDetailModal,
-  DAYS_JA,
-  TabButton,
+  BookingDrawer,
   isActiveBooking,
   toDateStr,
 } from "./components";
-import { Dashboard } from "./dashboard";
+import { HomeView } from "./home";
+import { CalendarView } from "./calendar";
+import { SettingsView, type SettingsInfo } from "./settings";
 
-type Tab = "dashboard" | "slots" | "bookings";
+type Tab = "home" | "calendar" | "bookings" | "settings";
 
-const CLOSED_DAYS = [0, 1];
+const DEFAULT_CLOSED_DAYS = [0, 1]; // settings 取得失敗時のフォールバック（日・月）
+
+const NAV: { id: Tab; label: string; icon: React.ComponentType<{ size?: number | string; className?: string }> }[] = [
+  { id: "home", label: "ホーム", icon: Home },
+  { id: "calendar", label: "カレンダー", icon: Calendar },
+  { id: "bookings", label: "予約", icon: Users },
+  { id: "settings", label: "設定", icon: Settings },
+];
 
 function authHeader() {
   const pw = typeof window !== "undefined" ? sessionStorage.getItem("admin_pw") ?? "" : "";
@@ -51,12 +47,19 @@ function monthRange(d: Date) {
   return { from: `${y}-${mm}-01`, to: `${y}-${mm}-${String(last).padStart(2, "0")}` };
 }
 
+// カレンダー用スロット取得範囲: 表示月の前後7日を含める（週表示が月をまたぐため）
+function slotsRange(d: Date) {
+  const from = new Date(d.getFullYear(), d.getMonth(), 1 - 7);
+  const to = new Date(d.getFullYear(), d.getMonth() + 1, 0 + 7);
+  return { from: toDateStr(from), to: toDateStr(to) };
+}
+
 export default function AdminSlotsPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const [tab, setTab] = useState<Tab>("home");
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [monthSlots, setMonthSlots] = useState<Slot[]>([]); // 実カレンダー今月分（ダッシュボード用）
+  const [monthSlots, setMonthSlots] = useState<Slot[]>([]); // 実カレンダー今月分（KPI稼働率用）
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<BookingRow | null>(null);
@@ -65,6 +68,10 @@ export default function AdminSlotsPage() {
   const [slotsLoaded, setSlotsLoaded] = useState(false);
   const [bookingsLoaded, setBookingsLoaded] = useState(false);
   const [paymentsSyncing, setPaymentsSyncing] = useState(false);
+  const [actingId, setActingId] = useState<string | null>(null); // ホームのワンタップ操作中
+  const [closedDays, setClosedDays] = useState<number[]>(DEFAULT_CLOSED_DAYS);
+  const [settingsInfo, setSettingsInfo] = useState<SettingsInfo | null>(null);
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const paymentsSyncedOnce = useRef(false);
 
   useEffect(() => {
@@ -96,7 +103,7 @@ export default function AdminSlotsPage() {
   }, [router]);
 
   const loadSlots = useCallback(async () => {
-    const { from, to } = monthRange(new Date(year, month, 1));
+    const { from, to } = slotsRange(new Date(year, month, 1));
     const res = await fetch(`/api/admin/slots?from=${from}&to=${to}`, { headers: authHeader() });
     if (res.status === 401) {
       handleUnauthorized();
@@ -106,7 +113,7 @@ export default function AdminSlotsPage() {
     setSlotsLoaded(true);
   }, [year, month, handleUnauthorized]);
 
-  // ダッシュボードの稼働状況用に「実際の今月」のスロットも取得
+  // KPI 稼働率用に「実際の今月」のスロットも取得
   const loadMonthSlots = useCallback(async () => {
     const { from, to } = monthRange(new Date());
     const res = await fetch(`/api/admin/slots?from=${from}&to=${to}`, { headers: authHeader() });
@@ -124,6 +131,19 @@ export default function AdminSlotsPage() {
     setBookingsLoaded(true);
   }, [handleUnauthorized]);
 
+  // 定休日設定の取得。失敗時は DEFAULT_CLOSED_DAYS のまま。
+  const loadSettings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/settings", { headers: authHeader() });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (Array.isArray(json.closed_days)) setClosedDays(json.closed_days);
+      if (json.info) setSettingsInfo(json.info);
+    } catch {
+      // フォールバック（日・月）のまま
+    }
+  }, []);
+
   useEffect(() => {
     loadSlots();
   }, [loadSlots]);
@@ -135,6 +155,10 @@ export default function AdminSlotsPage() {
   useEffect(() => {
     loadBookings();
   }, [loadBookings]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   // Stripe 支払状況の同期。キー未設定・エラー時は静かに何もしない（従来動作を壊さない）。
   const syncPayments = useCallback(
@@ -179,12 +203,14 @@ export default function AdminSlotsPage() {
     await Promise.all([loadSlots(), loadMonthSlots()]);
   }, [loadSlots, loadMonthSlots]);
 
-  function getSlot(dateStr: string, time: string) {
-    return slots.find((s) => s.date === dateStr && s.time_slot === time);
-  }
-  function slotsForDate(dateStr: string) {
-    return slots.filter((s) => s.date === dateStr);
-  }
+  const getSlot = useCallback(
+    (dateStr: string, time: string) => slots.find((s) => s.date === dateStr && s.time_slot === time),
+    [slots]
+  );
+  const slotsForDate = useCallback(
+    (dateStr: string) => slots.filter((s) => s.date === dateStr),
+    [slots]
+  );
 
   // slot_id → 有効な予約（キャンセル除く）
   const bookingsBySlotId = useMemo(() => {
@@ -294,6 +320,7 @@ export default function AdminSlotsPage() {
     setSaving(false);
   }
 
+  // 選択日から1週間（定休日を除く）の未設定枠を一括追加
   async function openWeek() {
     if (!selectedDate) return;
     setSaving(true);
@@ -302,7 +329,7 @@ export default function AdminSlotsPage() {
     for (let i = 0; i < 7; i++) {
       const d = new Date(base);
       d.setDate(base.getDate() + i);
-      if (CLOSED_DAYS.includes(d.getDay())) continue;
+      if (closedDays.includes(d.getDay())) continue;
       const dateStr = toDateStr(d);
       for (const t of TIME_SLOTS) {
         if (!getSlot(dateStr, t)) {
@@ -322,15 +349,15 @@ export default function AdminSlotsPage() {
     setSaving(false);
   }
 
-  // 表示中の月の営業日（火〜土）の全枠を公開
+  // 表示中の月の営業日（定休日を除く）の全枠を公開
   async function openMonth() {
     const label = `${year}年${month + 1}月`;
-    if (!confirm(`${label}の営業日（火〜土）の全枠を公開します。よろしいですか？`)) return;
+    if (!confirm(`${label}の営業日（定休日を除く）の全枠を公開します。よろしいですか？`)) return;
     setSaving(true);
     const tasks: Promise<Response>[] = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = padDay(d);
-      if (CLOSED_DAYS.includes(new Date(dateStr + "T00:00:00").getDay())) continue;
+      if (closedDays.includes(new Date(dateStr + "T00:00:00").getDay())) continue;
       for (const t of TIME_SLOTS) {
         const existing = getSlot(dateStr, t);
         if (existing) {
@@ -366,11 +393,14 @@ export default function AdminSlotsPage() {
   }
 
   async function updateBookingStatus(id: string, status: BookingStatus) {
-    await fetch("/api/admin/bookings", {
+    const res = await fetch("/api/admin/bookings", {
       method: "PATCH",
       headers: authHeader(),
       body: JSON.stringify({ id, status }),
     });
+    const updated: (BookingRow & { warning?: string }) | null = res.ok
+      ? await res.json().catch(() => null)
+      : null;
     showToast(
       status === "confirmed"
         ? "予約を確定し、確定メールを送信しました"
@@ -379,9 +409,47 @@ export default function AdminSlotsPage() {
           : "予約を未確認に戻しました"
     );
     await loadBookings();
-    if (selectedBooking?.id === id) {
-      const refreshed = bookings.find((b) => b.id === id);
-      if (refreshed) setSelectedBooking({ ...refreshed, status });
+    if (updated) {
+      setSelectedBooking((prev) => (prev?.id === id ? updated : prev));
+    }
+  }
+
+  // ホームの要対応キューからのワンタップ操作
+  async function quickStatus(id: string, status: BookingStatus) {
+    if (status === "cancelled" && !confirm("この予約をキャンセルしますか？")) return;
+    setActingId(id);
+    try {
+      await updateBookingStatus(id, status);
+    } finally {
+      setActingId(null);
+    }
+  }
+
+  // 設定: 定休日の保存
+  async function saveClosedDays(days: number[]) {
+    setSettingsSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PATCH",
+        headers: authHeader(),
+        body: JSON.stringify({ closed_days: days }),
+      });
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.closed_days)) setClosedDays(json.closed_days);
+        showToast("定休日を保存しました");
+      } else {
+        const json = await res.json().catch(() => null);
+        showToast(json?.error ?? "保存に失敗しました");
+      }
+    } catch {
+      showToast("保存に失敗しました");
+    } finally {
+      setSettingsSaving(false);
     }
   }
 
@@ -400,533 +468,161 @@ export default function AdminSlotsPage() {
     <div className="min-h-screen bg-charcoal text-cream font-[family-name:Inter,sans-serif]">
       {/* Toast */}
       {toast && (
-        <div className="fixed right-5 top-5 z-50 rounded bg-deep-green px-5 py-3 text-sm shadow-lg">
+        <div className="fixed left-1/2 top-4 z-[60] -translate-x-1/2 whitespace-nowrap rounded bg-deep-green px-5 py-3 text-sm shadow-lg sm:left-auto sm:right-5 sm:translate-x-0">
           {toast}
         </div>
       )}
 
-      {/* Header */}
-      <header className="border-b border-cream/10 bg-charcoal-light">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 px-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-            <span className="hidden shrink-0 font-[family-name:var(--font-heading)] text-lg sm:inline">
-              円茶会 管理
-            </span>
-            <span className="shrink-0 font-[family-name:var(--font-heading)] text-base sm:hidden">
-              円茶会
-            </span>
-            <nav className="flex gap-1 overflow-x-auto">
-              <TabButton active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-                <LayoutDashboard size={14} className="shrink-0" />
-                <span className="hidden sm:inline">ダッシュボード</span>
-                <span className="sm:hidden">概要</span>
-              </TabButton>
-              <TabButton active={tab === "slots"} onClick={() => setTab("slots")}>
-                <Calendar size={14} className="shrink-0" />
-                <span className="hidden sm:inline">スロット管理</span>
-                <span className="sm:hidden">枠</span>
-              </TabButton>
-              <TabButton active={tab === "bookings"} onClick={() => setTab("bookings")}>
-                <Users size={14} className="shrink-0" />
-                <span className="hidden sm:inline">予約一覧</span>
-                <span className="sm:hidden">予約</span>
-                {pendingCount > 0 && (
-                  <span className="ml-1 rounded-full bg-clay px-1.5 py-0.5 text-[10px] font-bold text-charcoal">
-                    {pendingCount}
-                  </span>
-                )}
-              </TabButton>
-            </nav>
-          </div>
+      {/* モバイル: 薄いヘッダー（ロゴ + ログアウトのみ） */}
+      <header className="sticky top-0 z-30 border-b border-cream/10 bg-charcoal-light lg:hidden">
+        <div className="flex h-12 items-center justify-between px-4">
+          <span className="font-[family-name:var(--font-heading)] text-base">円茶会</span>
           <button
             onClick={handleLogout}
-            className="flex shrink-0 items-center gap-1.5 p-2 text-sm text-cream/40 transition-colors hover:text-cream"
+            className="flex items-center gap-1.5 p-2 text-sm text-cream/40 transition-colors hover:text-cream"
             aria-label="ログアウト"
           >
             <LogOut size={16} />
-            <span className="hidden sm:inline">ログアウト</span>
           </button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-3 py-5 sm:px-6 sm:py-8">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-24 text-cream/40">
-            <span className="h-8 w-8 animate-spin rounded-full border-2 border-cream/15 border-t-clay" />
-            <p className="text-sm">読み込み中…</p>
-          </div>
-        ) : (
-          <>
-            {tab === "dashboard" && (
-              <Dashboard
-                bookings={bookings}
-                monthSlots={monthSlots}
-                onOpenBooking={setSelectedBooking}
-              />
-            )}
+      {/* PC: 左サイドバー */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-cream/10 bg-charcoal-light lg:flex">
+        <div className="border-b border-cream/10 px-5 py-5">
+          <p className="font-[family-name:var(--font-heading)] text-xl">円茶会</p>
+          <p className="mt-0.5 text-[11px] uppercase tracking-[0.15em] text-cream/35">管理画面</p>
+        </div>
+        <nav className="flex-1 space-y-1 px-3 py-4">
+          {NAV.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors ${
+                tab === id ? "bg-clay/15 text-clay" : "text-cream/55 hover:bg-cream/5 hover:text-cream"
+              }`}
+            >
+              <Icon size={17} />
+              <span className="flex-1 text-left">{label}</span>
+              {id === "bookings" && pendingCount > 0 && (
+                <span className="rounded-full bg-clay px-1.5 py-0.5 text-[10px] font-bold text-charcoal">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="border-t border-cream/10 p-3">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm text-cream/40 transition-colors hover:bg-cream/5 hover:text-cream"
+          >
+            <LogOut size={16} /> ログアウト
+          </button>
+        </div>
+      </aside>
 
-            {tab === "slots" && (
-              <SlotsManager
-                year={year}
-                month={month}
-                firstDay={firstDay}
-                daysInMonth={daysInMonth}
-                todayStr={todayStr}
-                setCalendarMonth={setCalendarMonth}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                padDay={padDay}
-                slotsForDate={slotsForDate}
-                getSlot={getSlot}
-                bookingsBySlotId={bookingsBySlotId}
-                onOpenBooking={setSelectedBooking}
-                toggleSlot={toggleSlot}
-                deleteSlot={deleteSlot}
-                openDay={openDay}
-                closeDay={closeDay}
-                openWeek={openWeek}
-                openMonth={openMonth}
-                saving={saving}
-              />
-            )}
+      {/* コンテンツ */}
+      <div className="lg:pl-56">
+        <main className="mx-auto max-w-5xl px-4 pb-28 pt-5 lg:max-w-6xl lg:px-8 lg:pb-12 lg:pt-8">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-24 text-cream/40">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-cream/15 border-t-clay" />
+              <p className="text-sm">読み込み中…</p>
+            </div>
+          ) : (
+            <>
+              {tab === "home" && (
+                <HomeView
+                  bookings={bookings}
+                  monthSlots={monthSlots}
+                  onOpenBooking={setSelectedBooking}
+                  onQuickStatus={quickStatus}
+                  actingId={actingId}
+                />
+              )}
 
-            {tab === "bookings" && (
-              <BookingsList
-                bookings={bookings}
-                onSelect={setSelectedBooking}
-                onSyncPayments={() => syncPayments(false)}
-                paymentsSyncing={paymentsSyncing}
-              />
-            )}
-          </>
-        )}
-      </main>
+              {tab === "calendar" && (
+                <CalendarView
+                  year={year}
+                  month={month}
+                  firstDay={firstDay}
+                  daysInMonth={daysInMonth}
+                  todayStr={todayStr}
+                  closedDays={closedDays}
+                  setCalendarMonth={setCalendarMonth}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  padDay={padDay}
+                  slotsForDate={slotsForDate}
+                  getSlot={getSlot}
+                  bookingsBySlotId={bookingsBySlotId}
+                  onOpenBooking={setSelectedBooking}
+                  toggleSlot={toggleSlot}
+                  deleteSlot={deleteSlot}
+                  openDay={openDay}
+                  closeDay={closeDay}
+                  openWeek={openWeek}
+                  openMonth={openMonth}
+                  saving={saving}
+                />
+              )}
 
-      {/* Booking detail modal */}
+              {tab === "bookings" && (
+                <BookingsList
+                  bookings={bookings}
+                  onSelect={setSelectedBooking}
+                  onSyncPayments={() => syncPayments(false)}
+                  paymentsSyncing={paymentsSyncing}
+                />
+              )}
+
+              {tab === "settings" && (
+                <SettingsView
+                  closedDays={closedDays}
+                  onSaveClosedDays={saveClosedDays}
+                  saving={settingsSaving}
+                  info={settingsInfo}
+                />
+              )}
+            </>
+          )}
+        </main>
+      </div>
+
+      {/* モバイル: 下部固定タブバー */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-cream/10 bg-charcoal-light pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="grid grid-cols-4">
+          {NAV.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`relative flex flex-col items-center gap-1 py-2.5 transition-colors ${
+                tab === id ? "text-clay" : "text-cream/40 hover:text-cream/70"
+              }`}
+              aria-label={label}
+            >
+              <span className="relative">
+                <Icon size={20} />
+                {id === "bookings" && pendingCount > 0 && (
+                  <span className="absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[9px] font-bold text-charcoal">
+                    {pendingCount}
+                  </span>
+                )}
+              </span>
+              <span className="text-[10px] font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* 予約詳細ドロワー */}
       {selectedBooking && (
-        <BookingDetailModal
+        <BookingDrawer
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
           onStatusChange={(status) => updateBookingStatus(selectedBooking.id, status)}
         />
-      )}
-    </div>
-  );
-}
-
-// ── スロット管理 ──────────────────────────────────────────────────────────────
-
-// 選択日の時間枠エディタ（右パネル / モバイルボトムシート共通）
-function SlotEditor({
-  selectedDate,
-  getSlot,
-  bookingsBySlotId,
-  onOpenBooking,
-  toggleSlot,
-  deleteSlot,
-  openDay,
-  closeDay,
-  saving,
-}: {
-  selectedDate: string;
-  getSlot: (s: string, t: string) => Slot | undefined;
-  bookingsBySlotId: Map<string, BookingRow[]>;
-  onOpenBooking: (b: BookingRow) => void;
-  toggleSlot: (s: string, t: string) => Promise<void>;
-  deleteSlot: (s: string, t: string) => Promise<void>;
-  openDay: (s: string) => Promise<void>;
-  closeDay: (s: string) => Promise<void>;
-  saving: boolean;
-}) {
-  return (
-    <div className="p-4">
-      <p className="mb-3 text-[11px] uppercase tracking-[0.1em] text-cream/40">時間スロット</p>
-      <div className="space-y-2">
-        {TIME_SLOTS.map((time) => {
-          const slot = getSlot(selectedDate, time);
-          const exists = !!slot;
-          const isOpen = slot?.is_open ?? false;
-          const slotBookings = slot ? bookingsBySlotId.get(slot.id) ?? [] : [];
-          const hasBookings = slotBookings.length > 0;
-          const guests = slotBookings.reduce((n, b) => n + b.guests, 0);
-          return (
-            <div
-              key={time}
-              className={`rounded border px-3 py-3 ${
-                hasBookings
-                  ? "border-deep-green-light/40 bg-deep-green/10"
-                  : isOpen
-                    ? "border-clay/30 bg-clay/5"
-                    : "border-cream/10"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">{TIME_SLOT_LABELS[time]}</p>
-                  <p
-                    className={`mt-0.5 text-xs ${
-                      hasBookings
-                        ? "text-green-300"
-                        : isOpen
-                          ? "text-clay"
-                          : exists
-                            ? "text-cream/30"
-                            : "text-cream/20"
-                    }`}
-                  >
-                    {!exists
-                      ? "未設定"
-                      : hasBookings
-                        ? `● 予約あり（${guests}名 / 4名）${isOpen ? "" : "・非公開"}`
-                        : isOpen
-                          ? "● 公開中"
-                          : "○ 非公開"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => toggleSlot(selectedDate, time)}
-                    disabled={saving}
-                    className={`rounded border px-4 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${
-                      isOpen
-                        ? "border-red-400/40 text-red-300 hover:bg-red-400/10"
-                        : "border-deep-green bg-deep-green/30 text-cream hover:bg-deep-green/50"
-                    }`}
-                  >
-                    {!exists ? "追加" : isOpen ? "非公開" : "公開"}
-                  </button>
-                  {exists && (
-                    <button
-                      onClick={() => deleteSlot(selectedDate, time)}
-                      disabled={saving || hasBookings}
-                      title={hasBookings ? "予約が入っている枠は削除できません" : "削除"}
-                      className="flex h-9 w-9 items-center justify-center rounded text-cream/20 transition-colors hover:bg-red-400/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-cream/20"
-                      aria-label="削除"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* この枠の予約者 */}
-              {hasBookings && (
-                <ul className="mt-2 space-y-1 border-t border-cream/10 pt-2">
-                  {slotBookings.map((b) => (
-                    <li key={b.id}>
-                      <button
-                        onClick={() => onOpenBooking(b)}
-                        className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-cream/5"
-                      >
-                        <span className="min-w-0 truncate">
-                          <span className="font-medium text-cream/90">{b.name}</span>
-                          <span className="ml-1.5 text-cream/45">{b.guests}名</span>
-                          {b.status === "pending" && (
-                            <span className="ml-1.5 text-clay">未確認</span>
-                          )}
-                        </span>
-                        <span className="shrink-0 text-cream/30">詳細 →</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 1日一括操作 */}
-      <div className="mt-4 grid grid-cols-2 gap-2 border-t border-cream/10 pt-4">
-        <button
-          onClick={() => openDay(selectedDate)}
-          disabled={saving}
-          className="flex items-center justify-center gap-1.5 rounded border border-deep-green bg-deep-green/20 px-3 py-2.5 text-xs font-medium text-green-300 transition-colors hover:bg-deep-green/40 disabled:opacity-50"
-        >
-          <Eye size={14} /> この日を全枠公開
-        </button>
-        <button
-          onClick={() => closeDay(selectedDate)}
-          disabled={saving}
-          className="flex items-center justify-center gap-1.5 rounded border border-cream/15 px-3 py-2.5 text-xs font-medium text-cream/60 transition-colors hover:border-red-400/40 hover:text-red-300 disabled:opacity-50"
-        >
-          <EyeOff size={14} /> この日を全て非公開
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function SlotsManager(props: {
-  year: number;
-  month: number;
-  firstDay: number;
-  daysInMonth: number;
-  todayStr: string;
-  setCalendarMonth: (d: Date) => void;
-  selectedDate: string | null;
-  setSelectedDate: (d: string | null) => void;
-  padDay: (d: number) => string;
-  slotsForDate: (s: string) => Slot[];
-  getSlot: (s: string, t: string) => Slot | undefined;
-  bookingsBySlotId: Map<string, BookingRow[]>;
-  onOpenBooking: (b: BookingRow) => void;
-  toggleSlot: (s: string, t: string) => Promise<void>;
-  deleteSlot: (s: string, t: string) => Promise<void>;
-  openDay: (s: string) => Promise<void>;
-  closeDay: (s: string) => Promise<void>;
-  openWeek: () => Promise<void>;
-  openMonth: () => Promise<void>;
-  saving: boolean;
-}) {
-  const {
-    year,
-    month,
-    firstDay,
-    daysInMonth,
-    todayStr,
-    setCalendarMonth,
-    selectedDate,
-    setSelectedDate,
-    padDay,
-    slotsForDate,
-    getSlot,
-    bookingsBySlotId,
-    onOpenBooking,
-    toggleSlot,
-    deleteSlot,
-    openDay,
-    closeDay,
-    openWeek,
-    openMonth,
-    saving,
-  } = props;
-
-  const editorProps = {
-    getSlot,
-    bookingsBySlotId,
-    onOpenBooking,
-    toggleSlot,
-    deleteSlot,
-    openDay,
-    closeDay,
-    saving,
-  };
-
-  return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      {/* Calendar */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <button
-            onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
-            className="flex h-10 w-10 items-center justify-center rounded border border-cream/10 text-cream transition-colors hover:border-clay"
-            aria-label="前の月"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <div className="flex items-center gap-3">
-            <h2 className="font-[family-name:var(--font-heading)] text-xl">
-              {year}年{month + 1}月
-            </h2>
-            <button
-              onClick={() => setCalendarMonth(startOfMonth(new Date()))}
-              className="rounded border border-cream/15 px-3 py-1.5 text-xs text-cream/60 transition-colors hover:border-clay hover:text-clay"
-            >
-              今日
-            </button>
-          </div>
-          <button
-            onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
-            className="flex h-10 w-10 items-center justify-center rounded border border-cream/10 text-cream transition-colors hover:border-clay"
-            aria-label="次の月"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-
-        <div className="overflow-hidden rounded border border-cream/10">
-          <div className="grid grid-cols-7 border-b border-cream/10 bg-charcoal-light">
-            {DAYS_JA.map((d, i) => (
-              <div
-                key={d}
-                className={`py-2.5 text-center text-xs font-medium ${
-                  i === 0 ? "text-red-400" : i === 1 ? "text-cream/25" : "text-cream/40"
-                }`}
-              >
-                {d}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7">
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <div
-                key={`empty-${i}`}
-                className="min-h-[76px] border-b border-r border-cream/5 bg-black/10"
-              />
-            ))}
-            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
-              const dateStr = padDay(d);
-              const dateObj = new Date(dateStr + "T00:00:00");
-              const isClosed = CLOSED_DAYS.includes(dateObj.getDay());
-              const isSun = dateObj.getDay() === 0;
-              const isSelected = selectedDate === dateStr;
-              const isToday = dateStr === todayStr;
-              const daySlots = slotsForDate(dateStr);
-              const dayGuests = daySlots.reduce(
-                (n, s) =>
-                  n + (bookingsBySlotId.get(s.id) ?? []).reduce((m, b) => m + b.guests, 0),
-                0
-              );
-
-              return (
-                <button
-                  key={d}
-                  onClick={() => !isClosed && setSelectedDate(isSelected ? null : dateStr)}
-                  disabled={isClosed}
-                  className={`min-h-[76px] border-b border-r border-cream/5 p-1.5 text-left transition-colors sm:p-2 ${
-                    isSelected
-                      ? "bg-deep-green/25"
-                      : isClosed
-                        ? "bg-black/15 cursor-default"
-                        : "hover:bg-deep-green/10"
-                  } ${isToday ? "ring-1 ring-inset ring-clay" : ""}`}
-                >
-                  <div className="flex items-baseline justify-between gap-1">
-                    <span
-                      className={`text-sm font-medium ${
-                        isToday
-                          ? "text-clay"
-                          : isClosed
-                            ? "text-cream/20"
-                            : isSun
-                              ? "text-red-400"
-                              : "text-cream/80"
-                      }`}
-                    >
-                      {d}
-                    </span>
-                    {dayGuests > 0 && (
-                      <span className="rounded bg-deep-green/40 px-1 text-[10px] leading-4 text-green-300">
-                        {dayGuests}名
-                      </span>
-                    )}
-                  </div>
-                  {daySlots.length > 0 && (
-                    <div className="mt-1.5 flex flex-wrap gap-1">
-                      {[...daySlots]
-                        .sort((a, b) => a.time_slot.localeCompare(b.time_slot))
-                        .map((s) => {
-                          const booked = (bookingsBySlotId.get(s.id) ?? []).length > 0;
-                          return (
-                            <span
-                              key={s.id}
-                              className={`h-1.5 w-1.5 rounded-full ${
-                                booked
-                                  ? "bg-deep-green-light"
-                                  : s.is_open
-                                    ? "bg-clay"
-                                    : "bg-cream/20"
-                              }`}
-                              title={`${s.time_slot} ${
-                                booked ? "予約あり" : s.is_open ? "公開中" : "非公開"
-                              }`}
-                            />
-                          );
-                        })}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-cream/40">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-clay" /> 公開中
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-deep-green-light" /> 予約あり
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-cream/20" /> 非公開
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm ring-1 ring-clay" /> 今日
-          </span>
-          <span>日・月は定休日</span>
-        </div>
-
-        {/* 一括操作 */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            onClick={openMonth}
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
-          >
-            <CalendarCheck size={14} />
-            {month + 1}月の営業日（火〜土）を全枠公開
-          </button>
-          {selectedDate && (
-            <button
-              onClick={openWeek}
-              disabled={saving}
-              className="inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
-            >
-              <Plus size={14} />
-              {selectedDate} から1週間（火〜土）を一括公開
-            </button>
-          )}
-        </div>
-
-        {/* ボトムシートに隠れないための余白（モバイルのみ） */}
-        {selectedDate && <div className="h-16 lg:hidden" />}
-      </div>
-
-      {/* Right panel (lg以上のみ表示) */}
-      <div className="hidden lg:block">
-        {selectedDate ? (
-          <div className="overflow-hidden rounded border border-cream/10 bg-charcoal-light">
-            <div className="border-b border-cream/10 bg-black/20 px-4 py-3">
-              <p className="text-xs text-cream/50">選択中の日付</p>
-              <p className="mt-0.5 font-[family-name:var(--font-heading)] text-base">
-                {formatDateDisplay(selectedDate)}
-              </p>
-            </div>
-            <SlotEditor selectedDate={selectedDate} {...editorProps} />
-          </div>
-        ) : (
-          <div className="flex h-48 flex-col items-center justify-center gap-2 rounded border border-cream/10 text-sm text-cream/25">
-            <Calendar size={24} />
-            <p>左のカレンダーで日付を選択</p>
-          </div>
-        )}
-      </div>
-
-      {/* モバイル: ボトムシート */}
-      {selectedDate && (
-        <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden">
-          <div className="mx-auto max-h-[70vh] max-w-lg overflow-y-auto rounded-t-xl border-x border-t border-cream/15 bg-charcoal-light shadow-2xl">
-            <div className="sticky top-0 flex items-center justify-between border-b border-cream/10 bg-charcoal-light px-4 py-3">
-              <div>
-                <p className="text-xs text-cream/50">選択中の日付</p>
-                <p className="mt-0.5 font-[family-name:var(--font-heading)] text-base">
-                  {formatDateDisplay(selectedDate)}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="flex h-10 w-10 items-center justify-center rounded text-cream/50 transition-colors hover:bg-cream/10 hover:text-cream"
-                aria-label="閉じる"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <SlotEditor selectedDate={selectedDate} {...editorProps} />
-          </div>
-        </div>
       )}
     </div>
   );
