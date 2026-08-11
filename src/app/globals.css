@@ -28,6 +28,118 @@
   --font-zh: "Noto Sans SC", sans-serif;
 }
 
+/* ── 管理画面デザインシステム「和紙と墨」(docs/admin-design-system.md) ── */
+@theme inline {
+  /* 紙と墨 */
+  --color-washi: #f4efe5;
+  --color-washi-deep: #eae3d3;
+  --color-shiro: #fbf9f3;
+  --color-sumi: #262320;
+  --color-sumi-mid: #5c564d;
+  --color-sumi-soft: #958c7d;
+  --color-line: rgb(38 35 32 / 12%);
+  /* 抹茶（肯定・確定） */
+  --color-matcha: #66794f;
+  --color-matcha-deep: #4a5a3a;
+  --color-matcha-mist: #edefdf;
+  /* 朱（注意・未確認・今日） */
+  --color-shu: #b8492c;
+  --color-shu-deep: #96371f;
+  --color-shu-mist: #f7e7df;
+  /* 金茶（公開中・差し色） */
+  --color-kin: #a5813f;
+  --color-kin-mist: #f3ecda;
+}
+
+@layer components {
+  .wa-serif {
+    font-family: var(--font-serif-jp), "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  }
+  .wa-num {
+    font-variant-numeric: tabular-nums;
+  }
+  .wa-label {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--color-sumi-soft);
+  }
+  .wa-card {
+    background-color: var(--color-shiro);
+    border: 1px solid var(--color-line);
+    border-radius: 0.75rem;
+    box-shadow:
+      0 1px 2px rgb(38 35 32 / 0.04),
+      0 6px 20px rgb(38 35 32 / 0.05);
+  }
+  .wa-shadow-lg {
+    box-shadow:
+      0 2px 6px rgb(38 35 32 / 0.06),
+      0 24px 64px rgb(38 35 32 / 0.16);
+  }
+  .wa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+  }
+  .wa-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .wa-btn-primary {
+    background-color: var(--color-sumi);
+    color: var(--color-washi);
+    border: 1px solid var(--color-sumi);
+  }
+  .wa-btn-primary:not(:disabled):hover {
+    background-color: #3a352f;
+  }
+  .wa-btn-matcha {
+    background-color: var(--color-matcha-deep);
+    color: #fdfcf8;
+    border: 1px solid var(--color-matcha-deep);
+  }
+  .wa-btn-matcha:not(:disabled):hover {
+    background-color: var(--color-matcha);
+    border-color: var(--color-matcha);
+  }
+  .wa-btn-danger {
+    background-color: transparent;
+    color: var(--color-shu-deep);
+    border: 1px solid rgb(184 73 44 / 40%);
+  }
+  .wa-btn-danger:not(:disabled):hover {
+    background-color: var(--color-shu-mist);
+    border-color: var(--color-shu);
+  }
+  .wa-btn-ghost {
+    background-color: transparent;
+    color: var(--color-sumi-mid);
+    border: 1px solid var(--color-line);
+  }
+  .wa-btn-ghost:not(:disabled):hover {
+    border-color: rgb(38 35 32 / 30%);
+    color: var(--color-sumi);
+    background-color: var(--color-shiro);
+  }
+  .wa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;

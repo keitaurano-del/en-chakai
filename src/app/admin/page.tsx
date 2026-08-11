@@ -39,41 +39,42 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1e1e1a", padding: 24 }}>
-      <div style={{ width: "100%", maxWidth: 360 }}>
-        <p style={{ margin: "0 0 6px", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#b5936a" }}>
-          円茶会
+    <div className="flex min-h-screen items-center justify-center bg-washi p-6">
+      <div className="w-full max-w-sm">
+        <div className="wa-card px-8 py-10 sm:px-10">
+          {/* 紋: 朱の円相 */}
+          <div className="mb-7 flex flex-col items-center text-center">
+            <span
+              aria-hidden
+              className="mb-5 inline-block h-10 w-10 rounded-full border-[2.5px] border-shu"
+              style={{ borderRightColor: "transparent", transform: "rotate(-40deg)" }}
+            />
+            <h1 className="wa-serif text-3xl font-medium tracking-[0.35em] text-sumi">円茶会</h1>
+            <p className="wa-label mt-3 uppercase">Admin — 管理画面</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="パスワード"
+              autoFocus
+              className="w-full rounded-lg border border-line bg-white/70 px-4 py-3 text-base text-sumi placeholder:text-sumi-soft focus:border-sumi/40 focus:outline-none focus:ring-2 focus:ring-sumi/10"
+            />
+            {error && <p className="text-[13px] text-shu-deep">{error}</p>}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="wa-btn wa-btn-primary mt-1 w-full py-3.5 text-sm tracking-[0.2em]"
+            >
+              {submitting ? "確認中…" : "ログイン"}
+            </button>
+          </form>
+        </div>
+        <p className="mt-6 text-center text-[11px] tracking-[0.1em] text-sumi-soft">
+          En Chakai — Tokyo Tea Ceremony
         </p>
-        <h1 style={{ margin: "0 0 32px", fontFamily: "Cormorant Garamond, serif", fontSize: 28, fontWeight: 500, color: "#f0ebe0" }}>
-          管理画面
-        </h1>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="パスワード"
-            autoFocus
-            style={{
-              padding: "12px 16px", fontSize: 16, backgroundColor: "#2a2a25",
-              border: "1px solid rgba(240,235,224,0.15)", color: "#f0ebe0",
-              outline: "none", borderRadius: 4, width: "100%", boxSizing: "border-box",
-            }}
-          />
-          {error && <p style={{ margin: 0, fontSize: 13, color: "#e57373" }}>{error}</p>}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              padding: "14px", fontSize: 13, fontWeight: 600, letterSpacing: "0.1em",
-              backgroundColor: "#b5936a", color: "#1e1e1a", border: "none",
-              cursor: submitting ? "wait" : "pointer", borderRadius: 4, marginTop: 4,
-              opacity: submitting ? 0.6 : 1,
-            }}
-          >
-            {submitting ? "確認中…" : "ログイン"}
-          </button>
-        </form>
       </div>
     </div>
   );

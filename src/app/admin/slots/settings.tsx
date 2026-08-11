@@ -45,35 +45,36 @@ export function SettingsView({
   }
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h2 className="font-[family-name:var(--font-heading)] text-2xl">設定</h2>
-        <p className="mt-1 text-sm text-cream/50">お店の基本設定。</p>
+    <div className="max-w-2xl space-y-7">
+      <div className="border-b border-line pb-6">
+        <p className="wa-label uppercase">Settings</p>
+        <h2 className="wa-serif mt-1 text-2xl font-medium">設定</h2>
+        <p className="mt-1.5 text-sm text-sumi-mid">お店の基本設定。</p>
       </div>
 
       {/* 定休日 */}
-      <section className="rounded border border-cream/10 bg-charcoal-light p-4 sm:p-5">
-        <h3 className="text-sm font-medium">定休日</h3>
-        <p className="mt-1 text-xs text-cream/45">
+      <section className="wa-card p-5 sm:p-6">
+        <h3 className="wa-serif text-[15px] font-medium text-sumi">定休日</h3>
+        <p className="mt-1.5 text-xs leading-relaxed text-sumi-soft">
           チェックした曜日はカレンダーで定休日扱いになり、週・月の一括公開の対象から外れます。
         </p>
-        <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-7">
+        <div className="mt-5 grid grid-cols-4 gap-2 sm:grid-cols-7">
           {DAYS_JA.map((label, day) => {
             const checked = draft.includes(day);
             return (
               <button
                 key={day}
                 onClick={() => toggle(day)}
-                className={`flex flex-col items-center gap-1.5 rounded border py-3 text-sm transition-colors ${
+                className={`flex flex-col items-center gap-2 rounded-lg border py-3 text-sm transition-colors ${
                   checked
-                    ? "border-clay/50 bg-clay/15 text-clay"
-                    : "border-cream/15 text-cream/60 hover:border-cream/30"
+                    ? "border-shu/40 bg-shu-mist font-medium text-shu-deep"
+                    : "border-line bg-white/40 text-sumi-mid hover:border-sumi/25"
                 }`}
                 aria-pressed={checked}
               >
                 <span
                   className={`flex h-4.5 w-4.5 items-center justify-center rounded border ${
-                    checked ? "border-clay bg-clay text-charcoal" : "border-cream/30"
+                    checked ? "border-shu bg-shu text-white" : "border-sumi/25 bg-white"
                   }`}
                 >
                   {checked && <Check size={12} strokeWidth={3} />}
@@ -84,31 +85,33 @@ export function SettingsView({
           })}
         </div>
         {allClosed && (
-          <p className="mt-3 text-xs text-red-300">全曜日を定休日にすることはできません。</p>
+          <p className="mt-3 text-xs text-shu-deep">全曜日を定休日にすることはできません。</p>
         )}
-        <div className="mt-4 flex items-center gap-3 border-t border-cream/10 pt-4">
+        <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
           <button
             onClick={() => onSaveClosedDays(draft)}
             disabled={saving || !dirty || allClosed}
-            className="flex items-center gap-1.5 rounded border border-deep-green bg-deep-green/40 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-deep-green/60 disabled:opacity-40"
+            className="wa-btn wa-btn-primary px-5 py-2.5 text-sm"
           >
             <Save size={14} /> {saving ? "保存中…" : "保存"}
           </button>
-          {dirty && !saving && <span className="text-xs text-clay">未保存の変更があります</span>}
+          {dirty && !saving && (
+            <span className="text-xs text-shu-deep">未保存の変更があります</span>
+          )}
         </div>
       </section>
 
       {/* 表示のみの情報 */}
-      <section className="rounded border border-cream/10 bg-charcoal-light p-4 sm:p-5">
-        <h3 className="text-sm font-medium">店舗情報（表示のみ）</h3>
-        <dl className="mt-4 space-y-3.5 text-sm">
+      <section className="wa-card p-5 sm:p-6">
+        <h3 className="wa-serif text-[15px] font-medium text-sumi">店舗情報（表示のみ）</h3>
+        <dl className="mt-5 space-y-4 text-sm">
           <InfoRow label="予約サイト">
             {info ? (
               <a
                 href={info.booking_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 break-all text-clay hover:underline"
+                className="inline-flex items-center gap-1.5 break-all text-shu-deep hover:underline"
               >
                 {info.booking_url} <ExternalLink size={12} className="shrink-0" />
               </a>
@@ -116,10 +119,14 @@ export function SettingsView({
               "—"
             )}
           </InfoRow>
-          <InfoRow label="時間枠">{TIME_SLOTS.join(" / ")}（3枠固定）</InfoRow>
+          <InfoRow label="時間枠">
+            <span className="wa-num">{TIME_SLOTS.join(" / ")}</span>（3枠固定）
+          </InfoRow>
           <InfoRow label="料金">
-            ¥{plan.priceJpy.toLocaleString()} / ${plan.priceUsd} ・ 1名あたり（最大{plan.maxGuests}
-            名）
+            <span className="wa-num">
+              ¥{plan.priceJpy.toLocaleString()} / ${plan.priceUsd}
+            </span>{" "}
+            ・ 1名あたり（最大{plan.maxGuests}名）
           </InfoRow>
           <InfoRow label="通知先メール">{info?.notification_email ?? "—"}</InfoRow>
           <InfoRow label="送信元メール">{info?.email_from ?? "—"}</InfoRow>
@@ -137,9 +144,9 @@ export function SettingsView({
 
 function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[110px_1fr] gap-3">
-      <dt className="text-xs uppercase tracking-[0.08em] text-cream/40">{label}</dt>
-      <dd className="min-w-0 text-cream/90">{children}</dd>
+    <div className="grid grid-cols-[110px_1fr] gap-4">
+      <dt className="pt-px text-[11px] tracking-[0.08em] text-sumi-soft">{label}</dt>
+      <dd className="min-w-0 text-sumi">{children}</dd>
     </div>
   );
 }
@@ -147,8 +154,8 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
 function ServiceStatus({ enabled, name }: { enabled: boolean; name: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-        enabled ? "bg-deep-green/30 text-green-300" : "bg-cream/10 text-cream/40"
+      className={`wa-chip ${
+        enabled ? "bg-matcha-mist text-matcha-deep" : "bg-washi-deep text-sumi-soft"
       }`}
     >
       <CircleDot size={11} />

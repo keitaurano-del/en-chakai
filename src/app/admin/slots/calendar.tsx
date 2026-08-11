@@ -140,41 +140,40 @@ export function CalendarView(props: {
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <div>
         {/* ヘッダー: ナビゲーション + 月/週切替 */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <button
               onClick={() => (view === "month" ? setCalendarMonth(new Date(year, month - 1, 1)) : moveWeek(-7))}
-              className="flex h-10 w-10 items-center justify-center rounded border border-cream/10 text-cream transition-colors hover:border-clay"
+              className="wa-btn wa-btn-ghost h-10 w-10 rounded-lg"
               aria-label={view === "month" ? "前の月" : "前の週"}
             >
               <ChevronLeft size={16} />
             </button>
-            <h2 className="min-w-0 font-[family-name:var(--font-heading)] text-lg sm:text-xl">
+            <h2 className="wa-serif wa-num min-w-0 px-1 text-lg font-medium sm:text-xl">
               {view === "month" ? `${year}年${month + 1}月` : weekLabel}
             </h2>
             <button
               onClick={() => (view === "month" ? setCalendarMonth(new Date(year, month + 1, 1)) : moveWeek(7))}
-              className="flex h-10 w-10 items-center justify-center rounded border border-cream/10 text-cream transition-colors hover:border-clay"
+              className="wa-btn wa-btn-ghost h-10 w-10 rounded-lg"
               aria-label={view === "month" ? "次の月" : "次の週"}
             >
               <ChevronRight size={16} />
             </button>
-            <button
-              onClick={goToday}
-              className="rounded border border-cream/15 px-3 py-1.5 text-xs text-cream/60 transition-colors hover:border-clay hover:text-clay"
-            >
+            <button onClick={goToday} className="wa-btn wa-btn-ghost px-3 py-2 text-xs">
               今日
             </button>
           </div>
 
           {/* セグメントコントロール */}
-          <div className="flex rounded border border-cream/15 p-0.5">
+          <div className="flex rounded-lg border border-line bg-shiro p-1">
             {(["month", "week"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => switchView(m)}
-                className={`rounded px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                  view === m ? "bg-clay/20 text-clay" : "text-cream/45 hover:text-cream"
+                className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${
+                  view === m
+                    ? "bg-sumi text-washi shadow-sm"
+                    : "text-sumi-mid hover:text-sumi"
                 }`}
               >
                 {m === "month" ? "月" : "週"}
@@ -210,28 +209,28 @@ export function CalendarView(props: {
         )}
 
         {/* 凡例 */}
-        <div className="mt-3 flex flex-wrap gap-4 text-xs text-cream/40">
+        <div className="mt-3.5 flex flex-wrap gap-4 text-xs text-sumi-soft">
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-clay" /> 公開中
+            <span className="h-2 w-2 rounded-full bg-kin" /> 公開中
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-deep-green-light" /> 予約あり
+            <span className="h-2 w-2 rounded-full bg-matcha" /> 予約あり
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-cream/20" /> 非公開
+            <span className="h-2 w-2 rounded-full bg-sumi/20" /> 非公開
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm ring-1 ring-clay" /> 今日
+            <span className="h-2 w-2 rounded-sm ring-1 ring-shu" /> 今日
           </span>
           {closedLabel && <span>{closedLabel}は定休日</span>}
         </div>
 
         {/* 一括操作 */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2">
           <button
             onClick={openMonth}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
+            className="wa-btn wa-btn-matcha px-4 py-2.5 text-[13px]"
           >
             <CalendarCheck size={14} />
             {month + 1}月の営業日を全枠公開
@@ -240,7 +239,7 @@ export function CalendarView(props: {
             <button
               onClick={openWeek}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
+              className="wa-btn wa-btn-ghost px-4 py-2.5 text-[13px]"
             >
               <Plus size={14} />
               {selectedDate} から1週間を一括公開
@@ -255,18 +254,18 @@ export function CalendarView(props: {
       {/* Right panel (lg以上のみ表示) */}
       <div className="hidden lg:block">
         {selectedDate ? (
-          <div className="overflow-hidden rounded border border-cream/10 bg-charcoal-light">
-            <div className="border-b border-cream/10 bg-black/20 px-4 py-3">
-              <p className="text-xs text-cream/50">選択中の日付</p>
-              <p className="mt-0.5 font-[family-name:var(--font-heading)] text-base">
+          <div className="wa-card overflow-hidden">
+            <div className="border-b border-line bg-washi/60 px-5 py-4">
+              <p className="wa-label">選択中の日付</p>
+              <p className="wa-serif wa-num mt-1 text-base font-medium">
                 {formatDateDisplay(selectedDate)}
               </p>
             </div>
             <SlotEditor selectedDate={selectedDate} {...editorProps} />
           </div>
         ) : (
-          <div className="flex h-48 flex-col items-center justify-center gap-2 rounded border border-cream/10 text-sm text-cream/25">
-            <Calendar size={24} />
+          <div className="flex h-52 flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-sumi/20 text-sm text-sumi-soft">
+            <Calendar size={24} className="text-sumi-soft/60" />
             <p>カレンダーで日付を選択</p>
           </div>
         )}
@@ -275,21 +274,24 @@ export function CalendarView(props: {
       {/* モバイル: ボトムシート */}
       {selectedDate && (
         <div className="fixed inset-x-0 bottom-0 z-[45] lg:hidden">
-          <div className="mx-auto max-h-[70vh] max-w-lg overflow-y-auto rounded-t-xl border-x border-t border-cream/15 bg-charcoal-light pb-[env(safe-area-inset-bottom)] shadow-2xl">
-            <div className="sticky top-0 flex items-center justify-between border-b border-cream/10 bg-charcoal-light px-4 py-3">
-              <div>
-                <p className="text-xs text-cream/50">選択中の日付</p>
-                <p className="mt-0.5 font-[family-name:var(--font-heading)] text-base">
-                  {formatDateDisplay(selectedDate)}
-                </p>
+          <div className="wa-shadow-lg mx-auto max-h-[70vh] max-w-lg overflow-y-auto rounded-t-2xl border-x border-t border-line bg-shiro pb-[env(safe-area-inset-bottom)]">
+            <div className="sticky top-0 z-10 border-b border-line bg-shiro/95 backdrop-blur">
+              <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-sumi/15" aria-hidden />
+              <div className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="wa-label">選択中の日付</p>
+                  <p className="wa-serif wa-num mt-0.5 text-base font-medium">
+                    {formatDateDisplay(selectedDate)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-sumi-soft transition-colors hover:bg-washi-deep/70 hover:text-sumi"
+                  aria-label="閉じる"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="flex h-10 w-10 items-center justify-center rounded text-cream/50 transition-colors hover:bg-cream/10 hover:text-cream"
-                aria-label="閉じる"
-              >
-                <X size={18} />
-              </button>
             </div>
             <SlotEditor selectedDate={selectedDate} {...editorProps} />
           </div>
@@ -325,13 +327,13 @@ function MonthGrid({
   bookingsBySlotId: Map<string, BookingRow[]>;
 }) {
   return (
-    <div className="overflow-hidden rounded border border-cream/10">
-      <div className="grid grid-cols-7 border-b border-cream/10 bg-charcoal-light">
+    <div className="wa-card overflow-hidden rounded-xl">
+      <div className="grid grid-cols-7 border-b border-line bg-washi/60">
         {DAYS_JA.map((d, i) => (
           <div
             key={d}
             className={`py-2.5 text-center text-xs font-medium ${
-              i === 0 ? "text-red-400" : i === 6 ? "text-sky-300/70" : "text-cream/40"
+              i === 0 ? "text-shu" : i === 6 ? "text-matcha-deep" : "text-sumi-soft"
             }`}
           >
             {d}
@@ -341,7 +343,10 @@ function MonthGrid({
 
       <div className="grid grid-cols-7">
         {Array.from({ length: firstDay }).map((_, i) => (
-          <div key={`empty-${i}`} className="min-h-[76px] border-b border-r border-cream/5 bg-black/10" />
+          <div
+            key={`empty-${i}`}
+            className="min-h-[76px] border-b border-r border-line/60 bg-washi/50"
+          />
         ))}
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
           const dateStr = padDay(d);
@@ -361,30 +366,30 @@ function MonthGrid({
               key={d}
               onClick={() => !isClosed && setSelectedDate(isSelected ? null : dateStr)}
               disabled={isClosed}
-              className={`min-h-[76px] border-b border-r border-cream/5 p-1.5 text-left transition-colors sm:p-2 ${
+              className={`min-h-[76px] border-b border-r border-line/60 p-1.5 text-left transition-colors sm:p-2 ${
                 isSelected
-                  ? "bg-deep-green/25"
+                  ? "bg-matcha-mist"
                   : isClosed
-                    ? "bg-black/15 cursor-default"
-                    : "hover:bg-deep-green/10"
-              } ${isToday ? "ring-1 ring-inset ring-clay" : ""}`}
+                    ? "cursor-default bg-washi/70"
+                    : "hover:bg-washi-deep/40"
+              } ${isToday ? "ring-1 ring-inset ring-shu" : ""}`}
             >
               <div className="flex items-baseline justify-between gap-1">
                 <span
-                  className={`text-sm font-medium ${
+                  className={`wa-serif wa-num text-sm font-medium ${
                     isToday
-                      ? "text-clay"
+                      ? "text-shu-deep"
                       : isClosed
-                        ? "text-cream/20"
+                        ? "text-sumi/25"
                         : isSun
-                          ? "text-red-400"
-                          : "text-cream/80"
+                          ? "text-shu"
+                          : "text-sumi"
                   }`}
                 >
                   {d}
                 </span>
                 {dayGuests > 0 && (
-                  <span className="rounded bg-deep-green/40 px-1 text-[10px] leading-4 text-green-300">
+                  <span className="wa-num rounded bg-matcha-deep px-1 text-[10px] font-medium leading-4 text-white">
                     {dayGuests}名
                   </span>
                 )}
@@ -399,11 +404,7 @@ function MonthGrid({
                         <span
                           key={s.id}
                           className={`h-1.5 w-1.5 rounded-full ${
-                            booked
-                              ? "bg-deep-green-light"
-                              : s.is_open
-                                ? "bg-clay"
-                                : "bg-cream/20"
+                            booked ? "bg-matcha" : s.is_open ? "bg-kin" : "bg-sumi/20"
                           }`}
                           title={`${s.time_slot} ${
                             booked ? "予約あり" : s.is_open ? "公開中" : "非公開"
@@ -441,10 +442,10 @@ function WeekGrid({
   bookingsBySlotId: Map<string, BookingRow[]>;
 }) {
   return (
-    <div className="overflow-x-auto rounded border border-cream/10">
+    <div className="wa-card overflow-x-auto rounded-xl">
       <div className="min-w-[720px]">
         {/* 曜日ヘッダー */}
-        <div className="grid grid-cols-[52px_repeat(7,1fr)] border-b border-cream/10 bg-charcoal-light">
+        <div className="grid grid-cols-[52px_repeat(7,1fr)] border-b border-line bg-washi/60">
           <div />
           {weekDates.map((d) => {
             const dateStr = toDateStr(d);
@@ -456,20 +457,24 @@ function WeekGrid({
                 key={dateStr}
                 onClick={() => !closed && setSelectedDate(isSelected ? null : dateStr)}
                 disabled={closed}
-                className={`border-l border-cream/5 px-1 py-2 text-center transition-colors ${
-                  isSelected ? "bg-deep-green/25" : closed ? "cursor-default" : "hover:bg-deep-green/10"
+                className={`border-l border-line/60 px-1 py-2 text-center transition-colors ${
+                  isSelected ? "bg-matcha-mist" : closed ? "cursor-default" : "hover:bg-washi-deep/40"
                 }`}
               >
                 <p
                   className={`text-[11px] ${
-                    closed ? "text-cream/20" : d.getDay() === 0 ? "text-red-400" : "text-cream/40"
+                    closed ? "text-sumi/25" : d.getDay() === 0 ? "text-shu" : "text-sumi-soft"
                   }`}
                 >
                   {DAYS_JA[d.getDay()]}
                 </p>
                 <p
-                  className={`mt-0.5 text-sm font-medium ${
-                    isToday ? "inline-block rounded bg-clay/20 px-1.5 text-clay" : closed ? "text-cream/20" : "text-cream/80"
+                  className={`wa-serif wa-num mt-0.5 text-sm font-medium ${
+                    isToday
+                      ? "inline-block rounded bg-shu px-1.5 text-white"
+                      : closed
+                        ? "text-sumi/25"
+                        : "text-sumi"
                   }`}
                 >
                   {d.getDate()}
@@ -481,8 +486,13 @@ function WeekGrid({
 
         {/* 3枠 × 7日 */}
         {TIME_SLOTS.map((time) => (
-          <div key={time} className="grid grid-cols-[52px_repeat(7,1fr)] border-b border-cream/5 last:border-b-0">
-            <div className="flex items-start justify-center pt-2.5 text-xs text-clay">{time}</div>
+          <div
+            key={time}
+            className="grid grid-cols-[52px_repeat(7,1fr)] border-b border-line/60 last:border-b-0"
+          >
+            <div className="wa-serif wa-num flex items-start justify-center pt-2.5 text-xs font-medium text-sumi-mid">
+              {time}
+            </div>
             {weekDates.map((d) => {
               const dateStr = toDateStr(d);
               const closed = isClosedDate(d);
@@ -498,42 +508,44 @@ function WeekGrid({
                   onClick={() => !closed && setSelectedDate(isSelected ? null : dateStr)}
                   disabled={closed}
                   title={closed ? "定休日" : `${dateStr} ${time}`}
-                  className={`min-h-[64px] border-l border-cream/5 p-1 text-left transition-colors ${
+                  className={`min-h-[64px] border-l border-line/60 p-1 text-left transition-colors ${
                     closed
-                      ? "cursor-default bg-black/15"
+                      ? "cursor-default bg-washi/70"
                       : isSelected
-                        ? "bg-deep-green/20"
-                        : "hover:bg-deep-green/10"
+                        ? "bg-matcha-mist/70"
+                        : "hover:bg-washi-deep/40"
                   }`}
                 >
                   {closed ? (
-                    <p className="mt-2 text-center text-[10px] text-cream/15">定休</p>
+                    <p className="mt-2 text-center text-[10px] text-sumi/20">定休</p>
                   ) : booked ? (
-                    <div className="h-full rounded border border-deep-green-light/40 bg-deep-green/25 px-1.5 py-1">
-                      <p className="text-[10px] font-medium text-green-300">
+                    <div className="h-full rounded-md border border-matcha/35 bg-matcha-mist px-1.5 py-1">
+                      <p className="wa-num text-[10px] font-medium text-matcha-deep">
                         {guests}名 / 4名{slot && !slot.is_open ? " ・非公開" : ""}
                       </p>
                       {slotBookings.map((b) => (
-                        <p key={b.id} className="truncate text-[11px] text-cream/85">
+                        <p key={b.id} className="truncate text-[11px] text-sumi">
                           {b.name}
-                          {b.status === "pending" && <span className="ml-1 text-clay">未確認</span>}
+                          {b.status === "pending" && (
+                            <span className="ml-1 font-medium text-shu">未確認</span>
+                          )}
                         </p>
                       ))}
                     </div>
                   ) : slot?.is_open ? (
-                    <div className="flex h-full items-center justify-center rounded border border-clay/25 bg-clay/5">
-                      <p className="flex items-center gap-1 text-[10px] text-clay">
+                    <div className="flex h-full items-center justify-center rounded-md border border-kin/30 bg-kin-mist/60">
+                      <p className="flex items-center gap-1 text-[10px] font-medium text-kin">
                         <Eye size={10} /> 公開中
                       </p>
                     </div>
                   ) : slot ? (
-                    <div className="flex h-full items-center justify-center rounded border border-cream/10">
-                      <p className="flex items-center gap-1 text-[10px] text-cream/30">
+                    <div className="flex h-full items-center justify-center rounded-md border border-dashed border-sumi/15">
+                      <p className="flex items-center gap-1 text-[10px] text-sumi-soft">
                         <EyeOff size={10} /> 非公開
                       </p>
                     </div>
                   ) : (
-                    <p className="mt-2 text-center text-[10px] text-cream/15">—</p>
+                    <p className="mt-2 text-center text-[10px] text-sumi/15">—</p>
                   )}
                 </button>
               );
@@ -569,9 +581,9 @@ function SlotEditor({
   saving: boolean;
 }) {
   return (
-    <div className="p-4">
-      <p className="mb-3 text-[11px] uppercase tracking-[0.1em] text-cream/40">時間スロット</p>
-      <div className="space-y-2">
+    <div className="p-5">
+      <p className="wa-label mb-3">時間スロット</p>
+      <div className="space-y-2.5">
         {TIME_SLOTS.map((time) => {
           const slot = getSlot(selectedDate, time);
           const exists = !!slot;
@@ -582,26 +594,28 @@ function SlotEditor({
           return (
             <div
               key={time}
-              className={`rounded border px-3 py-3 ${
+              className={`rounded-lg border px-3.5 py-3 ${
                 hasBookings
-                  ? "border-deep-green-light/40 bg-deep-green/10"
+                  ? "border-matcha/35 bg-matcha-mist/70"
                   : isOpen
-                    ? "border-clay/30 bg-clay/5"
-                    : "border-cream/10"
+                    ? "border-kin/35 bg-kin-mist/50"
+                    : "border-line bg-white/40"
               }`}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-sm font-medium">{TIME_SLOT_LABELS[time]}</p>
+                  <p className="wa-serif wa-num text-sm font-medium text-sumi">
+                    {TIME_SLOT_LABELS[time]}
+                  </p>
                   <p
                     className={`mt-0.5 text-xs ${
                       hasBookings
-                        ? "text-green-300"
+                        ? "text-matcha-deep"
                         : isOpen
-                          ? "text-clay"
+                          ? "text-kin"
                           : exists
-                            ? "text-cream/30"
-                            : "text-cream/20"
+                            ? "text-sumi-soft"
+                            : "text-sumi/30"
                     }`}
                   >
                     {!exists
@@ -617,10 +631,8 @@ function SlotEditor({
                   <button
                     onClick={() => toggleSlot(selectedDate, time)}
                     disabled={saving}
-                    className={`rounded border px-4 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${
-                      isOpen
-                        ? "border-red-400/40 text-red-300 hover:bg-red-400/10"
-                        : "border-deep-green bg-deep-green/30 text-cream hover:bg-deep-green/50"
+                    className={`wa-btn px-4 py-2 text-xs ${
+                      isOpen ? "wa-btn-danger" : "wa-btn-matcha"
                     }`}
                   >
                     {!exists ? "追加" : isOpen ? "非公開" : "公開"}
@@ -630,7 +642,7 @@ function SlotEditor({
                       onClick={() => deleteSlot(selectedDate, time)}
                       disabled={saving || hasBookings}
                       title={hasBookings ? "予約が入っている枠は削除できません" : "削除"}
-                      className="flex h-9 w-9 items-center justify-center rounded text-cream/20 transition-colors hover:bg-red-400/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-cream/20"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-sumi/30 transition-colors hover:bg-shu-mist hover:text-shu-deep disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-sumi/30"
                       aria-label="削除"
                     >
                       <Trash2 size={14} />
@@ -641,19 +653,21 @@ function SlotEditor({
 
               {/* この枠の予約者 */}
               {hasBookings && (
-                <ul className="mt-2 space-y-1 border-t border-cream/10 pt-2">
+                <ul className="mt-2 space-y-1 border-t border-matcha/20 pt-2">
                   {slotBookings.map((b) => (
                     <li key={b.id}>
                       <button
                         onClick={() => onOpenBooking(b)}
-                        className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-cream/5"
+                        className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-white/70"
                       >
                         <span className="min-w-0 truncate">
-                          <span className="font-medium text-cream/90">{b.name}</span>
-                          <span className="ml-1.5 text-cream/45">{b.guests}名</span>
-                          {b.status === "pending" && <span className="ml-1.5 text-clay">未確認</span>}
+                          <span className="font-medium text-sumi">{b.name}</span>
+                          <span className="ml-1.5 text-sumi-mid">{b.guests}名</span>
+                          {b.status === "pending" && (
+                            <span className="ml-1.5 font-medium text-shu">未確認</span>
+                          )}
                         </span>
-                        <span className="shrink-0 text-cream/30">詳細 →</span>
+                        <span className="shrink-0 text-sumi-soft">詳細 →</span>
                       </button>
                     </li>
                   ))}
@@ -665,18 +679,18 @@ function SlotEditor({
       </div>
 
       {/* 1日一括操作 */}
-      <div className="mt-4 grid grid-cols-2 gap-2 border-t border-cream/10 pt-4">
+      <div className="mt-5 grid grid-cols-2 gap-2 border-t border-line pt-4">
         <button
           onClick={() => openDay(selectedDate)}
           disabled={saving}
-          className="flex items-center justify-center gap-1.5 rounded border border-deep-green bg-deep-green/20 px-3 py-2.5 text-xs font-medium text-green-300 transition-colors hover:bg-deep-green/40 disabled:opacity-50"
+          className="wa-btn wa-btn-matcha px-3 py-2.5 text-xs"
         >
           <Eye size={14} /> この日を全枠公開
         </button>
         <button
           onClick={() => closeDay(selectedDate)}
           disabled={saving}
-          className="flex items-center justify-center gap-1.5 rounded border border-cream/15 px-3 py-2.5 text-xs font-medium text-cream/60 transition-colors hover:border-red-400/40 hover:text-red-300 disabled:opacity-50"
+          className="wa-btn wa-btn-danger px-3 py-2.5 text-xs"
         >
           <EyeOff size={14} /> この日を全て非公開
         </button>

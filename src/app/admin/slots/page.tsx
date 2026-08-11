@@ -465,21 +465,28 @@ export default function AdminSlotsPage() {
 
   // ── UI ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-charcoal text-cream font-[family-name:Inter,sans-serif]">
+    <div className="min-h-screen bg-washi text-sumi">
       {/* Toast */}
       {toast && (
-        <div className="fixed left-1/2 top-4 z-[60] -translate-x-1/2 whitespace-nowrap rounded bg-deep-green px-5 py-3 text-sm shadow-lg sm:left-auto sm:right-5 sm:translate-x-0">
+        <div className="wa-shadow-lg fixed left-1/2 top-4 z-[60] -translate-x-1/2 whitespace-nowrap rounded-lg bg-sumi px-5 py-3 text-sm text-washi sm:left-auto sm:right-6 sm:translate-x-0">
           {toast}
         </div>
       )}
 
       {/* モバイル: 薄いヘッダー（ロゴ + ログアウトのみ） */}
-      <header className="sticky top-0 z-30 border-b border-cream/10 bg-charcoal-light lg:hidden">
+      <header className="sticky top-0 z-30 border-b border-line bg-shiro/90 backdrop-blur lg:hidden">
         <div className="flex h-12 items-center justify-between px-4">
-          <span className="font-[family-name:var(--font-heading)] text-base">円茶会</span>
+          <span className="flex items-center gap-2.5">
+            <span
+              aria-hidden
+              className="inline-block h-4 w-4 rounded-full border-2 border-shu"
+              style={{ borderRightColor: "transparent", transform: "rotate(-40deg)" }}
+            />
+            <span className="wa-serif text-base font-medium tracking-[0.2em]">円茶会</span>
+          </span>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 p-2 text-sm text-cream/40 transition-colors hover:text-cream"
+            className="flex items-center gap-1.5 rounded-lg p-2 text-sm text-sumi-soft transition-colors hover:text-sumi"
             aria-label="ログアウト"
           >
             <LogOut size={16} />
@@ -488,34 +495,43 @@ export default function AdminSlotsPage() {
       </header>
 
       {/* PC: 左サイドバー */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-cream/10 bg-charcoal-light lg:flex">
-        <div className="border-b border-cream/10 px-5 py-5">
-          <p className="font-[family-name:var(--font-heading)] text-xl">円茶会</p>
-          <p className="mt-0.5 text-[11px] uppercase tracking-[0.15em] text-cream/35">管理画面</p>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-shiro lg:flex">
+        <div className="border-b border-line px-6 py-6">
+          <p className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="inline-block h-5 w-5 rounded-full border-2 border-shu"
+              style={{ borderRightColor: "transparent", transform: "rotate(-40deg)" }}
+            />
+            <span className="wa-serif text-xl font-medium tracking-[0.25em]">円茶会</span>
+          </p>
+          <p className="wa-label mt-2 uppercase">Admin — 管理画面</p>
         </div>
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-5">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors ${
-                tab === id ? "bg-clay/15 text-clay" : "text-cream/55 hover:bg-cream/5 hover:text-cream"
+              className={`flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm transition-colors ${
+                tab === id
+                  ? "bg-sumi font-medium text-washi shadow-sm"
+                  : "text-sumi-mid hover:bg-washi-deep/60 hover:text-sumi"
               }`}
             >
-              <Icon size={17} />
+              <Icon size={17} className={tab === id ? "text-washi" : "text-sumi-soft"} />
               <span className="flex-1 text-left">{label}</span>
               {id === "bookings" && pendingCount > 0 && (
-                <span className="rounded-full bg-clay px-1.5 py-0.5 text-[10px] font-bold text-charcoal">
+                <span className="rounded-full bg-shu px-1.5 py-0.5 text-[10px] font-bold text-white">
                   {pendingCount}
                 </span>
               )}
             </button>
           ))}
         </nav>
-        <div className="border-t border-cream/10 p-3">
+        <div className="border-t border-line p-3">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm text-cream/40 transition-colors hover:bg-cream/5 hover:text-cream"
+            className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm text-sumi-soft transition-colors hover:bg-washi-deep/60 hover:text-sumi"
           >
             <LogOut size={16} /> ログアウト
           </button>
@@ -523,11 +539,11 @@ export default function AdminSlotsPage() {
       </aside>
 
       {/* コンテンツ */}
-      <div className="lg:pl-56">
-        <main className="mx-auto max-w-5xl px-4 pb-28 pt-5 lg:max-w-6xl lg:px-8 lg:pb-12 lg:pt-8">
+      <div className="lg:pl-60">
+        <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 lg:max-w-6xl lg:px-10 lg:pb-14 lg:pt-10">
           {loading ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-24 text-cream/40">
-              <span className="h-8 w-8 animate-spin rounded-full border-2 border-cream/15 border-t-clay" />
+            <div className="flex flex-col items-center justify-center gap-4 py-24 text-sumi-soft">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-shu" />
               <p className="text-sm">読み込み中…</p>
             </div>
           ) : (
@@ -591,21 +607,25 @@ export default function AdminSlotsPage() {
       </div>
 
       {/* モバイル: 下部固定タブバー */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-cream/10 bg-charcoal-light pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-shiro/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <div className="grid grid-cols-4">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               className={`relative flex flex-col items-center gap-1 py-2.5 transition-colors ${
-                tab === id ? "text-clay" : "text-cream/40 hover:text-cream/70"
+                tab === id ? "text-shu-deep" : "text-sumi-soft hover:text-sumi-mid"
               }`}
               aria-label={label}
             >
+              {/* アクティブインジケータ（上端の朱線） */}
+              {tab === id && (
+                <span className="absolute inset-x-6 top-0 h-0.5 rounded-full bg-shu" />
+              )}
               <span className="relative">
                 <Icon size={20} />
                 {id === "bookings" && pendingCount > 0 && (
-                  <span className="absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[9px] font-bold text-charcoal">
+                  <span className="absolute -right-2.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-shu px-1 text-[9px] font-bold text-white">
                     {pendingCount}
                   </span>
                 )}
