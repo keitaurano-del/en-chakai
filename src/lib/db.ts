@@ -25,6 +25,11 @@ export type Booking = {
   notes: string | null;
   status: "pending" | "confirmed" | "cancelled";
   created_at: string;
+  // Stripe 決済（optional — 既存データとの後方互換のため任意フィールド）
+  payment_link_id?: string;
+  payment_url?: string;
+  payment_status?: "unpaid" | "paid";
+  paid_at?: string;
 };
 
 export type BookingWithSlot = Booking & { available_slots: Slot | null };
@@ -132,6 +137,20 @@ export function listBookings(limit = 100): BookingWithSlot[] {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, limit)
     .map((b) => ({ ...b, available_slots: byId.get(b.slot_id) ?? null }));
+}
+
+// 任意フィールドの部分更新（Stripe 決済情報の保存などに使用）
+export function updateBooking(
+  id: string,
+  patch: Partial<Omit<Booking, "id" | "created_at">>
+): BookingWithSlot | null {
+  const rows = readJson<Booking>(BOOKINGS_FILE);
+  const booking = rows.find((b) => b.id === id);
+  if (!booking) return null;
+  Object.assign(booking, patch);
+  writeJson(BOOKINGS_FILE, rows);
+  const slot = readJson<Slot>(SLOTS_FILE).find((s) => s.id === booking.slot_id) ?? null;
+  return { ...booking, available_slots: slot };
 }
 
 export function updateBookingStatus(id: string, status: Booking["status"]): BookingWithSlot | null {

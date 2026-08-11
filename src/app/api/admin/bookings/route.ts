@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listBookings, updateBookingStatus } from "@/lib/db";
+import { listBookings, updateBooking, updateBookingStatus } from "@/lib/db";
 import { Resend } from "resend";
 import { PLAN_LABELS, TIME_SLOT_LABELS, formatDateDisplay, type TimeSlot } from "@/lib/booking";
 import { PLANS } from "@/lib/constants";
+import { createPaymentLink, formatStripeAmount, isStripeEnabled } from "@/lib/stripe";
 
 // Resend is optional — without RESEND_API_KEY, emails are skipped gracefully.
 function getResend(): Resend | null {
@@ -35,19 +36,47 @@ export async function PATCH(req: NextRequest) {
 
   const { id, status } = await req.json();
 
-  const booking = updateBookingStatus(id, status);
+  let booking = updateBookingStatus(id, status);
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 500 });
 
-  // Send confirmation email when status flips to confirmed
-  if (status === "confirmed" && booking?.available_slots) {
+  let warning: string | undefined;
+
+  if (status === "confirmed" && booking.available_slots) {
+    const slot = booking.available_slots;
+
+    // Stripe Payment Link を発行（STRIPE_SECRET_KEY 未設定なら丸ごとスキップ＝従来動作）。
+    // Stripe が失敗しても確定処理とメール送信は止めない。
+    if (isStripeEnabled() && !booking.payment_url) {
+      try {
+        const dateLabel = formatDateDisplay(slot.date);
+        const timeLabel = TIME_SLOT_LABELS[slot.time_slot as TimeSlot] ?? slot.time_slot;
+        const link = await createPaymentLink({
+          bookingId: booking.id,
+          dateLabel,
+          timeLabel,
+          guests: booking.guests,
+        });
+        booking =
+          updateBooking(booking.id, {
+            payment_link_id: link.id,
+            payment_url: link.url,
+            payment_status: "unpaid",
+          }) ?? booking;
+      } catch (stripeError) {
+        console.error("Stripe payment link error:", stripeError);
+        warning = "決済リンクの作成に失敗しました。確定メールは決済リンク無しで送信します。";
+      }
+    }
+
+    // Send confirmation email when status flips to confirmed
     try {
-      await sendConfirmationEmail({ ...booking, available_slots: booking.available_slots });
+      await sendConfirmationEmail({ ...booking, available_slots: slot });
     } catch (emailError) {
       console.error("Confirmation email error:", emailError);
     }
   }
 
-  return NextResponse.json(booking);
+  return NextResponse.json(warning ? { ...booking, warning } : booking);
 }
 
 type BookingWithSlot = {
@@ -58,6 +87,7 @@ type BookingWithSlot = {
   guests: number;
   dietary: string | null;
   notes: string | null;
+  payment_url?: string;
   available_slots: {
     date: string;
     time_slot: string;
@@ -72,6 +102,19 @@ async function sendConfirmationEmail(booking: BookingWithSlot) {
   const planMeta = PLANS.find((p) => p.id === plan) ?? PLANS[0];
   const totalUsd = planMeta.priceUsd * guests;
   const totalJpy = planMeta.priceJpy * guests;
+
+  // Stripe 決済リンクがあれば決済ボタンを差し込む（無ければ従来文面のまま）
+  const paymentBlock = booking.payment_url
+    ? `
+        <div style="margin: 28px 0 0; padding: 24px; background: #f2ede0; border: 1px solid #e0dccc; border-radius: 4px; text-align: center;">
+          <a href="${booking.payment_url}" style="display: inline-block; background: #b5936a; color: #ffffff; padding: 14px 36px; border-radius: 4px; font-size: 16px; font-weight: 500; letter-spacing: 0.04em; text-decoration: none;">
+            Complete Payment — ${formatStripeAmount(guests)}
+          </a>
+          <p style="margin: 14px 0 0; font-size: 13px; color: #555550;">
+            Payment is required to finalize your reservation.
+          </p>
+        </div>`
+    : "";
 
   await getResend()?.emails.send({
     from: EMAIL_FROM,
@@ -94,6 +137,7 @@ async function sendConfirmationEmail(booking: BookingWithSlot) {
           <tr><td style="padding: 12px 0; font-size: 13px; color: #888880;">Guests</td><td style="padding: 12px 0; font-size: 15px;">${guests}</td></tr>
           <tr><td style="padding: 12px 0; font-size: 13px; color: #888880;">Total</td><td style="padding: 12px 0; font-size: 15px;"><strong>$${totalUsd}</strong> <span style="color:#888880;">(¥${totalJpy.toLocaleString()})</span></td></tr>
         </table>
+        ${paymentBlock}
 
         <h2 style="font-size: 14px; text-transform: uppercase; letter-spacing: 0.15em; color: #b5936a; margin: 32px 0 12px;">Location</h2>
         <p style="font-size: 15px; line-height: 1.7; margin: 0;">

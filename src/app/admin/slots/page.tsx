@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { type Slot } from "@/lib/db";
 import { TIME_SLOTS, TIME_SLOT_LABELS, formatDateDisplay } from "@/lib/booking";
@@ -64,6 +64,8 @@ export default function AdminSlotsPage() {
   const [toast, setToast] = useState("");
   const [slotsLoaded, setSlotsLoaded] = useState(false);
   const [bookingsLoaded, setBookingsLoaded] = useState(false);
+  const [paymentsSyncing, setPaymentsSyncing] = useState(false);
+  const paymentsSyncedOnce = useRef(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && sessionStorage.getItem("admin_auth") !== "1") {
@@ -133,6 +135,43 @@ export default function AdminSlotsPage() {
   useEffect(() => {
     loadBookings();
   }, [loadBookings]);
+
+  // Stripe 支払状況の同期。キー未設定・エラー時は静かに何もしない（従来動作を壊さない）。
+  const syncPayments = useCallback(
+    async (silent: boolean) => {
+      setPaymentsSyncing(true);
+      try {
+        const res = await fetch("/api/admin/payments/sync", {
+          method: "POST",
+          headers: authHeader(),
+        });
+        if (res.ok) {
+          const result = await res.json().catch(() => null);
+          if (result && result.updated > 0) {
+            await loadBookings();
+            setToast(`支払状況を更新しました（${result.updated}件が支払済に）`);
+            setTimeout(() => setToast(""), 2500);
+          } else if (!silent) {
+            setToast(result?.enabled === false ? "Stripe 連携は未設定です" : "支払状況は最新です");
+            setTimeout(() => setToast(""), 2500);
+          }
+        }
+      } catch {
+        // ネットワークエラー等は無視（手動更新で再試行可能）
+      } finally {
+        setPaymentsSyncing(false);
+      }
+    },
+    [loadBookings]
+  );
+
+  // 予約タブを開いたとき、自動で1回だけ支払状況を同期
+  useEffect(() => {
+    if (tab === "bookings" && !paymentsSyncedOnce.current) {
+      paymentsSyncedOnce.current = true;
+      syncPayments(true);
+    }
+  }, [tab, syncPayments]);
 
   const loading = !slotsLoaded || !bookingsLoaded;
 
@@ -452,7 +491,12 @@ export default function AdminSlotsPage() {
             )}
 
             {tab === "bookings" && (
-              <BookingsList bookings={bookings} onSelect={setSelectedBooking} />
+              <BookingsList
+                bookings={bookings}
+                onSelect={setSelectedBooking}
+                onSyncPayments={() => syncPayments(false)}
+                paymentsSyncing={paymentsSyncing}
+              />
             )}
           </>
         )}

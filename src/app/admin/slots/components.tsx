@@ -10,7 +10,10 @@ import {
   ChevronDown,
   Copy,
   Download,
+  ExternalLink,
+  Link2,
   Mail,
+  RefreshCw,
   Search,
   Users,
   Utensils,
@@ -57,6 +60,30 @@ export function StatusBadge({ status }: { status: BookingStatus }) {
     cancelled: { label: "キャンセル", cls: "bg-red-900/20 text-red-300" },
   };
   const { label, cls } = map[status];
+  return (
+    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
+// 支払状況バッジ — confirmed の予約にのみ表示（pending / cancelled は非表示）
+export function paymentStatusLabel(b: BookingRow): "支払済" | "未払" | "リンク無し" | null {
+  if (b.status !== "confirmed") return null;
+  if (b.payment_status === "paid") return "支払済";
+  if (b.payment_link_id) return "未払";
+  return "リンク無し";
+}
+
+export function PaymentBadge({ booking }: { booking: BookingRow }) {
+  const label = paymentStatusLabel(booking);
+  if (!label) return null;
+  const cls =
+    label === "支払済"
+      ? "bg-deep-green/30 text-green-300"
+      : label === "未払"
+        ? "bg-clay/15 text-clay"
+        : "bg-cream/10 text-cream/40";
   return (
     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${cls}`}>
       {label}
@@ -121,6 +148,7 @@ export function exportBookingsCsv(rows: BookingRow[]) {
     "人数",
     "プラン",
     "状態",
+    "支払状況",
     "食事制限",
     "備考",
     "申込日時",
@@ -141,6 +169,7 @@ export function exportBookingsCsv(rows: BookingRow[]) {
         String(b.guests),
         planShortLabel(b.plan),
         statusJa[b.status],
+        paymentStatusLabel(b) ?? "",
         b.dietary ?? "",
         b.notes ?? "",
         new Date(b.created_at).toLocaleString("ja-JP"),
@@ -168,9 +197,13 @@ type Filter = "all" | BookingStatus;
 export function BookingsList({
   bookings,
   onSelect,
+  onSyncPayments,
+  paymentsSyncing = false,
 }: {
   bookings: BookingRow[];
   onSelect: (b: BookingRow) => void;
+  onSyncPayments?: () => void;
+  paymentsSyncing?: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -270,6 +303,17 @@ export function BookingsList({
             className="w-full rounded border border-cream/15 bg-charcoal-light py-2.5 pl-9 pr-3 text-sm text-cream placeholder:text-cream/30 focus:border-clay focus:outline-none"
           />
         </div>
+        {onSyncPayments && (
+          <button
+            onClick={onSyncPayments}
+            disabled={paymentsSyncing}
+            className="flex shrink-0 items-center gap-1.5 rounded border border-cream/15 px-3 py-2.5 text-xs text-cream/60 transition-colors hover:border-clay hover:text-clay disabled:opacity-40"
+            title="Stripe の支払状況を照会して反映"
+          >
+            <RefreshCw size={14} className={paymentsSyncing ? "animate-spin" : ""} />
+            {paymentsSyncing ? "確認中…" : "支払状況を更新"}
+          </button>
+        )}
         <button
           onClick={() =>
             exportBookingsCsv([...upcomingGroups.flatMap((g) => g.rows), ...pastRows])
@@ -359,6 +403,7 @@ function BookingRowCard({
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{b.name}</span>
           <StatusBadge status={b.status} />
+          <PaymentBadge booking={b} />
           <DietaryIcon dietary={b.dietary} />
         </div>
         <p className="mt-1 truncate text-sm text-cream/50">{b.email}</p>
@@ -421,6 +466,7 @@ export function BookingDetailModal({
   onStatusChange: (status: BookingStatus) => Promise<void>;
 }) {
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const { usd, jpy } = planPrices(booking.plan);
   const totalUsd = usd * booking.guests;
   const totalJpy = jpy * booking.guests;
@@ -430,6 +476,17 @@ export function BookingDetailModal({
       await navigator.clipboard.writeText(buildReplyTemplate(booking));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard 不可の環境では黙ってスキップ
+    }
+  }
+
+  async function copyPaymentLink() {
+    if (!booking.payment_url) return;
+    try {
+      await navigator.clipboard.writeText(booking.payment_url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
     } catch {
       // clipboard 不可の環境では黙ってスキップ
     }
@@ -461,6 +518,7 @@ export function BookingDetailModal({
         <div className="space-y-5 px-6 py-5 text-sm">
           <div className="flex items-center gap-3">
             <StatusBadge status={booking.status} />
+            <PaymentBadge booking={booking} />
             <span className="text-cream/40">ID: {booking.id.slice(0, 8)}…</span>
           </div>
 
@@ -481,6 +539,45 @@ export function BookingDetailModal({
               {booking.email}
             </a>
           </DetailRow>
+          {booking.payment_url && (
+            <DetailRow label="決済リンク">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={copyPaymentLink}
+                  className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs transition-colors ${
+                    linkCopied
+                      ? "border-deep-green text-green-300"
+                      : "border-cream/15 text-cream/70 hover:border-clay hover:text-clay"
+                  }`}
+                  title="ゲストへ送る決済リンクをコピー"
+                >
+                  {linkCopied ? <Check size={12} /> : <Link2 size={12} />}
+                  {linkCopied ? "コピー済み" : "決済リンクをコピー"}
+                </button>
+                {booking.payment_link_id && (
+                  <a
+                    href={`https://dashboard.stripe.com/payment-links/${booking.payment_link_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded border border-cream/15 px-3 py-1.5 text-xs text-cream/70 transition-colors hover:border-clay hover:text-clay"
+                  >
+                    <ExternalLink size={12} /> Stripe で確認
+                  </a>
+                )}
+              </div>
+            </DetailRow>
+          )}
+          {booking.paid_at && (
+            <DetailRow label="支払日時">
+              {new Date(booking.paid_at).toLocaleString("ja-JP", {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </DetailRow>
+          )}
           {booking.dietary && <DetailRow label="食事制限">{booking.dietary}</DetailRow>}
           {booking.notes && <DetailRow label="備考">{booking.notes}</DetailRow>}
           <DetailRow label="申込日時">

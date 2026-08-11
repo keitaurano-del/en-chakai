@@ -60,6 +60,7 @@ export function Dashboard({
     let thisMonthCount = 0;
     let monthRevenueJpy = 0;
     let monthRevenueUsd = 0;
+    let monthPaidJpy = 0; // うち Stripe 支払済
     const urgent: BookingRow[] = []; // 3日以内の未確認予約
     const todayRows: BookingRow[] = [];
     const tomorrowRows: BookingRow[] = [];
@@ -83,6 +84,7 @@ export function Dashboard({
         thisMonthCount++;
         monthRevenueJpy += jpy * b.guests;
         monthRevenueUsd += usd * b.guests;
+        if (b.payment_status === "paid") monthPaidJpy += jpy * b.guests;
       }
     }
 
@@ -134,6 +136,7 @@ export function Dashboard({
       thisMonthCount,
       monthRevenueJpy,
       monthRevenueUsd,
+      monthPaidJpy,
       urgent,
       todayRows,
       tomorrowRows,
@@ -204,7 +207,7 @@ export function Dashboard({
           icon={<TrendingUp size={16} />}
           label="今月の売上（確定）"
           value={`¥${data.monthRevenueJpy.toLocaleString()}`}
-          sub={`$${data.monthRevenueUsd.toLocaleString()}`}
+          sub={`$${data.monthRevenueUsd.toLocaleString()} ・ うち支払済 ¥${data.monthPaidJpy.toLocaleString()}`}
         />
       </div>
 
