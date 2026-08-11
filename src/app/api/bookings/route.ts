@@ -4,6 +4,8 @@ import { Resend } from "resend";
 import { PLAN_LABELS, TIME_SLOT_LABELS, formatDateDisplay, type TimeSlot } from "@/lib/booking";
 
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL ?? "keita.urano@gmail.com";
+// Sender must be a Resend-verified domain; falls back to Resend's shared onboarding sender.
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "En Chakai <onboarding@resend.dev>";
 
 // Resend is optional — without RESEND_API_KEY, emails are skipped gracefully.
 function getResend(): Resend | null {
@@ -66,7 +68,7 @@ export async function POST(req: NextRequest) {
   // 1. Send notification email to host
   try {
     await resend?.emails.send({
-      from: "En Chakai Bookings <bookings@en-chakai.com>",
+      from: EMAIL_FROM,
       to: NOTIFICATION_EMAIL,
       subject: `New reservation request — ${name} · ${dateLabel}`,
       html: `
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest) {
   // 2. Send acknowledgement email to guest
   try {
     await resend?.emails.send({
-      from: "En Chakai <bookings@en-chakai.com>",
+      from: EMAIL_FROM,
       to: email,
       subject: `We've received your reservation request — En Chakai`,
       html: `

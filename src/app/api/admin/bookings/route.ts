@@ -9,6 +9,9 @@ function getResend(): Resend | null {
   return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 }
 
+// Sender must be a Resend-verified domain; falls back to Resend's shared onboarding sender.
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "En Chakai <onboarding@resend.dev>";
+
 function isAuthorized(req: NextRequest) {
   const auth = req.headers.get("x-admin-password");
   const expected = process.env.ADMIN_PASSWORD;
@@ -67,7 +70,7 @@ async function sendConfirmationEmail(booking: BookingWithSlot) {
   const totalJpy = planMeta.priceJpy * guests;
 
   await getResend()?.emails.send({
-    from: "En Chakai <bookings@en-chakai.com>",
+    from: EMAIL_FROM,
     to: email,
     subject: `Reservation confirmed — ${dateLabel} · En Chakai`,
     html: `
