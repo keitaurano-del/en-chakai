@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -16,17 +17,25 @@ export default function AdminLoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Verify against the server (ADMIN_PASSWORD env) instead of a hardcoded value.
-    const res = await fetch("/api/admin/slots", {
-      headers: { "x-admin-password": password },
-    });
-    if (res.ok) {
-      sessionStorage.setItem("admin_auth", "1");
-      sessionStorage.setItem("admin_pw", password);
-      router.replace("/admin/slots");
-    } else {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      // Verify against the server (ADMIN_PASSWORD env) instead of a hardcoded value.
+      const res = await fetch("/api/admin/slots", {
+        headers: { "x-admin-password": password },
+      });
+      if (res.ok) {
+        sessionStorage.setItem("admin_auth", "1");
+        sessionStorage.setItem("admin_pw", password);
+        router.replace("/admin/slots");
+        return;
+      }
       setError("パスワードが違います");
+    } catch {
+      setError("通信エラーが発生しました。もう一度お試しください");
     }
+    setSubmitting(false);
   }
 
   return (
@@ -54,13 +63,15 @@ export default function AdminLoginPage() {
           {error && <p style={{ margin: 0, fontSize: 13, color: "#e57373" }}>{error}</p>}
           <button
             type="submit"
+            disabled={submitting}
             style={{
-              padding: "12px", fontSize: 13, fontWeight: 600, letterSpacing: "0.1em",
+              padding: "14px", fontSize: 13, fontWeight: 600, letterSpacing: "0.1em",
               backgroundColor: "#b5936a", color: "#1e1e1a", border: "none",
-              cursor: "pointer", borderRadius: 4, marginTop: 4,
+              cursor: submitting ? "wait" : "pointer", borderRadius: 4, marginTop: 4,
+              opacity: submitting ? 0.6 : 1,
             }}
           >
-            ログイン
+            {submitting ? "確認中…" : "ログイン"}
           </button>
         </form>
       </div>
