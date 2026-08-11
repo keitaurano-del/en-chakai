@@ -15,7 +15,7 @@ ID 採番: **EC-xx**。採番は `bash /home/dev/cron-scripts/next-task-id.sh EC
 
 | ID | タイトル | 優先度 | ステータス | 担当 | 備考 |
 |----|---------|--------|-----------|------|------|
-| （現在アクティブな en-chakai タスクなし） | | | | | |
+| EC-1 | 円茶会 再開準備（稼働確認・Render/ドメイン整理） | 高 | TODO | Son | 2026-08-11 Keita「再開するよ」。現状: sengoku-chakai.onrender.com=404（free plan・要状態確認）、en-chakai.com=未取得（DNS未解決）、render.yaml の name が旧称 sengoku-chakai のまま。再開スコープ（サイト公開／予約受付）は Keita 確認中 |
 
 ---
 
@@ -26,4 +26,4 @@ ID 採番: **EC-xx**。採番は `bash /home/dev/cron-scripts/next-task-id.sh EC
 
 ---
 
-最終更新: 2026-05-31 / 管理: task-manager
+最終更新: 2026-08-11 / 管理: task-manager
