@@ -17,6 +17,7 @@ ID 採番: **EC-xx**。採番は `bash /home/dev/cron-scripts/next-task-id.sh EC
 |----|---------|--------|-----------|------|------|
 | EC-1 | 円茶会 再構築（Render/Supabase脱却・自宅サーバ化） | 高 | DONE | Son | 2026-08-11完了。DoD: ①成果物=en-chakai repo main(219f875/b6395bc)+en-chakai.service(:3002)+cloudflared ingress追加 ②検証=実測 top200/公開API200/admin旧PW401/新PW200/https://chakai.apollomansion.com/en 200・既存2ホスト無傷 ③本番反映=済(systemd常駐+Tunnel公開・push済)。過去データ移行不要(Keita指示)。残: Resendキー未設定=メール通知スキップ動作、予約枠の登録はadmin画面から |
 | EC-2 | メール通知の有効化（Resend） | 中 | DONE | Son | 2026-08-11完了。DoD: ①成果物=EMAIL_FROM環境変数化(8688118)+.env.localにRESEND_API_KEY設定(Keita提供)+再起動 ②検証=テスト予約でホスト通知/ゲスト受付の2通をResend API実測 last_event=delivered・テストデータは削除済 ③本番反映=済。制約: 送信元がonboarding@resend.devのためアカウント本人宛のみ送達可→顧客宛はEC-3のドメイン認証待ち |
+| EC-4 | Apollo茶事ページにサイト情報タブ | 低 | DONE | Son | 2026-08-11完了。DoD: ①成果物=cxo-agent web/src/views/Chaji.tsx「円茶会サイト」タブ(65867e2)・公開URL/予約/管理画面(PW伏せ字トグル)/メール設定/運用メモ ②検証=build後 /chaji の配信チャンクに新タブ文字列を実測確認(静的配信のため再起動不要) ③本番反映=済(push済) |
 | EC-3 | 送信ドメイン認証（顧客宛メール解放） | 中 | DONE | Son | 2026-08-11完了。Keitaがenchakai.com取得→CFトークンにゾーン追加。DoD: ①成果物=enchakai.comゾーンにDNS5件(サイトCNAME×2+DKIM TXT/SPF MX/SPF TXT)・Resendドメイン差替(apollomansion削除→enchakai.com id=3fbe36ba, verified)・EMAIL_FROM=円茶会 <bookings@enchakai.com>・NEXT_PUBLIC_BASE_URL=https://enchakai.com ②検証=テスト予約でホスト通知/ゲスト受付2通ともbookings@enchakai.com送信元でlast_event=delivered実測・テストデータ削除済 ③本番反映=済(cloudflared+en-chakai再起動・https://enchakai.com 200実測・chakai.apollomansion.com併存) |
 
 ---
