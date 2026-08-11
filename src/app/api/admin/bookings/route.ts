@@ -11,7 +11,8 @@ function getResend(): Resend | null {
 
 function isAuthorized(req: NextRequest) {
   const auth = req.headers.get("x-admin-password");
-  return auth === process.env.ADMIN_PASSWORD || auth === "chakai2024";
+  const expected = process.env.ADMIN_PASSWORD;
+  return !!expected && auth === expected;
 }
 
 // GET — list recent bookings

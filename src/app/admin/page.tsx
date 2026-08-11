@@ -14,10 +14,15 @@ export default function AdminLoginPage() {
     }
   }, [router]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password === "chakai2024") {
+    // Verify against the server (ADMIN_PASSWORD env) instead of a hardcoded value.
+    const res = await fetch("/api/admin/slots", {
+      headers: { "x-admin-password": password },
+    });
+    if (res.ok) {
       sessionStorage.setItem("admin_auth", "1");
+      sessionStorage.setItem("admin_pw", password);
       router.replace("/admin/slots");
     } else {
       setError("パスワードが違います");

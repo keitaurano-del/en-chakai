@@ -25,11 +25,11 @@ type Tab = "dashboard" | "slots" | "bookings";
 type BookingRow = Booking & { available_slots: Slot };
 
 const CLOSED_DAYS = [0, 1];
-const ADMIN_PW = "chakai2024";
 const DAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
 function authHeader() {
-  return { "x-admin-password": ADMIN_PW, "Content-Type": "application/json" };
+  const pw = typeof window !== "undefined" ? sessionStorage.getItem("admin_pw") ?? "" : "";
+  return { "x-admin-password": pw, "Content-Type": "application/json" };
 }
 
 function startOfWeek(d: Date) {
