@@ -5,6 +5,7 @@
 import { useMemo, useState } from "react";
 import { type Slot } from "@/lib/db";
 import {
+  AlertTriangle,
   BarChart3,
   Calendar,
   Check,
@@ -157,18 +158,14 @@ export function HomeView({
   }, [bookings, monthSlots]);
 
   const d = data.now;
+  const heading = `${d.getMonth() + 1}月${d.getDate()}日(${DAYS_JA[d.getDay()]}) 今日の茶会`;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       {/* 挨拶行 */}
-      <div className="border-b border-line pb-6">
-        <p className="wa-label uppercase">Today</p>
-        <h2 className="wa-serif mt-1.5 text-[26px] font-medium leading-snug sm:text-3xl">
-          {d.getMonth() + 1}月{d.getDate()}日
-          <span className="ml-1.5 text-lg text-sumi-soft sm:text-xl">({DAYS_JA[d.getDay()]})</span>
-          <span className="ml-3">今日の茶会</span>
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-sumi-mid">
+      <div>
+        <h2 className="font-[family-name:var(--font-heading)] text-2xl sm:text-3xl">{heading}</h2>
+        <p className="mt-1 text-sm text-cream/50">
           {data.todayRows.length > 0
             ? `本日は ${data.todayRows.length} 組・${data.todayRows.reduce((n, b) => n + b.guests, 0)} 名のお客様をお迎えします。`
             : "本日の予定はありません。ゆっくりお過ごしください。"}
@@ -177,22 +174,22 @@ export function HomeView({
 
       {/* 要対応キュー */}
       <section>
-        <h3 className="mb-3 flex items-center gap-2">
-          <span className="h-3.5 w-[3px] rounded-full bg-shu" aria-hidden />
-          <span className="text-[13px] font-medium tracking-[0.12em] text-sumi">要対応</span>
+        <h3 className="mb-2.5 flex items-center gap-2 text-sm font-medium uppercase tracking-[0.15em] text-clay">
+          <AlertTriangle size={15} />
+          要対応
           {data.pendingQueue.length > 0 && (
-            <span className="wa-chip bg-shu-mist font-bold text-shu-deep">
+            <span className="rounded-full bg-clay/20 px-2 py-0.5 text-[11px] font-bold text-clay">
               {data.pendingQueue.length}
             </span>
           )}
         </h3>
         {data.pendingQueue.length === 0 ? (
-          <div className="wa-card flex items-center gap-2.5 border-matcha/25 bg-matcha-mist/60 px-5 py-4 text-sm text-matcha-deep">
+          <div className="flex items-center gap-2.5 rounded border border-deep-green/40 bg-deep-green/10 px-4 py-3.5 text-sm text-green-300">
             <CheckCircle2 size={17} />
             すべて対応済みです
           </div>
         ) : (
-          <ul className="space-y-2.5">
+          <ul className="space-y-2">
             {data.pendingQueue.map((b) => {
               const date = b.available_slots?.date;
               const urgent = !!date && date <= data.in3daysStr; // 3日以内（過去含む）は警告色
@@ -200,23 +197,25 @@ export function HomeView({
               return (
                 <li
                   key={b.id}
-                  className={`wa-card p-4 ${
-                    urgent ? "border-l-[3px] border-l-shu bg-shu-mist/40" : ""
+                  className={`rounded border p-3 ${
+                    urgent ? "border-clay/50 bg-clay/10" : "border-cream/10 bg-charcoal-light"
                   }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                     <button
                       onClick={() => onOpenBooking(b)}
                       className="min-w-0 flex-1 text-left"
                     >
                       <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <span className="wa-serif truncate text-[15px] font-medium">{b.name}</span>
+                        <span className="truncate text-sm font-medium">{b.name}</span>
                         <DietaryIcon dietary={b.dietary} />
                         {urgent && (
-                          <span className="wa-chip bg-shu text-white">開催間近</span>
+                          <span className="rounded bg-clay/25 px-1.5 py-0.5 text-[10px] font-medium text-clay">
+                            開催間近
+                          </span>
                         )}
                       </span>
-                      <span className="wa-num mt-1 block text-xs text-sumi-mid">
+                      <span className="mt-0.5 block text-xs text-cream/55">
                         {b.available_slots
                           ? `${formatShortDateJa(b.available_slots.date)} ${b.available_slots.time_slot}`
                           : "開催日未定"}{" "}
@@ -224,18 +223,18 @@ export function HomeView({
                       </span>
                     </button>
                     {/* ワンタップ確定/キャンセル */}
-                    <div className="flex shrink-0 gap-2">
+                    <div className="flex shrink-0 gap-1.5">
                       <button
                         onClick={() => onQuickStatus(b.id, "confirmed")}
                         disabled={busy}
-                        className="wa-btn wa-btn-matcha px-3.5 py-2.5 text-xs"
+                        className="flex items-center gap-1 rounded border border-deep-green bg-deep-green/40 px-3 py-2 text-xs font-medium transition-colors hover:bg-deep-green/60 disabled:opacity-50"
                       >
                         <Check size={13} /> {busy ? "処理中…" : "確定"}
                       </button>
                       <button
                         onClick={() => onQuickStatus(b.id, "cancelled")}
                         disabled={busy}
-                        className="wa-btn wa-btn-danger px-3.5 py-2.5 text-xs"
+                        className="flex items-center gap-1 rounded border border-red-400/40 px-3 py-2 text-xs text-red-300 transition-colors hover:bg-red-400/10 disabled:opacity-50"
                       >
                         <X size={13} /> キャンセル
                       </button>
@@ -250,11 +249,8 @@ export function HomeView({
 
       {/* 今日・明日の予定（タイムライン） */}
       <section>
-        <h3 className="mb-3 flex items-center gap-2">
-          <span className="h-3.5 w-[3px] rounded-full bg-matcha" aria-hidden />
-          <span className="text-[13px] font-medium tracking-[0.12em] text-sumi">
-            今日・明日の予定
-          </span>
+        <h3 className="mb-2.5 text-sm font-medium uppercase tracking-[0.15em] text-clay">
+          今日・明日の予定
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <DayTimeline title="今日" rows={data.todayRows} onOpen={onOpenBooking} emphasize />
@@ -267,8 +263,7 @@ export function HomeView({
         <StatCard
           icon={<Users size={15} />}
           label="今月の確定"
-          value={`${data.thisMonthCount}`}
-          unit="件"
+          value={`${data.thisMonthCount}件`}
         />
         <StatCard
           icon={<TrendingUp size={15} />}
@@ -279,35 +274,33 @@ export function HomeView({
         <StatCard
           icon={<Calendar size={15} />}
           label="今週の予約"
-          value={`${data.thisWeekCount}`}
-          unit="件"
+          value={`${data.thisWeekCount}件`}
         />
         <StatCard
           icon={<Gauge size={15} />}
           label="今月の稼働率"
-          value={`${data.occupancy}`}
-          unit="%"
+          value={`${data.occupancy}%`}
           sub={`予約済 ${data.bookedSlotCount} / 対象 ${data.relevantCount} 枠`}
         />
       </div>
 
       {/* 月次推移チャート（折りたたみ可） */}
-      <section className="wa-card overflow-hidden">
+      <section className="overflow-hidden rounded border border-cream/10 bg-charcoal-light">
         <button
           onClick={() => setChartOpen((v) => !v)}
-          className="flex w-full items-center justify-between px-5 py-4 text-left"
+          className="flex w-full items-center justify-between px-4 py-3.5 text-left sm:px-5"
         >
-          <span className="flex items-center gap-2.5 text-[12px] tracking-[0.1em] text-sumi-mid">
-            <BarChart3 size={16} className="text-kin" />
+          <span className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-cream/40">
+            <BarChart3 size={16} className="text-clay" />
             月次推移（直近6ヶ月・確定予約）
           </span>
           <ChevronDown
             size={16}
-            className={`text-sumi-soft transition-transform ${chartOpen ? "rotate-180" : ""}`}
+            className={`text-cream/40 transition-transform ${chartOpen ? "rotate-180" : ""}`}
           />
         </button>
         {chartOpen && (
-          <div className="border-t border-line px-5 py-5">
+          <div className="border-t border-cream/10 p-4 sm:p-5">
             <MonthlyChart months={data.months} />
           </div>
         )}
@@ -330,37 +323,31 @@ function DayTimeline({
   emphasize?: boolean;
 }) {
   return (
-    <div className="wa-card p-5">
-      <h4 className="mb-3.5 flex items-baseline gap-2">
-        <span
-          className={`wa-serif text-[15px] font-medium ${
-            emphasize ? "text-shu-deep" : "text-sumi-mid"
-          }`}
-        >
-          {title}
-        </span>
-        <span className="wa-num text-xs text-sumi-soft">
+    <div className="rounded border border-cream/10 bg-charcoal-light p-4">
+      <h4
+        className={`mb-3 flex items-baseline gap-2 text-sm font-medium ${
+          emphasize ? "text-clay" : "text-cream/60"
+        }`}
+      >
+        {title}
+        <span className="text-xs font-normal text-cream/35">
           {rows.length > 0
             ? `${rows.length}組 ・ ${rows.reduce((n, b) => n + b.guests, 0)}名`
             : ""}
         </span>
       </h4>
       {rows.length === 0 ? (
-        <p className="py-5 text-center text-sm text-sumi-soft/70">予定なし</p>
+        <p className="py-4 text-center text-sm text-cream/25">予定なし</p>
       ) : (
-        <ol className="relative ml-1 space-y-2.5 border-l border-line pl-4">
+        <ol className="relative ml-1 space-y-2.5 border-l border-cream/15 pl-4">
           {rows.map((b) => (
             <li key={b.id} className="relative">
-              <span
-                className={`absolute -left-[21px] top-3.5 h-2 w-2 rounded-full ${
-                  emphasize ? "bg-shu" : "bg-matcha"
-                }`}
-              />
+              <span className="absolute -left-[21px] top-3 h-2 w-2 rounded-full bg-clay" />
               <button
                 onClick={() => onOpen(b)}
-                className="flex w-full items-center gap-3 rounded-lg border border-line bg-white/50 px-3.5 py-2.5 text-left transition-colors hover:border-sumi/25 hover:bg-white"
+                className="flex w-full items-center gap-3 rounded border border-cream/10 bg-charcoal px-3 py-2.5 text-left transition-colors hover:border-clay/40"
               >
-                <span className="wa-serif wa-num w-11 shrink-0 text-sm font-medium text-sumi">
+                <span className="w-11 shrink-0 font-[family-name:var(--font-heading)] text-sm text-clay">
                   {b.available_slots!.time_slot}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -368,7 +355,7 @@ function DayTimeline({
                     <span className="truncate text-sm font-medium">{b.name}</span>
                     <DietaryIcon dietary={b.dietary} />
                   </span>
-                  <span className="mt-0.5 block text-xs text-sumi-soft">
+                  <span className="mt-0.5 block text-xs text-cream/50">
                     {b.guests}名 ・ {planShortLabel(b.plan)}
                   </span>
                 </span>
@@ -388,26 +375,21 @@ function StatCard({
   icon,
   label,
   value,
-  unit,
   sub,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  unit?: string;
   sub?: string;
 }) {
   return (
-    <div className="wa-card p-4 sm:p-5">
-      <div className="flex items-center gap-2 text-[11px] tracking-[0.1em] text-sumi-soft">
-        <span className="text-kin">{icon}</span>
+    <div className="rounded border border-cream/10 bg-charcoal-light p-4">
+      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-cream/40">
+        <span className="text-clay">{icon}</span>
         <span className="truncate">{label}</span>
       </div>
-      <p className="wa-serif wa-num mt-2.5 text-[26px] font-medium leading-none text-sumi">
-        {value}
-        {unit && <span className="ml-0.5 text-sm font-normal text-sumi-soft">{unit}</span>}
-      </p>
-      {sub && <p className="wa-num mt-2 text-[11px] leading-relaxed text-sumi-soft">{sub}</p>}
+      <p className="mt-2 font-[family-name:var(--font-heading)] text-2xl text-cream">{value}</p>
+      {sub && <p className="mt-1 text-xs text-cream/40">{sub}</p>}
     </div>
   );
 }
@@ -425,12 +407,12 @@ function MonthlyChart({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-end gap-4 text-[10px] text-sumi-soft">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-[3px] bg-matcha-deep" /> 売上(¥)
+      <div className="mb-4 flex items-center justify-end gap-3 text-[10px] text-cream/45">
+        <span className="inline-flex items-center gap-1">
+          <span className="h-2 w-2 rounded-sm bg-clay" /> 売上(¥)
         </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-[3px] bg-kin" /> 予約数
+        <span className="inline-flex items-center gap-1">
+          <span className="h-2 w-2 rounded-sm bg-deep-green-light" /> 予約数
         </span>
       </div>
 
@@ -439,30 +421,28 @@ function MonthlyChart({
           {months.map((m) => (
             <div key={m.key} className="flex flex-1 flex-col items-center gap-1.5">
               {/* 値ラベル */}
-              <div className="wa-num text-center leading-tight">
-                <p className="text-[10px] font-medium text-matcha-deep">
+              <div className="text-center leading-tight">
+                <p className="text-[10px] text-clay">
                   {m.revenueJpy > 0 ? `¥${(m.revenueJpy / 10000).toLocaleString()}万` : "—"}
                 </p>
-                <p className="text-[10px] text-kin">{m.count > 0 ? `${m.count}件` : ""}</p>
+                <p className="text-[10px] text-green-300/80">{m.count > 0 ? `${m.count}件` : ""}</p>
               </div>
               {/* バー */}
               <div className="flex w-full items-end justify-center gap-1" style={{ height: H }}>
                 <div
-                  className="w-4 rounded-t-sm bg-matcha-deep/90 sm:w-5"
+                  className="w-4 rounded-t-sm bg-clay/85 sm:w-5"
                   style={{
                     height: Math.max((m.revenueJpy / maxRevenue) * H, m.revenueJpy > 0 ? 4 : 2),
                   }}
                   title={`売上 ¥${m.revenueJpy.toLocaleString()}`}
                 />
                 <div
-                  className="w-4 rounded-t-sm bg-kin/85 sm:w-5"
+                  className="w-4 rounded-t-sm bg-deep-green-light/85 sm:w-5"
                   style={{ height: Math.max((m.count / maxCount) * H, m.count > 0 ? 4 : 2) }}
                   title={`確定予約 ${m.count}件`}
                 />
               </div>
-              <p className="wa-num border-t border-line pt-1.5 text-[11px] text-sumi-mid">
-                {m.label}
-              </p>
+              <p className="border-t border-cream/10 pt-1 text-[11px] text-cream/50">{m.label}</p>
             </div>
           ))}
         </div>

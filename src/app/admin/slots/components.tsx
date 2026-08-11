@@ -55,12 +55,16 @@ export function isActiveBooking(b: BookingRow) {
 
 export function StatusBadge({ status }: { status: BookingStatus }) {
   const map = {
-    pending: { label: "未確認", cls: "bg-shu-mist text-shu-deep" },
-    confirmed: { label: "確定", cls: "bg-matcha-mist text-matcha-deep" },
-    cancelled: { label: "キャンセル", cls: "bg-washi-deep text-sumi-soft" },
+    pending: { label: "未確認", cls: "bg-clay/15 text-clay" },
+    confirmed: { label: "確定", cls: "bg-deep-green/30 text-green-300" },
+    cancelled: { label: "キャンセル", cls: "bg-red-900/20 text-red-300" },
   };
   const { label, cls } = map[status];
-  return <span className={`wa-chip ${cls}`}>{label}</span>;
+  return (
+    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 // 支払状況バッジ — confirmed の予約にのみ表示（pending / cancelled は非表示）
@@ -76,18 +80,22 @@ export function PaymentBadge({ booking }: { booking: BookingRow }) {
   if (!label) return null;
   const cls =
     label === "支払済"
-      ? "bg-matcha-deep text-white"
+      ? "bg-deep-green/30 text-green-300"
       : label === "未払"
-        ? "bg-kin-mist text-kin"
-        : "bg-washi-deep text-sumi-soft";
-  return <span className={`wa-chip ${cls}`}>{label}</span>;
+        ? "bg-clay/15 text-clay"
+        : "bg-cream/10 text-cream/40";
+  return (
+    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 export function DietaryIcon({ dietary }: { dietary: string | null }) {
   if (!dietary) return null;
   return (
     <span
-      className="wa-chip bg-kin-mist text-[10px] text-kin"
+      className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-400/10 px-1.5 py-0.5 text-[10px] text-amber-300"
       title={`食事制限: ${dietary}`}
     >
       <Utensils size={10} /> 食事制限
@@ -97,9 +105,9 @@ export function DietaryIcon({ dietary }: { dietary: string | null }) {
 
 export function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[92px_1fr] gap-4">
-      <dt className="pt-px text-[11px] tracking-[0.1em] text-sumi-soft">{label}</dt>
-      <dd className="min-w-0 text-sumi">{children}</dd>
+    <div className="grid grid-cols-[100px_1fr] gap-3">
+      <dt className="text-xs uppercase tracking-[0.1em] text-cream/40">{label}</dt>
+      <dd className="text-cream/90">{children}</dd>
     </div>
   );
 }
@@ -235,28 +243,24 @@ export function BookingsList({
     <div>
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="wa-label uppercase">Reservations</p>
-          <h2 className="wa-serif mt-1 text-2xl font-medium">予約一覧</h2>
+          <h2 className="font-[family-name:var(--font-heading)] text-2xl">予約一覧</h2>
           {counts.pending > 0 && (
-            <p className="mt-1.5 text-sm text-shu-deep">未確認 {counts.pending} 件</p>
+            <p className="mt-1 text-sm text-clay">未確認 {counts.pending} 件</p>
           )}
         </div>
-        {/* ステータスフィルタ（セグメント） */}
-        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-line bg-shiro p-1">
+        <div className="flex flex-wrap items-center gap-1">
           {(["all", "pending", "confirmed", "cancelled"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`wa-num rounded-md px-3 py-2 text-xs transition-colors ${
-                filter === f
-                  ? "bg-sumi font-medium text-washi shadow-sm"
-                  : "text-sumi-mid hover:bg-washi-deep/60 hover:text-sumi"
+              className={`rounded px-3 py-2 text-xs transition-colors ${
+                filter === f ? "bg-clay/15 text-clay" : "text-cream/40 hover:text-cream"
               }`}
             >
               {filterLabels[f]}
-              <span className={filter === f ? "text-washi/60" : "text-sumi-soft/70"}>
+              <span className={filter === f ? "text-clay/70" : "text-cream/25"}>
                 {" "}
-                {counts[f]}
+                ({counts[f]})
               </span>
             </button>
           ))}
@@ -264,25 +268,25 @@ export function BookingsList({
       </div>
 
       {/* 検索 + CSV */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         <div className="relative min-w-0 flex-1 sm:max-w-sm">
           <Search
             size={15}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sumi-soft"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream/30"
           />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="名前・メールで検索"
-            className="w-full rounded-lg border border-line bg-shiro py-2.5 pl-10 pr-3 text-sm text-sumi placeholder:text-sumi-soft focus:border-sumi/40 focus:outline-none focus:ring-2 focus:ring-sumi/10"
+            className="w-full rounded border border-cream/15 bg-charcoal-light py-2.5 pl-9 pr-3 text-sm text-cream placeholder:text-cream/30 focus:border-clay focus:outline-none"
           />
         </div>
         {onSyncPayments && (
           <button
             onClick={onSyncPayments}
             disabled={paymentsSyncing}
-            className="wa-btn wa-btn-ghost shrink-0 px-3.5 py-2.5 text-xs"
+            className="flex shrink-0 items-center gap-1.5 rounded border border-cream/15 px-3 py-2.5 text-xs text-cream/60 transition-colors hover:border-clay hover:text-clay disabled:opacity-40"
             title="Stripe の支払状況を照会して反映"
           >
             <RefreshCw size={14} className={paymentsSyncing ? "animate-spin" : ""} />
@@ -294,7 +298,7 @@ export function BookingsList({
             exportBookingsCsv([...upcomingGroups.flatMap((g) => g.rows), ...pastRows])
           }
           disabled={nothing}
-          className="wa-btn wa-btn-ghost shrink-0 px-3.5 py-2.5 text-xs"
+          className="flex shrink-0 items-center gap-1.5 rounded border border-cream/15 px-3 py-2.5 text-xs text-cream/60 transition-colors hover:border-clay hover:text-clay disabled:opacity-40"
           title="表示中の予約をCSVでダウンロード"
         >
           <Download size={14} /> CSV
@@ -302,26 +306,28 @@ export function BookingsList({
       </div>
 
       {nothing ? (
-        <div className="wa-card p-14 text-center text-sm text-sumi-soft">
+        <div className="rounded border border-cream/10 p-12 text-center text-cream/30">
           該当する予約はありません
         </div>
       ) : (
-        <div className="space-y-7">
+        <div className="space-y-6">
           {upcomingGroups.map((g) => (
             <section key={g.date}>
-              <h3 className="mb-2.5 flex items-baseline gap-2.5 border-b border-line pb-2">
-                <span className="wa-serif wa-num text-[15px] font-medium text-sumi">
+              <h3 className="mb-2 flex items-baseline gap-2 border-b border-cream/10 pb-1.5">
+                <span className="font-[family-name:var(--font-heading)] text-base text-cream/90">
                   {formatShortDateJa(g.date)}
                 </span>
                 {g.date === todayStr && (
-                  <span className="wa-chip bg-shu text-[10px] text-white">今日</span>
+                  <span className="rounded bg-clay/20 px-1.5 py-0.5 text-[10px] font-medium text-clay">
+                    今日
+                  </span>
                 )}
-                <span className="wa-num text-xs text-sumi-soft">
+                <span className="text-xs text-cream/35">
                   {g.rows.filter(isActiveBooking).reduce((n, b) => n + b.guests, 0)}名 /{" "}
                   {g.rows.length}件
                 </span>
               </h3>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {g.rows.map((b) => (
                   <li key={b.id}>
                     <BookingRowCard booking={b} onSelect={onSelect} />
@@ -335,18 +341,18 @@ export function BookingsList({
             <section>
               <button
                 onClick={() => setShowPast((v) => !v)}
-                className="mb-2.5 flex w-full items-center justify-between border-b border-line pb-2 text-left"
+                className="mb-2 flex w-full items-center justify-between border-b border-cream/10 pb-1.5 text-left"
               >
-                <span className="text-sm text-sumi-mid">過去の予約（{pastRows.length}件）</span>
+                <span className="text-sm text-cream/50">過去の予約（{pastRows.length}件）</span>
                 <ChevronDown
                   size={16}
-                  className={`text-sumi-soft transition-transform ${showPast ? "rotate-180" : ""}`}
+                  className={`text-cream/40 transition-transform ${showPast ? "rotate-180" : ""}`}
                 />
               </button>
               {showPast && (
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {pastRows.map((b) => (
-                    <li key={b.id} className="opacity-65">
+                    <li key={b.id} className="opacity-70">
                       <BookingRowCard booking={b} onSelect={onSelect} />
                     </li>
                   ))}
@@ -370,27 +376,27 @@ function BookingRowCard({
   return (
     <button
       onClick={() => onSelect(b)}
-      className="wa-card flex w-full items-start justify-between gap-4 p-4 text-left transition-[border-color,box-shadow] hover:border-sumi/25 sm:p-5"
+      className="flex w-full items-start justify-between gap-4 rounded border border-cream/10 bg-charcoal-light p-4 text-left transition-colors hover:border-clay/40"
     >
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="wa-serif text-[15px] font-medium">{b.name}</span>
+          <span className="font-medium">{b.name}</span>
           <StatusBadge status={b.status} />
           <PaymentBadge booking={b} />
           <DietaryIcon dietary={b.dietary} />
         </div>
-        <p className="mt-1 truncate text-[13px] text-sumi-soft">{b.email}</p>
-        <div className="wa-num mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-sumi-mid">
+        <p className="mt-1 truncate text-sm text-cream/50">{b.email}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-cream/60">
           {b.available_slots && (
             <span>
               {formatShortDateJa(b.available_slots.date)} {b.available_slots.time_slot}
             </span>
           )}
           <span className="inline-flex items-center gap-1">
-            <Users size={11} className="text-sumi-soft" /> {b.guests}名
+            <Users size={11} /> {b.guests}名
           </span>
           <span>{planShortLabel(b.plan)}</span>
-          <span className="font-medium text-sumi">
+          <span className="text-cream/35">
             ¥{(planPrices(b.plan).jpy * b.guests).toLocaleString()}
           </span>
         </div>
@@ -442,24 +448,24 @@ function formatDateTimeJa(iso: string) {
 
 function HistoryTimeline({ booking }: { booking: BookingRow }) {
   const events: { label: string; at: string; tone: string }[] = [
-    { label: "申込", at: booking.created_at, tone: "bg-sumi-soft" },
+    { label: "申込", at: booking.created_at, tone: "bg-cream/40" },
   ];
   if (booking.confirmed_at)
-    events.push({ label: "確定", at: booking.confirmed_at, tone: "bg-matcha" });
-  if (booking.paid_at) events.push({ label: "支払", at: booking.paid_at, tone: "bg-kin" });
+    events.push({ label: "確定", at: booking.confirmed_at, tone: "bg-deep-green-light" });
+  if (booking.paid_at) events.push({ label: "支払", at: booking.paid_at, tone: "bg-clay" });
   events.sort((a, b) => a.at.localeCompare(b.at));
 
   return (
     <div>
-      <p className="wa-label mb-3">履歴</p>
-      <ol className="relative ml-1.5 space-y-3.5 border-l border-line pl-4">
+      <p className="mb-2 text-xs uppercase tracking-[0.1em] text-cream/40">履歴</p>
+      <ol className="relative ml-1.5 space-y-3 border-l border-cream/15 pl-4">
         {events.map((e) => (
           <li key={e.label} className="relative">
             <span
-              className={`absolute -left-[21.5px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-shiro ${e.tone}`}
+              className={`absolute -left-[21.5px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-charcoal-light ${e.tone}`}
             />
-            <p className="text-sm font-medium text-sumi">{e.label}</p>
-            <p className="wa-num text-xs text-sumi-soft">{formatDateTimeJa(e.at)}</p>
+            <p className="text-sm text-cream/90">{e.label}</p>
+            <p className="text-xs text-cream/45">{formatDateTimeJa(e.at)}</p>
           </li>
         ))}
       </ol>
@@ -514,7 +520,7 @@ export function BookingDrawer({
     <div className="fixed inset-0 z-50">
       {/* Overlay */}
       <div
-        className={`absolute inset-0 bg-sumi/40 backdrop-blur-[2px] transition-opacity duration-300 ${
+        className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
           entered ? "opacity-100" : "opacity-0"
         }`}
         onClick={onClose}
@@ -522,105 +528,97 @@ export function BookingDrawer({
 
       {/* 右からのスライドドロワー: モバイルはほぼ全画面 / PC は幅480px */}
       <div
-        className={`wa-shadow-lg absolute inset-y-0 right-0 flex w-full flex-col bg-shiro transition-transform duration-300 sm:w-[480px] ${
+        className={`absolute inset-y-0 right-0 flex w-full flex-col border-l border-cream/15 bg-charcoal-light shadow-2xl transition-transform duration-300 sm:w-[480px] ${
           entered ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* 天の朱線 */}
-        <span aria-hidden className="h-[3px] w-full shrink-0 bg-shu" />
-
-        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 sm:px-7">
+        <div className="flex shrink-0 items-center justify-between border-b border-cream/10 px-5 py-4 sm:px-6">
           <div>
-            <p className="wa-label uppercase">予約詳細</p>
-            <h3 className="wa-serif mt-1 text-xl font-medium text-sumi">{booking.name}</h3>
+            <p className="text-xs uppercase tracking-[0.15em] text-cream/40">予約詳細</p>
+            <h3 className="mt-1 font-[family-name:var(--font-heading)] text-xl">{booking.name}</h3>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-sumi-soft transition-colors hover:bg-washi-deep/70 hover:text-sumi"
+            className="rounded p-2 text-cream/40 transition-colors hover:bg-cream/10 hover:text-cream"
             aria-label="閉じる"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-6 text-sm sm:px-7">
-          <div className="flex items-center gap-2.5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 text-sm sm:px-6">
+          <div className="flex items-center gap-3">
             <StatusBadge status={booking.status} />
             <PaymentBadge booking={booking} />
-            <span className="wa-num text-xs text-sumi-soft">ID: {booking.id.slice(0, 8)}…</span>
+            <span className="text-cream/40">ID: {booking.id.slice(0, 8)}…</span>
           </div>
 
-          <div className="wa-num space-y-4 rounded-xl border border-line bg-white/50 p-4 sm:p-5">
-            <DetailRow label="日時">
-              {booking.available_slots
-                ? `${formatDateDisplay(booking.available_slots.date)} ・ ${booking.available_slots.time_slot}`
-                : "—"}
-            </DetailRow>
-            <DetailRow label="プラン">{planShortLabel(booking.plan)}</DetailRow>
-            <DetailRow label="人数">{booking.guests} 名</DetailRow>
-            <DetailRow label="合計">
-              <span className="wa-serif text-base font-medium">
-                ${totalUsd}{" "}
-                <span className="text-sm font-normal text-sumi-mid">
-                  (¥{totalJpy.toLocaleString()})
-                </span>
-              </span>
-            </DetailRow>
-            <DetailRow label="メール">
-              <a href={`mailto:${booking.email}`} className="break-all text-shu-deep hover:underline">
-                {booking.email}
-              </a>
-            </DetailRow>
-            {booking.payment_url && (
-              <DetailRow label="決済リンク">
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={copyPaymentLink}
-                    className={`wa-btn px-3 py-2 text-xs ${
-                      linkCopied
-                        ? "border border-matcha bg-matcha-mist text-matcha-deep"
-                        : "wa-btn-ghost"
-                    }`}
-                    title="ゲストへ送る決済リンクをコピー"
+          <DetailRow label="日時">
+            {booking.available_slots
+              ? `${formatDateDisplay(booking.available_slots.date)} ・ ${booking.available_slots.time_slot}`
+              : "—"}
+          </DetailRow>
+          <DetailRow label="プラン">{planShortLabel(booking.plan)}</DetailRow>
+          <DetailRow label="人数">{booking.guests} 名</DetailRow>
+          <DetailRow label="合計">
+            <span className="text-base">
+              ${totalUsd} <span className="text-cream/50">(¥{totalJpy.toLocaleString()})</span>
+            </span>
+          </DetailRow>
+          <DetailRow label="メール">
+            <a href={`mailto:${booking.email}`} className="text-clay hover:underline">
+              {booking.email}
+            </a>
+          </DetailRow>
+          {booking.payment_url && (
+            <DetailRow label="決済リンク">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={copyPaymentLink}
+                  className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs transition-colors ${
+                    linkCopied
+                      ? "border-deep-green text-green-300"
+                      : "border-cream/15 text-cream/70 hover:border-clay hover:text-clay"
+                  }`}
+                  title="ゲストへ送る決済リンクをコピー"
+                >
+                  {linkCopied ? <Check size={12} /> : <Link2 size={12} />}
+                  {linkCopied ? "コピー済み" : "決済リンクをコピー"}
+                </button>
+                {booking.payment_link_id && (
+                  <a
+                    href={`https://dashboard.stripe.com/payment-links/${booking.payment_link_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded border border-cream/15 px-3 py-1.5 text-xs text-cream/70 transition-colors hover:border-clay hover:text-clay"
                   >
-                    {linkCopied ? <Check size={12} /> : <Link2 size={12} />}
-                    {linkCopied ? "コピー済み" : "決済リンクをコピー"}
-                  </button>
-                  {booking.payment_link_id && (
-                    <a
-                      href={`https://dashboard.stripe.com/payment-links/${booking.payment_link_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="wa-btn wa-btn-ghost px-3 py-2 text-xs"
-                    >
-                      <ExternalLink size={12} /> Stripe で確認
-                    </a>
-                  )}
-                </div>
-              </DetailRow>
-            )}
-            {booking.dietary && <DetailRow label="食事制限">{booking.dietary}</DetailRow>}
-            {booking.notes && <DetailRow label="備考">{booking.notes}</DetailRow>}
-          </div>
+                    <ExternalLink size={12} /> Stripe で確認
+                  </a>
+                )}
+              </div>
+            </DetailRow>
+          )}
+          {booking.dietary && <DetailRow label="食事制限">{booking.dietary}</DetailRow>}
+          {booking.notes && <DetailRow label="備考">{booking.notes}</DetailRow>}
 
           {/* 履歴タイムライン */}
-          <div className="pt-1">
+          <div className="border-t border-cream/10 pt-4">
             <HistoryTimeline booking={booking} />
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2 border-t border-line bg-washi/70 px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-7">
+        <div className="flex shrink-0 flex-wrap gap-2 border-t border-cream/10 bg-black/20 px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-6">
           {booking.status === "pending" && (
             <>
               <button
                 onClick={() => onStatusChange("confirmed")}
-                className="wa-btn wa-btn-matcha px-4 py-2.5 text-sm"
+                className="flex items-center gap-1.5 rounded border border-deep-green bg-deep-green/40 px-4 py-2 text-sm font-medium transition-colors hover:bg-deep-green/60"
               >
                 <Check size={14} /> 確定 + メール送信
               </button>
               <button
                 onClick={() => onStatusChange("cancelled")}
-                className="wa-btn wa-btn-danger px-4 py-2.5 text-sm"
+                className="flex items-center gap-1.5 rounded border border-red-400/40 px-4 py-2 text-sm text-red-300 transition-colors hover:bg-red-400/10"
               >
                 <X size={14} /> キャンセル
               </button>
@@ -629,7 +627,7 @@ export function BookingDrawer({
           {booking.status !== "pending" && (
             <button
               onClick={() => onStatusChange("pending")}
-              className="wa-btn wa-btn-ghost px-4 py-2.5 text-sm"
+              className="flex items-center gap-1.5 rounded border border-cream/20 px-4 py-2 text-sm text-cream/60 transition-colors hover:bg-cream/5"
             >
               未確認に戻す
             </button>
@@ -637,8 +635,10 @@ export function BookingDrawer({
           <div className="ml-auto flex gap-2">
             <button
               onClick={copyTemplate}
-              className={`wa-btn px-4 py-2.5 text-sm ${
-                copied ? "border border-matcha bg-matcha-mist text-matcha-deep" : "wa-btn-ghost"
+              className={`flex items-center gap-1.5 rounded border px-4 py-2 text-sm transition-colors ${
+                copied
+                  ? "border-deep-green text-green-300"
+                  : "border-cream/15 text-cream/70 hover:border-clay hover:text-clay"
               }`}
               title="日時・人数入りの英語定型返信文をコピー"
             >
@@ -649,7 +649,7 @@ export function BookingDrawer({
               href={`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(booking.email)}&su=${encodeURIComponent("Your reservation at En Chakai")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="wa-btn wa-btn-ghost px-4 py-2.5 text-sm"
+              className="flex items-center gap-1.5 rounded border border-cream/15 px-4 py-2 text-sm text-cream/70 transition-colors hover:border-clay hover:text-clay"
             >
               <Mail size={14} /> Gmailで返信
             </a>
