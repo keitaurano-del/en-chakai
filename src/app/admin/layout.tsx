@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import type { Viewport } from "next";
 import { Noto_Sans_JP, Noto_Serif_JP } from "next/font/google";
 
+import "../globals.css";
+
 const serifJp = Noto_Serif_JP({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
