@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { type Slot, type Booking } from "@/lib/supabase";
+import { type Slot, type Booking } from "@/lib/db";
 import { TIME_SLOTS, TIME_SLOT_LABELS, PLAN_LABELS, formatDateDisplay } from "@/lib/booking";
 import { PLANS } from "@/lib/constants";
 import {

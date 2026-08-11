@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase";
+import { listBookings, updateBookingStatus } from "@/lib/db";
 import { Resend } from "resend";
 import { PLAN_LABELS, TIME_SLOT_LABELS, formatDateDisplay, type TimeSlot } from "@/lib/booking";
 import { PLANS } from "@/lib/constants";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Resend is optional — without RESEND_API_KEY, emails are skipped gracefully.
+function getResend(): Resend | null {
+  return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+}
 
 function isAuthorized(req: NextRequest) {
   const auth = req.headers.get("x-admin-password");
@@ -15,14 +18,7 @@ function isAuthorized(req: NextRequest) {
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const supabase = createServiceClient();
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*, available_slots(*)")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json(listBookings(100));
 }
 
 // PATCH — update booking status (and send confirmation email when confirming)
@@ -30,21 +26,14 @@ export async function PATCH(req: NextRequest) {
   if (!isAuthorized(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id, status } = await req.json();
-  const supabase = createServiceClient();
 
-  const { data: booking, error } = await supabase
-    .from("bookings")
-    .update({ status })
-    .eq("id", id)
-    .select("*, available_slots(*)")
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const booking = updateBookingStatus(id, status);
+  if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 500 });
 
   // Send confirmation email when status flips to confirmed
   if (status === "confirmed" && booking?.available_slots) {
     try {
-      await sendConfirmationEmail(booking);
+      await sendConfirmationEmail({ ...booking, available_slots: booking.available_slots });
     } catch (emailError) {
       console.error("Confirmation email error:", emailError);
     }
@@ -76,7 +65,7 @@ async function sendConfirmationEmail(booking: BookingWithSlot) {
   const totalUsd = planMeta.priceUsd * guests;
   const totalJpy = planMeta.priceJpy * guests;
 
-  await resend.emails.send({
+  await getResend()?.emails.send({
     from: "En Chakai <bookings@en-chakai.com>",
     to: email,
     subject: `Reservation confirmed — ${dateLabel} · En Chakai`,

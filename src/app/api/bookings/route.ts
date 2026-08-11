@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "@/lib/supabase";
+import { findOpenSlot, insertBooking, listSlots } from "@/lib/db";
 import { Resend } from "resend";
 import { PLAN_LABELS, TIME_SLOT_LABELS, formatDateDisplay, type TimeSlot } from "@/lib/booking";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL ?? "keita.urano@gmail.com";
+
+// Resend is optional — without RESEND_API_KEY, emails are skipped gracefully.
+function getResend(): Resend | null {
+  return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+}
+
+// GET — public: list open slots (optionally within ?from=&to= date range)
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const slots = listSlots({
+    from: searchParams.get("from"),
+    to: searchParams.get("to"),
+    openOnly: true,
+  });
+  return NextResponse.json(slots);
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -15,28 +30,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const supabase = createServiceClient();
-
   // Find the slot
-  const { data: slot, error: slotError } = await supabase
-    .from("available_slots")
-    .select("*")
-    .eq("date", date)
-    .eq("time_slot", time_slot)
-    .eq("is_open", true)
-    .single();
-
-  if (slotError || !slot) {
+  const slot = findOpenSlot(date, time_slot);
+  if (!slot) {
     return NextResponse.json(
       { error: "This time slot is no longer available. Please choose another." },
       { status: 409 }
     );
   }
 
-  // Insert booking — seating column kept as "floor" for legacy NOT NULL constraint
-  const { data: booking, error: bookingError } = await supabase
-    .from("bookings")
-    .insert({
+  let booking;
+  try {
+    // seating kept as "floor" for legacy schema compatibility
+    booking = insertBooking({
       slot_id: slot.id,
       plan,
       guests,
@@ -45,14 +51,13 @@ export async function POST(req: NextRequest) {
       seating: "floor",
       dietary: dietary || null,
       notes: notes || null,
-    })
-    .select()
-    .single();
-
-  if (bookingError) {
+    });
+  } catch (bookingError) {
     console.error("Booking insert error:", bookingError);
     return NextResponse.json({ error: "Failed to save booking" }, { status: 500 });
   }
+
+  const resend = getResend();
 
   const dateLabel = formatDateDisplay(date);
   const timeLabel = TIME_SLOT_LABELS[time_slot as TimeSlot] ?? time_slot;
@@ -60,7 +65,7 @@ export async function POST(req: NextRequest) {
 
   // 1. Send notification email to host
   try {
-    await resend.emails.send({
+    await resend?.emails.send({
       from: "En Chakai Bookings <bookings@en-chakai.com>",
       to: NOTIFICATION_EMAIL,
       subject: `New reservation request — ${name} · ${dateLabel}`,
@@ -91,7 +96,7 @@ export async function POST(req: NextRequest) {
 
   // 2. Send acknowledgement email to guest
   try {
-    await resend.emails.send({
+    await resend?.emails.send({
       from: "En Chakai <bookings@en-chakai.com>",
       to: email,
       subject: `We've received your reservation request — En Chakai`,

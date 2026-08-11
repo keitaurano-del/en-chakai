@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { supabase, type Slot } from "@/lib/supabase";
+import { type Slot } from "@/lib/db";
 import {
   CLOSED_DAYS,
   TIME_SLOT_LABELS,
@@ -73,15 +73,12 @@ export function BookingContent() {
     const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
     const nextMonth = new Date(year, month + 2, 0);
     const to = `${year}-${String(month + 1).padStart(2, "0")}-${nextMonth.getDate()}`;
-    supabase
-      .from("available_slots")
-      .select("*")
-      .gte("date", from)
-      .lte("date", to)
-      .eq("is_open", true)
-      .then(({ data }) => {
-        if (data) setSlots(data as Slot[]);
-      });
+    fetch(`/api/bookings?from=${from}&to=${to}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setSlots(data as Slot[]);
+      })
+      .catch(() => {});
   }, [calendarMonth]);
 
   useEffect(() => {
