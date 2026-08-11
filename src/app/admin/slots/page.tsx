@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { type Slot, type Booking } from "@/lib/db";
-import { TIME_SLOTS, TIME_SLOT_LABELS, PLAN_LABELS, formatDateDisplay } from "@/lib/booking";
-import { PLANS } from "@/lib/constants";
+import { type Slot } from "@/lib/db";
+import { TIME_SLOTS, TIME_SLOT_LABELS, formatDateDisplay } from "@/lib/booking";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,42 +13,42 @@ import {
   LayoutDashboard,
   Plus,
   Trash2,
-  Check,
   X,
-  TrendingUp,
-  Clock,
-  Mail,
-  Search,
   Eye,
   EyeOff,
+  CalendarCheck,
 } from "lucide-react";
+import {
+  type BookingRow,
+  type BookingStatus,
+  BookingsList,
+  BookingDetailModal,
+  DAYS_JA,
+  TabButton,
+  isActiveBooking,
+  toDateStr,
+} from "./components";
+import { Dashboard } from "./dashboard";
 
 type Tab = "dashboard" | "slots" | "bookings";
-type BookingRow = Booking & { available_slots: Slot };
 
 const CLOSED_DAYS = [0, 1];
-const DAYS_JA = ["日", "月", "火", "水", "木", "金", "土"];
 
 function authHeader() {
   const pw = typeof window !== "undefined" ? sessionStorage.getItem("admin_pw") ?? "" : "";
   return { "x-admin-password": pw, "Content-Type": "application/json" };
 }
 
-function startOfWeek(d: Date) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  const day = x.getDay();
-  const diff = day === 0 ? 6 : day - 1;
-  x.setDate(x.getDate() - diff);
-  return x;
-}
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
-function toDateStr(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
+
+function monthRange(d: Date) {
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const last = new Date(y, m + 1, 0).getDate();
+  const mm = String(m + 1).padStart(2, "0");
+  return { from: `${y}-${mm}-01`, to: `${y}-${mm}-${String(last).padStart(2, "0")}` };
 }
 
 export default function AdminSlotsPage() {
@@ -57,6 +56,7 @@ export default function AdminSlotsPage() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [monthSlots, setMonthSlots] = useState<Slot[]>([]); // 実カレンダー今月分（ダッシュボード用）
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<BookingRow | null>(null);
@@ -94,8 +94,7 @@ export default function AdminSlotsPage() {
   }, [router]);
 
   const loadSlots = useCallback(async () => {
-    const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
-    const to = `${year}-${String(month + 1).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
+    const { from, to } = monthRange(new Date(year, month, 1));
     const res = await fetch(`/api/admin/slots?from=${from}&to=${to}`, { headers: authHeader() });
     if (res.status === 401) {
       handleUnauthorized();
@@ -103,10 +102,18 @@ export default function AdminSlotsPage() {
     }
     if (res.ok) setSlots(await res.json());
     setSlotsLoaded(true);
-  }, [year, month, daysInMonth, handleUnauthorized]);
+  }, [year, month, handleUnauthorized]);
+
+  // ダッシュボードの稼働状況用に「実際の今月」のスロットも取得
+  const loadMonthSlots = useCallback(async () => {
+    const { from, to } = monthRange(new Date());
+    const res = await fetch(`/api/admin/slots?from=${from}&to=${to}`, { headers: authHeader() });
+    if (res.ok) setMonthSlots(await res.json());
+  }, []);
 
   const loadBookings = useCallback(async () => {
-    const res = await fetch("/api/admin/bookings", { headers: authHeader() });
+    // limit は後方互換の追加パラメータ（省略時は従来通り100件）
+    const res = await fetch("/api/admin/bookings?limit=500", { headers: authHeader() });
     if (res.status === 401) {
       handleUnauthorized();
       return;
@@ -120,10 +127,18 @@ export default function AdminSlotsPage() {
   }, [loadSlots]);
 
   useEffect(() => {
+    loadMonthSlots();
+  }, [loadMonthSlots]);
+
+  useEffect(() => {
     loadBookings();
   }, [loadBookings]);
 
   const loading = !slotsLoaded || !bookingsLoaded;
+
+  const refreshSlots = useCallback(async () => {
+    await Promise.all([loadSlots(), loadMonthSlots()]);
+  }, [loadSlots, loadMonthSlots]);
 
   function getSlot(dateStr: string, time: string) {
     return slots.find((s) => s.date === dateStr && s.time_slot === time);
@@ -131,6 +146,18 @@ export default function AdminSlotsPage() {
   function slotsForDate(dateStr: string) {
     return slots.filter((s) => s.date === dateStr);
   }
+
+  // slot_id → 有効な予約（キャンセル除く）
+  const bookingsBySlotId = useMemo(() => {
+    const map = new Map<string, BookingRow[]>();
+    for (const b of bookings) {
+      if (!isActiveBooking(b)) continue;
+      const list = map.get(b.slot_id);
+      if (list) list.push(b);
+      else map.set(b.slot_id, [b]);
+    }
+    return map;
+  }, [bookings]);
 
   async function toggleSlot(dateStr: string, time: string) {
     setSaving(true);
@@ -150,23 +177,26 @@ export default function AdminSlotsPage() {
       });
       showToast("スロットを追加しました");
     }
-    await loadSlots();
+    await refreshSlots();
     setSaving(false);
   }
 
   async function deleteSlot(dateStr: string, time: string) {
+    const slot = getSlot(dateStr, time);
+    if (!slot) return;
+    if ((bookingsBySlotId.get(slot.id)?.length ?? 0) > 0) {
+      showToast("予約が入っている枠は削除できません");
+      return;
+    }
     if (!confirm("このスロットを削除しますか？")) return;
     setSaving(true);
-    const slot = getSlot(dateStr, time);
-    if (slot) {
-      await fetch("/api/admin/slots", {
-        method: "DELETE",
-        headers: authHeader(),
-        body: JSON.stringify({ id: slot.id }),
-      });
-      showToast("削除しました");
-      await loadSlots();
-    }
+    await fetch("/api/admin/slots", {
+      method: "DELETE",
+      headers: authHeader(),
+      body: JSON.stringify({ id: slot.id }),
+    });
+    showToast("削除しました");
+    await refreshSlots();
     setSaving(false);
   }
 
@@ -197,7 +227,7 @@ export default function AdminSlotsPage() {
       }
     }
     await Promise.all(tasks);
-    await loadSlots();
+    await refreshSlots();
     showToast("この日の全枠を公開しました");
     setSaving(false);
   }
@@ -220,7 +250,7 @@ export default function AdminSlotsPage() {
         })
       )
     );
-    await loadSlots();
+    await refreshSlots();
     showToast("この日の全枠を非公開にしました");
     setSaving(false);
   }
@@ -248,12 +278,55 @@ export default function AdminSlotsPage() {
       }
     }
     await Promise.all(tasks);
-    await loadSlots();
+    await refreshSlots();
     showToast("週のスロットを一括追加しました");
     setSaving(false);
   }
 
-  async function updateBookingStatus(id: string, status: "pending" | "confirmed" | "cancelled") {
+  // 表示中の月の営業日（火〜土）の全枠を公開
+  async function openMonth() {
+    const label = `${year}年${month + 1}月`;
+    if (!confirm(`${label}の営業日（火〜土）の全枠を公開します。よろしいですか？`)) return;
+    setSaving(true);
+    const tasks: Promise<Response>[] = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = padDay(d);
+      if (CLOSED_DAYS.includes(new Date(dateStr + "T00:00:00").getDay())) continue;
+      for (const t of TIME_SLOTS) {
+        const existing = getSlot(dateStr, t);
+        if (existing) {
+          if (!existing.is_open) {
+            tasks.push(
+              fetch("/api/admin/slots", {
+                method: "PATCH",
+                headers: authHeader(),
+                body: JSON.stringify({ id: existing.id, is_open: true }),
+              })
+            );
+          }
+        } else {
+          tasks.push(
+            fetch("/api/admin/slots", {
+              method: "POST",
+              headers: authHeader(),
+              body: JSON.stringify({ date: dateStr, time_slot: t, is_open: true }),
+            })
+          );
+        }
+      }
+    }
+    if (tasks.length === 0) {
+      showToast("すべての枠がすでに公開されています");
+      setSaving(false);
+      return;
+    }
+    await Promise.all(tasks);
+    await refreshSlots();
+    showToast(`${label}の営業日を全枠公開しました（${tasks.length}件）`);
+    setSaving(false);
+  }
+
+  async function updateBookingStatus(id: string, status: BookingStatus) {
     await fetch("/api/admin/bookings", {
       method: "PATCH",
       headers: authHeader(),
@@ -278,46 +351,10 @@ export default function AdminSlotsPage() {
     router.push("/admin");
   }
 
-  // ── DERIVED METRICS ────────────────────────────────────────────────────────
-  const metrics = useMemo(() => {
-    const now = new Date();
-    const weekStart = startOfWeek(now);
-    const monthStart = startOfMonth(now);
-    const planJpy = PLANS[0]?.priceJpy ?? 10000;
-    const planUsd = PLANS[0]?.priceUsd ?? 70;
-
-    let pending = 0;
-    let thisWeekCount = 0;
-    let thisMonthCount = 0;
-    let monthRevenueJpy = 0;
-    let monthRevenueUsd = 0;
-
-    for (const b of bookings) {
-      if (b.status === "pending") pending++;
-      if (!b.available_slots) continue;
-      const d = new Date(b.available_slots.date + "T00:00:00");
-
-      if (d >= weekStart && b.status !== "cancelled") thisWeekCount++;
-
-      if (d >= monthStart && d < new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1)) {
-        if (b.status === "confirmed") {
-          thisMonthCount++;
-          monthRevenueJpy += planJpy * b.guests;
-          monthRevenueUsd += planUsd * b.guests;
-        }
-      }
-    }
-
-    const upcoming = bookings
-      .filter((b) => b.available_slots && b.status !== "cancelled")
-      .filter((b) => new Date(b.available_slots.date + "T00:00:00") >= new Date(new Date().setHours(0, 0, 0, 0)))
-      .sort((a, b) => a.available_slots.date.localeCompare(b.available_slots.date))
-      .slice(0, 5);
-
-    return { pending, thisWeekCount, thisMonthCount, monthRevenueJpy, monthRevenueUsd, upcoming };
-  }, [bookings]);
-
-  const pendingCount = metrics.pending;
+  const pendingCount = useMemo(
+    () => bookings.filter((b) => b.status === "pending").length,
+    [bookings]
+  );
 
   // ── UI ─────────────────────────────────────────────────────────────────────
   return (
@@ -381,7 +418,13 @@ export default function AdminSlotsPage() {
           </div>
         ) : (
           <>
-            {tab === "dashboard" && <Dashboard metrics={metrics} onOpenBooking={setSelectedBooking} />}
+            {tab === "dashboard" && (
+              <Dashboard
+                bookings={bookings}
+                monthSlots={monthSlots}
+                onOpenBooking={setSelectedBooking}
+              />
+            )}
 
             {tab === "slots" && (
               <SlotsManager
@@ -396,21 +439,20 @@ export default function AdminSlotsPage() {
                 padDay={padDay}
                 slotsForDate={slotsForDate}
                 getSlot={getSlot}
+                bookingsBySlotId={bookingsBySlotId}
+                onOpenBooking={setSelectedBooking}
                 toggleSlot={toggleSlot}
                 deleteSlot={deleteSlot}
                 openDay={openDay}
                 closeDay={closeDay}
                 openWeek={openWeek}
+                openMonth={openMonth}
                 saving={saving}
               />
             )}
 
             {tab === "bookings" && (
-              <BookingsList
-                bookings={bookings}
-                pendingCount={pendingCount}
-                onSelect={setSelectedBooking}
-              />
+              <BookingsList bookings={bookings} onSelect={setSelectedBooking} />
             )}
           </>
         )}
@@ -428,146 +470,14 @@ export default function AdminSlotsPage() {
   );
 }
 
-// ── COMPONENTS ───────────────────────────────────────────────────────────────
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded px-3 py-2 text-sm transition-colors ${
-        active ? "bg-clay/15 text-clay" : "text-cream/50 hover:text-cream"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-type Metrics = {
-  pending: number;
-  thisWeekCount: number;
-  thisMonthCount: number;
-  monthRevenueJpy: number;
-  monthRevenueUsd: number;
-  upcoming: BookingRow[];
-};
-
-function Dashboard({
-  metrics,
-  onOpenBooking,
-}: {
-  metrics: Metrics;
-  onOpenBooking: (b: BookingRow) => void;
-}) {
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="font-[family-name:var(--font-heading)] text-2xl">ダッシュボード</h2>
-        <p className="mt-1 text-sm text-cream/50">予約状況のサマリーと今後の予約。</p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={<Clock size={16} />}
-          label="未確認の予約"
-          value={metrics.pending.toString()}
-          tone={metrics.pending > 0 ? "warn" : "muted"}
-        />
-        <StatCard icon={<Calendar size={16} />} label="今週の予約" value={metrics.thisWeekCount.toString()} />
-        <StatCard icon={<Users size={16} />} label="今月の確定予約" value={metrics.thisMonthCount.toString()} />
-        <StatCard
-          icon={<TrendingUp size={16} />}
-          label="今月の売上（確定済み）"
-          value={`¥${metrics.monthRevenueJpy.toLocaleString()}`}
-          sub={`$${metrics.monthRevenueUsd}`}
-        />
-      </div>
-
-      <div>
-        <h3 className="mb-4 text-sm font-medium uppercase tracking-[0.15em] text-clay">
-          今後の予約（直近5件）
-        </h3>
-        {metrics.upcoming.length === 0 ? (
-          <p className="rounded border border-cream/10 bg-charcoal-light p-6 text-sm text-cream/40">
-            今後の予約はまだありません。
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {metrics.upcoming.map((b) => (
-              <li key={b.id}>
-                <button
-                  onClick={() => onOpenBooking(b)}
-                  className="flex w-full items-center justify-between rounded border border-cream/10 bg-charcoal-light px-4 py-3 text-left transition-colors hover:border-clay/40"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{b.name}</p>
-                    <p className="mt-0.5 text-xs text-cream/50">
-                      {formatDateDisplay(b.available_slots.date)} ・{" "}
-                      {b.available_slots.time_slot} ・ {b.guests}名
-                    </p>
-                  </div>
-                  <StatusBadge status={b.status} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  sub,
-  tone = "default",
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sub?: string;
-  tone?: "default" | "warn" | "muted";
-}) {
-  const accent =
-    tone === "warn" ? "text-clay" : tone === "muted" ? "text-cream/60" : "text-cream";
-  return (
-    <div className="rounded border border-cream/10 bg-charcoal-light p-5">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-cream/40">
-        <span className="text-clay">{icon}</span>
-        {label}
-      </div>
-      <p className={`mt-3 font-[family-name:var(--font-heading)] text-3xl ${accent}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-cream/40">{sub}</p>}
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: "pending" | "confirmed" | "cancelled" }) {
-  const map = {
-    pending: { label: "未確認", cls: "bg-clay/15 text-clay" },
-    confirmed: { label: "確定", cls: "bg-deep-green/30 text-green-300" },
-    cancelled: { label: "キャンセル", cls: "bg-red-900/20 text-red-300" },
-  };
-  const { label, cls } = map[status];
-  return (
-    <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${cls}`}>{label}</span>
-  );
-}
+// ── スロット管理 ──────────────────────────────────────────────────────────────
 
 // 選択日の時間枠エディタ（右パネル / モバイルボトムシート共通）
 function SlotEditor({
   selectedDate,
   getSlot,
+  bookingsBySlotId,
+  onOpenBooking,
   toggleSlot,
   deleteSlot,
   openDay,
@@ -576,6 +486,8 @@ function SlotEditor({
 }: {
   selectedDate: string;
   getSlot: (s: string, t: string) => Slot | undefined;
+  bookingsBySlotId: Map<string, BookingRow[]>;
+  onOpenBooking: (b: BookingRow) => void;
   toggleSlot: (s: string, t: string) => Promise<void>;
   deleteSlot: (s: string, t: string) => Promise<void>;
   openDay: (s: string) => Promise<void>;
@@ -590,46 +502,91 @@ function SlotEditor({
           const slot = getSlot(selectedDate, time);
           const exists = !!slot;
           const isOpen = slot?.is_open ?? false;
+          const slotBookings = slot ? bookingsBySlotId.get(slot.id) ?? [] : [];
+          const hasBookings = slotBookings.length > 0;
+          const guests = slotBookings.reduce((n, b) => n + b.guests, 0);
           return (
             <div
               key={time}
-              className={`flex items-center justify-between rounded border px-3 py-3 ${
-                isOpen ? "border-clay/30 bg-clay/5" : "border-cream/10"
+              className={`rounded border px-3 py-3 ${
+                hasBookings
+                  ? "border-deep-green-light/40 bg-deep-green/10"
+                  : isOpen
+                    ? "border-clay/30 bg-clay/5"
+                    : "border-cream/10"
               }`}
             >
-              <div>
-                <p className="text-sm font-medium">{TIME_SLOT_LABELS[time]}</p>
-                <p
-                  className={`mt-0.5 text-xs ${
-                    isOpen ? "text-clay" : exists ? "text-cream/30" : "text-cream/20"
-                  }`}
-                >
-                  {!exists ? "未設定" : isOpen ? "● 公開中" : "○ 非公開"}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => toggleSlot(selectedDate, time)}
-                  disabled={saving}
-                  className={`rounded border px-4 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${
-                    isOpen
-                      ? "border-red-400/40 text-red-300 hover:bg-red-400/10"
-                      : "border-deep-green bg-deep-green/30 text-cream hover:bg-deep-green/50"
-                  }`}
-                >
-                  {!exists ? "追加" : isOpen ? "非公開" : "公開"}
-                </button>
-                {exists && (
-                  <button
-                    onClick={() => deleteSlot(selectedDate, time)}
-                    disabled={saving}
-                    className="flex h-9 w-9 items-center justify-center rounded text-cream/20 transition-colors hover:bg-red-400/10 hover:text-red-300 disabled:opacity-50"
-                    aria-label="削除"
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">{TIME_SLOT_LABELS[time]}</p>
+                  <p
+                    className={`mt-0.5 text-xs ${
+                      hasBookings
+                        ? "text-green-300"
+                        : isOpen
+                          ? "text-clay"
+                          : exists
+                            ? "text-cream/30"
+                            : "text-cream/20"
+                    }`}
                   >
-                    <Trash2 size={14} />
+                    {!exists
+                      ? "未設定"
+                      : hasBookings
+                        ? `● 予約あり（${guests}名 / 4名）${isOpen ? "" : "・非公開"}`
+                        : isOpen
+                          ? "● 公開中"
+                          : "○ 非公開"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => toggleSlot(selectedDate, time)}
+                    disabled={saving}
+                    className={`rounded border px-4 py-2 text-xs font-medium transition-colors disabled:opacity-50 ${
+                      isOpen
+                        ? "border-red-400/40 text-red-300 hover:bg-red-400/10"
+                        : "border-deep-green bg-deep-green/30 text-cream hover:bg-deep-green/50"
+                    }`}
+                  >
+                    {!exists ? "追加" : isOpen ? "非公開" : "公開"}
                   </button>
-                )}
+                  {exists && (
+                    <button
+                      onClick={() => deleteSlot(selectedDate, time)}
+                      disabled={saving || hasBookings}
+                      title={hasBookings ? "予約が入っている枠は削除できません" : "削除"}
+                      className="flex h-9 w-9 items-center justify-center rounded text-cream/20 transition-colors hover:bg-red-400/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-cream/20"
+                      aria-label="削除"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* この枠の予約者 */}
+              {hasBookings && (
+                <ul className="mt-2 space-y-1 border-t border-cream/10 pt-2">
+                  {slotBookings.map((b) => (
+                    <li key={b.id}>
+                      <button
+                        onClick={() => onOpenBooking(b)}
+                        className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-cream/5"
+                      >
+                        <span className="min-w-0 truncate">
+                          <span className="font-medium text-cream/90">{b.name}</span>
+                          <span className="ml-1.5 text-cream/45">{b.guests}名</span>
+                          {b.status === "pending" && (
+                            <span className="ml-1.5 text-clay">未確認</span>
+                          )}
+                        </span>
+                        <span className="shrink-0 text-cream/30">詳細 →</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           );
         })}
@@ -668,11 +625,14 @@ function SlotsManager(props: {
   padDay: (d: number) => string;
   slotsForDate: (s: string) => Slot[];
   getSlot: (s: string, t: string) => Slot | undefined;
+  bookingsBySlotId: Map<string, BookingRow[]>;
+  onOpenBooking: (b: BookingRow) => void;
   toggleSlot: (s: string, t: string) => Promise<void>;
   deleteSlot: (s: string, t: string) => Promise<void>;
   openDay: (s: string) => Promise<void>;
   closeDay: (s: string) => Promise<void>;
   openWeek: () => Promise<void>;
+  openMonth: () => Promise<void>;
   saving: boolean;
 }) {
   const {
@@ -687,15 +647,27 @@ function SlotsManager(props: {
     padDay,
     slotsForDate,
     getSlot,
+    bookingsBySlotId,
+    onOpenBooking,
     toggleSlot,
     deleteSlot,
     openDay,
     closeDay,
     openWeek,
+    openMonth,
     saving,
   } = props;
 
-  const editorProps = { getSlot, toggleSlot, deleteSlot, openDay, closeDay, saving };
+  const editorProps = {
+    getSlot,
+    bookingsBySlotId,
+    onOpenBooking,
+    toggleSlot,
+    deleteSlot,
+    openDay,
+    closeDay,
+    saving,
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -745,7 +717,10 @@ function SlotsManager(props: {
 
           <div className="grid grid-cols-7">
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="min-h-[72px] border-b border-r border-cream/5 bg-black/10" />
+              <div
+                key={`empty-${i}`}
+                className="min-h-[76px] border-b border-r border-cream/5 bg-black/10"
+              />
             ))}
             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
               const dateStr = padDay(d);
@@ -755,14 +730,18 @@ function SlotsManager(props: {
               const isSelected = selectedDate === dateStr;
               const isToday = dateStr === todayStr;
               const daySlots = slotsForDate(dateStr);
-              const openSlots = daySlots.filter((s) => s.is_open);
+              const dayGuests = daySlots.reduce(
+                (n, s) =>
+                  n + (bookingsBySlotId.get(s.id) ?? []).reduce((m, b) => m + b.guests, 0),
+                0
+              );
 
               return (
                 <button
                   key={d}
                   onClick={() => !isClosed && setSelectedDate(isSelected ? null : dateStr)}
                   disabled={isClosed}
-                  className={`min-h-[72px] border-b border-r border-cream/5 p-2 text-left transition-colors ${
+                  className={`min-h-[76px] border-b border-r border-cream/5 p-1.5 text-left transition-colors sm:p-2 ${
                     isSelected
                       ? "bg-deep-green/25"
                       : isClosed
@@ -770,33 +749,48 @@ function SlotsManager(props: {
                         : "hover:bg-deep-green/10"
                   } ${isToday ? "ring-1 ring-inset ring-clay" : ""}`}
                 >
-                  <span
-                    className={`text-sm font-medium ${
-                      isToday
-                        ? "text-clay"
-                        : isClosed
-                          ? "text-cream/20"
-                          : isSun
-                            ? "text-red-400"
-                            : "text-cream/80"
-                    }`}
-                  >
-                    {d}
-                  </span>
-                  {openSlots.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {openSlots.map((_, i) => (
-                        <span key={i} className="h-1.5 w-1.5 rounded-full bg-clay" />
-                      ))}
-                    </div>
-                  )}
-                  {daySlots.length > openSlots.length && (
-                    <div className="mt-0.5 flex flex-wrap gap-1">
-                      {daySlots
-                        .filter((s) => !s.is_open)
-                        .map((_, i) => (
-                          <span key={i} className="h-1.5 w-1.5 rounded-full bg-cream/20" />
-                        ))}
+                  <div className="flex items-baseline justify-between gap-1">
+                    <span
+                      className={`text-sm font-medium ${
+                        isToday
+                          ? "text-clay"
+                          : isClosed
+                            ? "text-cream/20"
+                            : isSun
+                              ? "text-red-400"
+                              : "text-cream/80"
+                      }`}
+                    >
+                      {d}
+                    </span>
+                    {dayGuests > 0 && (
+                      <span className="rounded bg-deep-green/40 px-1 text-[10px] leading-4 text-green-300">
+                        {dayGuests}名
+                      </span>
+                    )}
+                  </div>
+                  {daySlots.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {[...daySlots]
+                        .sort((a, b) => a.time_slot.localeCompare(b.time_slot))
+                        .map((s) => {
+                          const booked = (bookingsBySlotId.get(s.id) ?? []).length > 0;
+                          return (
+                            <span
+                              key={s.id}
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                booked
+                                  ? "bg-deep-green-light"
+                                  : s.is_open
+                                    ? "bg-clay"
+                                    : "bg-cream/20"
+                              }`}
+                              title={`${s.time_slot} ${
+                                booked ? "予約あり" : s.is_open ? "公開中" : "非公開"
+                              }`}
+                            />
+                          );
+                        })}
                     </div>
                   )}
                 </button>
@@ -810,6 +804,9 @@ function SlotsManager(props: {
             <span className="h-2 w-2 rounded-full bg-clay" /> 公開中
           </span>
           <span className="inline-flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-deep-green-light" /> 予約あり
+          </span>
+          <span className="inline-flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-cream/20" /> 非公開
           </span>
           <span className="inline-flex items-center gap-1.5">
@@ -818,16 +815,27 @@ function SlotsManager(props: {
           <span>日・月は定休日</span>
         </div>
 
-        {selectedDate && (
+        {/* 一括操作 */}
+        <div className="mt-4 flex flex-wrap gap-2">
           <button
-            onClick={openWeek}
+            onClick={openMonth}
             disabled={saving}
-            className="mt-4 inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
           >
-            <Plus size={14} />
-            {selectedDate} から1週間（火〜土）を一括公開
+            <CalendarCheck size={14} />
+            {month + 1}月の営業日（火〜土）を全枠公開
           </button>
-        )}
+          {selectedDate && (
+            <button
+              onClick={openWeek}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded border border-deep-green px-4 py-2.5 text-sm text-green-300 transition-colors hover:bg-deep-green/20 disabled:opacity-50"
+            >
+              <Plus size={14} />
+              {selectedDate} から1週間（火〜土）を一括公開
+            </button>
+          )}
+        </div>
 
         {/* ボトムシートに隠れないための余白（モバイルのみ） */}
         {selectedDate && <div className="h-16 lg:hidden" />}
@@ -876,225 +884,6 @@ function SlotsManager(props: {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function BookingsList({
-  bookings,
-  pendingCount,
-  onSelect,
-}: {
-  bookings: BookingRow[];
-  pendingCount: number;
-  onSelect: (b: BookingRow) => void;
-}) {
-  const [filter, setFilter] = useState<"all" | "pending" | "confirmed" | "cancelled">("all");
-  const [query, setQuery] = useState("");
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return bookings
-      .filter((b) => filter === "all" || b.status === filter)
-      .filter(
-        (b) =>
-          !q ||
-          b.name.toLowerCase().includes(q) ||
-          b.email.toLowerCase().includes(q)
-      )
-      .sort((a, b) =>
-        (a.available_slots?.date ?? "9999-12-31").localeCompare(
-          b.available_slots?.date ?? "9999-12-31"
-        )
-      );
-  }, [bookings, filter, query]);
-
-  return (
-    <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h2 className="font-[family-name:var(--font-heading)] text-2xl">予約一覧</h2>
-          {pendingCount > 0 && (
-            <p className="mt-1 text-sm text-clay">未確認 {pendingCount} 件</p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {(["all", "pending", "confirmed", "cancelled"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`rounded px-3 py-2 text-xs transition-colors ${
-                filter === f ? "bg-clay/15 text-clay" : "text-cream/40 hover:text-cream"
-              }`}
-            >
-              {f === "all" ? "全て" : f === "pending" ? "未確認" : f === "confirmed" ? "確定" : "キャンセル"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 検索 */}
-      <div className="relative mb-4">
-        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream/30" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="名前・メールで検索"
-          className="w-full rounded border border-cream/15 bg-charcoal-light py-2.5 pl-9 pr-3 text-sm text-cream placeholder:text-cream/30 focus:border-clay focus:outline-none sm:max-w-sm"
-        />
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className="rounded border border-cream/10 p-12 text-center text-cream/30">
-          該当する予約はありません
-        </div>
-      ) : (
-        <ul className="space-y-2">
-          {filtered.map((b) => (
-            <li key={b.id}>
-              <button
-                onClick={() => onSelect(b)}
-                className="flex w-full items-start justify-between gap-4 rounded border border-cream/10 bg-charcoal-light p-4 text-left transition-colors hover:border-clay/40"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">{b.name}</span>
-                    <StatusBadge status={b.status} />
-                  </div>
-                  <p className="mt-1 truncate text-sm text-cream/50">{b.email}</p>
-                  <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-cream/60">
-                    {b.available_slots && (
-                      <span>
-                        📅 {formatDateDisplay(b.available_slots.date)} {b.available_slots.time_slot}
-                      </span>
-                    )}
-                    <span>👥 {b.guests}名</span>
-                    <span>🎋 {PLAN_LABELS[b.plan]?.split(" — ")[0]}</span>
-                  </div>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function BookingDetailModal({
-  booking,
-  onClose,
-  onStatusChange,
-}: {
-  booking: BookingRow;
-  onClose: () => void;
-  onStatusChange: (status: "pending" | "confirmed" | "cancelled") => Promise<void>;
-}) {
-  const planMeta = PLANS.find((p) => p.id === booking.plan) ?? PLANS[0];
-  const totalUsd = planMeta.priceUsd * booking.guests;
-  const totalJpy = planMeta.priceJpy * booking.guests;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-cream/15 bg-charcoal-light shadow-2xl"
-      >
-        <div className="flex items-center justify-between border-b border-cream/10 px-6 py-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.15em] text-cream/40">予約詳細</p>
-            <h3 className="mt-1 font-[family-name:var(--font-heading)] text-xl">{booking.name}</h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded p-2 text-cream/40 transition-colors hover:bg-cream/10 hover:text-cream"
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="space-y-5 px-6 py-5 text-sm">
-          <div className="flex items-center gap-3">
-            <StatusBadge status={booking.status} />
-            <span className="text-cream/40">ID: {booking.id.slice(0, 8)}…</span>
-          </div>
-
-          <DetailRow label="日時">
-            {booking.available_slots
-              ? `${formatDateDisplay(booking.available_slots.date)} ・ ${booking.available_slots.time_slot}`
-              : "—"}
-          </DetailRow>
-          <DetailRow label="プラン">{PLAN_LABELS[booking.plan]?.split(" — ")[0] ?? booking.plan}</DetailRow>
-          <DetailRow label="人数">{booking.guests} 名</DetailRow>
-          <DetailRow label="合計">
-            <span className="text-base">
-              ${totalUsd} <span className="text-cream/50">(¥{totalJpy.toLocaleString()})</span>
-            </span>
-          </DetailRow>
-          <DetailRow label="メール">
-            <a href={`mailto:${booking.email}`} className="text-clay hover:underline">
-              {booking.email}
-            </a>
-          </DetailRow>
-          {booking.dietary && <DetailRow label="食事制限">{booking.dietary}</DetailRow>}
-          {booking.notes && <DetailRow label="備考">{booking.notes}</DetailRow>}
-        </div>
-
-        <div className="flex flex-wrap gap-2 border-t border-cream/10 bg-black/20 px-6 py-4">
-          {booking.status === "pending" && (
-            <>
-              <button
-                onClick={() => onStatusChange("confirmed")}
-                className="flex items-center gap-1.5 rounded border border-deep-green bg-deep-green/40 px-4 py-2 text-sm font-medium transition-colors hover:bg-deep-green/60"
-              >
-                <Check size={14} /> 確定 + メール送信
-              </button>
-              <button
-                onClick={() => onStatusChange("cancelled")}
-                className="flex items-center gap-1.5 rounded border border-red-400/40 px-4 py-2 text-sm text-red-300 transition-colors hover:bg-red-400/10"
-              >
-                <X size={14} /> キャンセル
-              </button>
-            </>
-          )}
-          {booking.status === "confirmed" && (
-            <button
-              onClick={() => onStatusChange("pending")}
-              className="flex items-center gap-1.5 rounded border border-cream/20 px-4 py-2 text-sm text-cream/60 transition-colors hover:bg-cream/5"
-            >
-              未確認に戻す
-            </button>
-          )}
-          {booking.status === "cancelled" && (
-            <button
-              onClick={() => onStatusChange("pending")}
-              className="flex items-center gap-1.5 rounded border border-cream/20 px-4 py-2 text-sm text-cream/60 transition-colors hover:bg-cream/5"
-            >
-              未確認に戻す
-            </button>
-          )}
-          <a
-            href={`mailto:${booking.email}`}
-            className="ml-auto flex items-center gap-1.5 rounded border border-cream/15 px-4 py-2 text-sm text-cream/70 transition-colors hover:border-clay hover:text-clay"
-          >
-            <Mail size={14} /> メールで返信
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[100px_1fr] gap-3">
-      <dt className="text-xs uppercase tracking-[0.1em] text-cream/40">{label}</dt>
-      <dd className="text-cream/90">{children}</dd>
     </div>
   );
 }

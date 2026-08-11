@@ -19,10 +19,14 @@ function isAuthorized(req: NextRequest) {
 }
 
 // GET — list recent bookings
+// Optional ?limit= (default 100, max 1000) — backward compatible addition for the
+// admin dashboard's 6-month history chart.
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  return NextResponse.json(listBookings(100));
+  const raw = Number(new URL(req.url).searchParams.get("limit"));
+  const limit = Number.isFinite(raw) && raw > 0 ? Math.min(Math.floor(raw), 1000) : 100;
+  return NextResponse.json(listBookings(limit));
 }
 
 // PATCH — update booking status (and send confirmation email when confirming)
