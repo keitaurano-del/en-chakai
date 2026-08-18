@@ -71,7 +71,7 @@ export type NeighborhoodSlug = (typeof NEIGHBORHOODS)[number]["slug"];
 export const TRIPADVISOR_URL = "https://www.tripadvisor.com/";
 
 export const CONTACT = {
-  email: "info@en-chakai.com",
+  email: "bookings@enchakai.com",
   address: "Sengoku, Bunkyo-ku, Tokyo",
   station: "Sengoku Station, Toei Mita Line — 5 min walk",
 };

@@ -173,7 +173,7 @@ async function sendConfirmationEmail(booking: BookingWithSlot) {
 
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e0dccc; font-size: 12px; color: #999990;">
           En Chakai 円茶会<br/>
-          bookings@en-chakai.com<br/>
+          bookings@enchakai.com<br/>
           Booking ID: ${booking.id}
         </div>
       </div>
