@@ -171,7 +171,31 @@
     "cta": "Open the reservation form",
     "ctaNote": "We'll reply with confirmation and payment link by email.",
     "fallback": "Prefer email? Write to {email}.",
-    "trust": "Read our cancellation policy"
+    "trust": "Read our cancellation policy",
+    "window": {
+      "notice": "Online reservations are open for dates 14 days or more in advance. For dates within 2 weeks, please contact us separately.",
+      "noticeCta": "Go to the inquiry form"
+    },
+    "inquiry": {
+      "kicker": "Inquiry",
+      "heading": "Dates within 2 weeks?",
+      "lede": "For dates within 2 weeks, please contact us separately using this form. We'll reply by email as soon as we can.",
+      "nameLabel": "Your name *",
+      "namePlaceholder": "Full name",
+      "emailLabel": "Email address *",
+      "emailPlaceholder": "you@example.com",
+      "dateLabel": "Desired date",
+      "datePlaceholder": "e.g. 2026-08-25, or \"next weekend\"",
+      "partyLabel": "Party size",
+      "messageLabel": "Message *",
+      "messagePlaceholder": "Your preferred date and time, number of guests, questions, etc.",
+      "optional": "— optional",
+      "submit": "Send inquiry",
+      "submitting": "Sending…",
+      "successHeading": "Inquiry sent.",
+      "successBody": "Thank you — we've received your inquiry and will reply to your email shortly.",
+      "error": "Something went wrong. Please try again, or email us directly."
+    }
   },
   "faq": {
     "metaTitle": "FAQ — En Chakai",

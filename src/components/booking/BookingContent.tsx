@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { type Slot } from "@/lib/db";
 import {
   CLOSED_DAYS,
@@ -11,6 +12,7 @@ import {
 import { PLANS } from "@/lib/constants";
 import { Container } from "@/components/ui/Container";
 import { FadeIn } from "@/components/ui/FadeIn";
+import { InquirySection } from "@/components/booking/InquirySection";
 import { Link } from "@/i18n/navigation";
 import {
   ChevronLeft,
@@ -55,6 +57,7 @@ const EMPTY_FORM: FormState = {
 };
 
 export function BookingContent() {
+  const tWindow = useTranslations("booking.window");
   const [done, setDone] = useState(false);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -356,6 +359,17 @@ export function BookingContent() {
                         )}
                       </div>
                     </div>
+
+                    {/* EC-14: 2-week public booking window notice */}
+                    <div className="mt-4 border border-clay/40 bg-clay/10 px-4 py-3 text-sm leading-relaxed text-ink/75 sm:px-5">
+                      {tWindow("notice")}{" "}
+                      <a
+                        href="#inquiry"
+                        className="whitespace-nowrap text-clay underline underline-offset-4 transition-colors hover:text-ink"
+                      >
+                        {tWindow("noticeCta")}
+                      </a>
+                    </div>
                   </div>
                 </FadeIn>
 
@@ -585,6 +599,9 @@ export function BookingContent() {
                 <Languages size={14} className="text-clay" /> English hosted
               </span>
             </div>
+
+            {/* EC-14: inquiry form for dates within 2 weeks */}
+            <InquirySection />
           </div>
         </Container>
       </section>

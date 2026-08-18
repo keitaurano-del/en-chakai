@@ -171,7 +171,31 @@
     "cta": "ご予約フォームを開く",
     "ctaNote": "確認とお支払いのご案内をメールでお送りします。",
     "fallback": "メールをご希望の方は {email} までご連絡ください。",
-    "trust": "キャンセルポリシーを読む"
+    "trust": "キャンセルポリシーを読む",
+    "window": {
+      "notice": "オンラインでのご予約は、14日以上先の日程より承っております。2週間以内のご希望は別途お問い合わせください。",
+      "noticeCta": "お問い合わせフォームへ"
+    },
+    "inquiry": {
+      "kicker": "お問い合わせ",
+      "heading": "2週間以内のご希望の方へ",
+      "lede": "2週間以内の日程をご希望の場合は、こちらのフォームより別途お問い合わせください。折り返しメールでご連絡いたします。",
+      "nameLabel": "お名前 *",
+      "namePlaceholder": "お名前をご入力ください",
+      "emailLabel": "メールアドレス *",
+      "emailPlaceholder": "you@example.com",
+      "dateLabel": "ご希望の日程",
+      "datePlaceholder": "例：2026-08-25、来週末 など",
+      "partyLabel": "ご人数",
+      "messageLabel": "お問い合わせ内容 *",
+      "messagePlaceholder": "ご希望の日時・人数・ご質問などをご記入ください。",
+      "optional": "— 任意",
+      "submit": "お問い合わせを送信",
+      "submitting": "送信中…",
+      "successHeading": "送信いたしました。",
+      "successBody": "お問い合わせを受け付けました。折り返しメールにてご連絡いたしますので、しばらくお待ちください。",
+      "error": "送信に失敗しました。お手数ですが、もう一度お試しいただくか、メールで直接ご連絡ください。"
+    }
   },
   "faq": {
     "metaTitle": "よくあるご質問 — En Chakai 円茶会",

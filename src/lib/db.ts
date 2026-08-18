@@ -40,6 +40,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const SLOTS_FILE = path.join(DATA_DIR, "slots.json");
 const BOOKINGS_FILE = path.join(DATA_DIR, "bookings.json");
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
+const INQUIRIES_FILE = path.join(DATA_DIR, "inquiries.json");
 
 function readJson<T>(file: string): T[] {
   try {
@@ -154,6 +155,38 @@ export function updateBooking(
   writeJson(BOOKINGS_FILE, rows);
   const slot = readJson<Slot>(SLOTS_FILE).find((s) => s.id === booking.slot_id) ?? null;
   return { ...booking, available_slots: slot };
+}
+
+// ── Inquiries（2週間以内の日程などの個別お問い合わせ・data/inquiries.json） ──
+
+export type Inquiry = {
+  id: string;
+  name: string;
+  email: string;
+  desired_date: string | null; // free text or "YYYY-MM-DD"
+  party_size: number | null;
+  message: string;
+  created_at: string;
+};
+
+export function insertInquiry(
+  input: Omit<Inquiry, "id" | "created_at">
+): Inquiry {
+  const rows = readJson<Inquiry>(INQUIRIES_FILE);
+  const inquiry: Inquiry = {
+    ...input,
+    id: randomUUID(),
+    created_at: new Date().toISOString(),
+  };
+  rows.push(inquiry);
+  writeJson(INQUIRIES_FILE, rows);
+  return inquiry;
+}
+
+export function listInquiries(limit = 100): Inquiry[] {
+  return readJson<Inquiry>(INQUIRIES_FILE)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, limit);
 }
 
 // ── Settings（管理画面設定・data/settings.json） ─────────────────────────────

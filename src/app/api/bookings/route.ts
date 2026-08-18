@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { findOpenSlot, insertBooking, listSlots } from "@/lib/db";
 import { Resend } from "resend";
 import { PLAN_LABELS, TIME_SLOT_LABELS, formatDateDisplay, type TimeSlot } from "@/lib/booking";
+import { isPubliclyBookable } from "@/lib/booking-window";
 
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL ?? "keita.urano@gmail.com";
 // Sender must be a Resend-verified domain; falls back to Resend's shared onboarding sender.
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     from: searchParams.get("from"),
     to: searchParams.get("to"),
     openOnly: true,
-  });
+  }).filter((s) => isPubliclyBookable(s.date)); // EC-14: hide slots within 14 days (Asia/Tokyo)
   return NextResponse.json(slots);
 }
 
@@ -30,6 +31,17 @@ export async function POST(req: NextRequest) {
   // Validate required fields
   if (!date || !time_slot || !plan || !guests || !name || !email) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // EC-14: public bookings must be 14+ days ahead (Asia/Tokyo). Admin is unaffected.
+  if (!isPubliclyBookable(date)) {
+    return NextResponse.json(
+      {
+        error:
+          "Online reservations are available for dates 14 days or more in advance. For dates within 2 weeks, please contact us via the inquiry form.",
+      },
+      { status: 400 }
+    );
   }
 
   // Find the slot
