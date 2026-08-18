@@ -360,16 +360,18 @@ export function BookingContent() {
                       </div>
                     </div>
 
-                    {/* EC-14: 2-week public booking window notice */}
-                    <div className="mt-4 border border-clay/40 bg-clay/10 px-4 py-3 text-sm leading-relaxed text-ink/75 sm:px-5">
-                      {tWindow("notice")}{" "}
-                      <a
-                        href="#inquiry"
-                        className="whitespace-nowrap text-clay underline underline-offset-4 transition-colors hover:text-ink"
-                      >
-                        {tWindow("noticeCta")}
-                      </a>
-                    </div>
+                    {/* EC-14: 2-week public booking window notice (hidden once a bookable date is chosen) */}
+                    {!form.date && (
+                      <div className="mt-4 border border-clay/40 bg-clay/10 px-4 py-3 text-sm leading-relaxed text-ink/75 sm:px-5">
+                        {tWindow("notice")}{" "}
+                        <a
+                          href="#inquiry"
+                          className="whitespace-nowrap text-clay underline underline-offset-4 transition-colors hover:text-ink"
+                        >
+                          {tWindow("noticeCta")}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </FadeIn>
 
@@ -600,8 +602,8 @@ export function BookingContent() {
               </span>
             </div>
 
-            {/* EC-14: inquiry form for dates within 2 weeks */}
-            <InquirySection />
+            {/* EC-14: inquiry form for dates within 2 weeks (hidden once a bookable date is chosen) */}
+            {!form.date && <InquirySection />}
           </div>
         </Container>
       </section>
