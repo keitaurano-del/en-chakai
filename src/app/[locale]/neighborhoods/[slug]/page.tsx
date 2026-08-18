@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -8,7 +9,9 @@ import { Link } from "@/i18n/navigation";
 import { NEIGHBORHOODS, type NeighborhoodSlug } from "@/lib/constants";
 
 export function generateStaticParams() {
-  return NEIGHBORHOODS.map((n) => ({ slug: n.slug }));
+  return routing.locales.flatMap((locale) =>
+    NEIGHBORHOODS.map((n) => ({ locale, slug: n.slug })),
+  );
 }
 
 export async function generateMetadata({
@@ -36,6 +39,7 @@ export default async function NeighborhoodPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const n = NEIGHBORHOODS.find((x) => x.slug === slug);
   if (!n) notFound();
 

@@ -1,10 +1,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+function LocaleSwitch({ onNavigate }: { onNavigate?: () => void }) {
+  const locale = useLocale();
+  const pathname = usePathname();
+
+  return (
+    <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em]">
+      <Link
+        href={pathname}
+        locale="en"
+        onClick={onNavigate}
+        className={`transition-colors hover:text-clay ${
+          locale === "en" ? "text-ink" : "text-ink-muted"
+        }`}
+      >
+        EN
+      </Link>
+      <span className="text-ink-muted/50">|</span>
+      <Link
+        href={pathname}
+        locale="ja"
+        onClick={onNavigate}
+        className={`transition-colors hover:text-clay ${
+          locale === "ja" ? "text-ink" : "text-ink-muted"
+        }`}
+      >
+        日本語
+      </Link>
+    </span>
+  );
+}
 
 export function Header() {
   const t = useTranslations("nav");
@@ -59,6 +90,7 @@ export function Header() {
           >
             {t("booking")}
           </Link>
+          <LocaleSwitch />
         </nav>
 
         <button
@@ -97,6 +129,9 @@ export function Header() {
               >
                 {t("booking")}
               </Link>
+              <div className="flex justify-center pt-4">
+                <LocaleSwitch onNavigate={() => setMobileOpen(false)} />
+              </div>
             </div>
           </motion.nav>
         )}

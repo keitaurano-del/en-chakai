@@ -18,5 +18,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...staticRoutes, ...neighborhoodRoutes];
+  const jaStaticRoutes = STATIC_PATHS.map((path) => ({
+    url: absoluteUrl(path === "/" ? "/ja" : `/ja${path}`),
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: path === "/" ? 0.9 : 0.7,
+  }));
+
+  const jaNeighborhoodRoutes = NEIGHBORHOODS.map((n) => ({
+    url: absoluteUrl(`/ja/neighborhoods/${n.slug}`),
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...neighborhoodRoutes,
+    ...jaStaticRoutes,
+    ...jaNeighborhoodRoutes,
+  ];
 }

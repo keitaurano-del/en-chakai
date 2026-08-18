@@ -7,8 +7,6 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.1.106"],
   async redirects() {
     return [
-      { source: "/ja", destination: "/", permanent: true },
-      { source: "/ja/:path*", destination: "/:path*", permanent: true },
       {
         source: "/cancellation",
         destination: "/faq#cancellation",
