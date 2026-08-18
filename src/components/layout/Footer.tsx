@@ -8,8 +8,8 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-paper">
-      <div className="mx-auto max-w-[640px] px-4 sm:px-8 py-12 sm:py-16">
-        <div className="grid gap-10 sm:grid-cols-3">
+      <div className="mx-auto max-w-[640px] px-4 sm:px-8 py-12 sm:py-16 md:max-w-6xl lg:px-10 lg:py-20">
+        <div className="grid gap-10 sm:grid-cols-3 lg:grid-cols-[1.6fr_1fr_1fr] lg:gap-16">
           <div className="sm:col-span-1">
             <p className="font-[family-name:var(--font-heading)] text-[17px] tracking-[0.2em] text-ink">
               EN CHAKAI 円茶会

@@ -7,17 +7,17 @@ export function ReserveBlock() {
   const t = useTranslations("reserve");
 
   return (
-    <section className="bg-ink py-24 text-center sm:py-32">
-      <div className="mx-auto max-w-[640px] px-4 sm:px-8">
+    <section className="bg-ink py-24 text-center sm:py-32 lg:py-40">
+      <div className="mx-auto max-w-[640px] px-4 sm:px-8 md:max-w-4xl lg:max-w-5xl lg:px-10">
         <FadeIn>
           <div className="mx-auto mb-8 h-px w-8 bg-clay" />
           <p className="mb-6 text-[11px] uppercase tracking-[0.3em] text-clay">
             {t("kicker")}
           </p>
-          <h2 className="font-[family-name:var(--font-heading)] mx-auto mb-6 text-[38px] font-normal leading-tight text-paper sm:text-5xl">
+          <h2 className="font-[family-name:var(--font-heading)] mx-auto mb-6 text-[38px] font-normal leading-tight text-paper sm:text-5xl lg:text-[56px]">
             {t("heading")}
           </h2>
-          <p className="mx-auto mb-10 max-w-[460px] text-[15px] leading-relaxed text-paper/70">
+          <p className="mx-auto mb-10 max-w-[460px] text-[15px] leading-relaxed text-paper/70 lg:max-w-[560px] lg:text-[16px]">
             {t("body")}
           </p>
 
@@ -29,7 +29,7 @@ export function ReserveBlock() {
           </Link>
 
           {/* レビュー */}
-          <div className="mt-16 grid gap-6 border-t border-paper/10 pt-12 text-left sm:grid-cols-3">
+          <div className="mt-16 grid gap-6 border-t border-paper/10 pt-12 text-left sm:grid-cols-3 lg:mt-20 lg:gap-12 lg:pt-14">
             {(["review1", "review2", "review3"] as const).map((k) => (
               <p key={k} className="text-[13px] leading-relaxed text-paper/60">
                 "{t(k)}"

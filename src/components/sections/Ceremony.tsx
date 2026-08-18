@@ -12,21 +12,22 @@ export function Ceremony() {
   const plan = PLANS[0];
 
   return (
-    <section className="border-t border-border bg-paper py-20 sm:py-28">
-      <div className="mx-auto max-w-[640px] px-4 sm:px-8">
+    <section className="border-t border-border bg-paper py-20 sm:py-28 lg:py-36">
+      <div className="mx-auto max-w-[640px] px-4 sm:px-8 md:max-w-6xl lg:px-10">
         <FadeIn>
           <div className="mb-8 h-px w-8 bg-clay" />
           <p className="mb-5 text-[11px] uppercase tracking-[0.3em] text-clay">
             {t("kicker")}
           </p>
-          <h2 className="font-[family-name:var(--font-heading)] mb-10 text-[32px] font-normal leading-[1.15] text-ink sm:text-4xl">
+          <h2 className="font-[family-name:var(--font-heading)] mb-10 text-[32px] font-normal leading-[1.15] text-ink sm:text-4xl lg:mb-16 lg:text-[44px] lg:max-w-[720px]">
             {t("heading")}
           </h2>
         </FadeIn>
 
+        <div className="lg:grid lg:grid-cols-[1.2fr_1fr] lg:items-start lg:gap-20">
         {/* タイムライン */}
         <FadeIn delay={0.05}>
-          <ul className="mb-14">
+          <ul className="mb-14 lg:mb-0">
             {timeline.map((step, i) => (
               <li
                 key={step.time}
@@ -48,8 +49,8 @@ export function Ceremony() {
         </FadeIn>
 
         {/* プランカード */}
-        <FadeIn delay={0.1}>
-          <div className="border border-clay p-7">
+        <FadeIn delay={0.1} className="lg:sticky lg:top-28">
+          <div className="border border-clay p-7 lg:p-9">
             <p className="font-[family-name:var(--font-heading)] mb-1 text-[23px] font-normal text-ink">
               {tp(`${plan.id}.name`)}
             </p>
@@ -78,6 +79,7 @@ export function Ceremony() {
             </Link>
           </div>
         </FadeIn>
+        </div>
       </div>
     </section>
   );

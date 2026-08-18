@@ -66,7 +66,7 @@ export function Header() {
           : "bg-paper/80 backdrop-blur-sm border-b border-border"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-4 sm:px-8">
+      <div className="mx-auto flex h-14 max-w-[640px] items-center justify-between px-4 sm:px-8 md:h-16 md:max-w-6xl lg:px-10">
         <Link
           href="/"
           className="font-[family-name:var(--font-heading)] text-[17px] tracking-[0.2em] text-ink transition-colors hover:text-clay"
@@ -74,7 +74,7 @@ export function Header() {
           EN CHAKAI 円茶会
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-6 md:flex lg:gap-8">
           {navItems.map((item) => (
             <Link
               key={item.href}

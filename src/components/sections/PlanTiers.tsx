@@ -9,7 +9,7 @@ export function PlanTiers() {
 
   return (
     <FadeIn>
-      <div className="mx-auto max-w-md border border-gold/40 bg-deep-green/15 p-7 sm:p-8">
+      <div className="mx-auto max-w-md border border-gold/40 bg-deep-green/15 p-7 sm:p-8 lg:max-w-lg lg:p-10">
         <h3 className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
           {t(`${plan.id}.name`)}
         </h3>
