@@ -116,7 +116,7 @@ export function SettingsView({
               "—"
             )}
           </InfoRow>
-          <InfoRow label="時間枠">{TIME_SLOTS.join(" / ")}（3枠固定）</InfoRow>
+          <InfoRow label="時間枠">{TIME_SLOTS.join(" / ")}（2枠固定）</InfoRow>
           <InfoRow label="料金">
             ¥{plan.priceJpy.toLocaleString()} / ${plan.priceUsd} ・ 1名あたり（最大{plan.maxGuests}
             名）

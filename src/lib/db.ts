@@ -8,7 +8,7 @@ import { randomUUID } from "crypto";
 export type Slot = {
   id: string;
   date: string; // "YYYY-MM-DD"
-  time_slot: "10:00" | "14:00" | "16:00";
+  time_slot: "11:00" | "14:00";
   is_open: boolean;
   created_at: string;
 };

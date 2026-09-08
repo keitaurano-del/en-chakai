@@ -18,7 +18,8 @@ export async function generateMetadata({
   };
 }
 
-type TimelineItem = { time: string; label: string };
+type SchedulePhase = { time: string; title: string; points: string[] };
+type ScheduleBlock = { heading: string; sub: string; note: string; phases: SchedulePhase[] };
 type ExpectItem = { title: string; body: string };
 
 export default async function ExperiencePage({
@@ -28,10 +29,9 @@ export default async function ExperiencePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "experience" });
-  const tc = await getTranslations({ locale, namespace: "ceremony" });
   const tp = await getTranslations({ locale, namespace: "plans" });
 
-  const timeline = tc.raw("timeline") as TimelineItem[];
+  const schedule = t.raw("schedule") as ScheduleBlock;
   const expectItems = t.raw("expect.items") as ExpectItem[];
 
   return (
@@ -73,21 +73,36 @@ export default async function ExperiencePage({
         <Container>
           <FadeIn>
             <div className="mx-auto max-w-3xl">
-              <h2 className="mb-8 font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
-                Sixty minutes, end to end
+              <p className="mb-2 text-xs uppercase tracking-[0.25em] text-gold sm:text-sm">
+                {schedule.sub}
+              </p>
+              <h2 className="font-[family-name:var(--font-heading)] text-2xl font-medium text-cream sm:text-3xl">
+                {schedule.heading}
               </h2>
-              <ol className="grid gap-3 sm:gap-4 md:grid-cols-2">
-                {timeline.map((step) => (
-                  <li
-                    key={step.time}
-                    className="flex items-baseline gap-4 border-l border-gold/30 px-5 py-4 sm:gap-6"
-                  >
-                    <span className="font-[family-name:var(--font-heading)] text-lg font-medium tabular-nums text-gold sm:text-xl">
-                      {step.time}
-                    </span>
-                    <span className="text-sm leading-relaxed text-cream/85 sm:text-base">
-                      {step.label}
-                    </span>
+              <p className="mt-4 text-sm leading-relaxed text-cream/70 sm:text-base">
+                {schedule.note}
+              </p>
+              <ol className="mt-10 space-y-9 border-l border-gold/30 pl-6 sm:pl-8">
+                {schedule.phases.map((phase) => (
+                  <li key={phase.time}>
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="font-[family-name:var(--font-heading)] text-lg font-medium tabular-nums text-gold sm:text-xl">
+                        {phase.time}
+                      </span>
+                      <h3 className="text-base font-medium text-cream sm:text-lg">
+                        {phase.title}
+                      </h3>
+                    </div>
+                    <ul className="mt-3 space-y-2">
+                      {phase.points.map((pt, i) => (
+                        <li
+                          key={i}
+                          className="text-sm leading-relaxed text-cream/75 sm:text-base"
+                        >
+                          {pt}
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 ))}
               </ol>

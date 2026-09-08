@@ -1,18 +1,17 @@
-export const TIME_SLOTS = ["10:00", "14:00", "16:00"] as const;
+export const TIME_SLOTS = ["11:00", "14:00"] as const;
 export type TimeSlot = (typeof TIME_SLOTS)[number];
 
 export const TIME_SLOT_LABELS: Record<TimeSlot, string> = {
-  "10:00": "Morning — 10:00",
+  "11:00": "Morning — 11:00",
   "14:00": "Afternoon — 14:00",
-  "16:00": "Late afternoon — 16:00",
 };
 
 export const PLAN_LABELS: Record<string, string> = {
-  conversation: "The Tea Ceremony — $70 (¥10,000) / 60 min / Up to 4 guests",
+  conversation: "The Tea Ceremony — $70 (¥10,000) / per person / 2–6 guests",
 };
 
 export const PLAN_MAX_GUESTS: Record<string, number> = {
-  conversation: 4,
+  conversation: 6,
 };
 
 // Sunday = 0, Monday = 1

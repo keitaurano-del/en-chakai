@@ -3,7 +3,7 @@ export const PLANS = [
     id: "conversation",
     name: "The Tea Ceremony",
     durationMin: 60,
-    maxGuests: 4,
+    maxGuests: 6,
     privacy: "shared",
     priceUsd: 70,
     priceJpy: 10000,
